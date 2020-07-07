@@ -20,11 +20,14 @@ if (document.getElementsByName("document.title")) {
 };
 
 /* get twitter:card */
+/*
 var kraftyTwitterCard;
 
 if (document.getElementsByName("twitter:card")) {
+  console.log("fgrefger");
   kraftyTwitterCard = document.getElementsByName('twitter:card')[0].content;
 };
+*/
 
 /* get viewport */
 var kraftyViewport;
@@ -185,13 +188,13 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFBAppId);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
+/*
 kraftyMessageArea.insertAdjacentHTML("beforeend", "twitter:card is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyTwitterCard);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
+*/
 kraftyMessageArea.insertAdjacentHTML("beforeend", "viewport is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyViewport);
