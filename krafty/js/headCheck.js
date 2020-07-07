@@ -3,37 +3,24 @@ if (document.body) {
 }
 
 
-
+/* get title */
+var kraftyPageTitle = document.title;
 
 /* get meta description */
-var kraftyDescription;
 
 if (document.getElementsByName("description")[0]) {
-  kraftyDescription = document.getElementsByName('description')[0].content;
-};
-
-/* get title */
-var kraftyPageTitle;
-
-if (document.getElementsByName("document.title")) {
-  kraftyPageTitle = document.title;
+  var kraftyDescription = document.getElementsByName("description")[0].content;
 };
 
 /* get twitter:card */
-/*
-var kraftyTwitterCard;
-
-if (document.getElementsByName("twitter:card")) {
-  console.log("fgrefger");
-  kraftyTwitterCard = document.getElementsByName('twitter:card')[0].content;
+if (document.getElementsByName("twitter:card")[0]) {
+  var kraftyTwitterCard = document.getElementsByName("twitter:card")[0].content;
 };
-*/
+
 
 /* get viewport */
-var kraftyViewport;
-
-if (document.getElementsByName('viewport')[0]) {
-  kraftyViewport = document.getElementsByName('viewport')[0].content;
+if (document.getElementsByName("viewport")[0]) {
+  var kraftyViewport = document.getElementsByName("viewport")[0].content;
 };
 
 
@@ -188,13 +175,13 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFBAppId);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-/*
+
 kraftyMessageArea.insertAdjacentHTML("beforeend", "twitter:card is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyTwitterCard);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-*/
+
 kraftyMessageArea.insertAdjacentHTML("beforeend", "viewport is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyViewport);
