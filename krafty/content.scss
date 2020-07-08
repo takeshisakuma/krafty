@@ -7,6 +7,11 @@ $safeColor:#fff;
   outline: $alartColor solid 1px;
 }
 
+
+#js-kraftyHeadInformation.kraftyHeadInformation {
+  display: none;
+}
+
 .kraftyHeadChecker {
   #js-kraftyHeadInformation.kraftyHeadInformation {
     font-size: 12px;
@@ -20,6 +25,7 @@ $safeColor:#fff;
     z-index: 2147483647;
     margin-right: 50px;
     line-height: 1.3;
+    display: block;
 
     hr {
       outline: none !important;
