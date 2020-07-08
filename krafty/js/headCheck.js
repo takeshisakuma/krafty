@@ -6,19 +6,22 @@ if (document.body) {
 /* get title */
 var kraftyPageTitle = document.title;
 
+/* get meta charset */
+var kraftyCharset = document.charset;
+
 /* get meta description */
 
 if (document.getElementsByName("description")[0]) {
   var kraftyDescription = document.getElementsByName("description")[0].content;
 };
 
-/* get twitter:card */
+/* get meta twitter:card */
 if (document.getElementsByName("twitter:card")[0]) {
   var kraftyTwitterCard = document.getElementsByName("twitter:card")[0].content;
 };
 
 
-/* get viewport */
+/* get meta viewport */
 if (document.getElementsByName("viewport")[0]) {
   var kraftyViewport = document.getElementsByName("viewport")[0].content;
 };
@@ -128,6 +131,11 @@ kraftyMessageArea.id = "js-kraftyHeadInformation";
 kraftyMessageArea.className = "kraftyHeadInformation";
 
 
+kraftyMessageArea.insertAdjacentHTML("beforeend", "title is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
+kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyPageTitle);
+
+kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "description is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
@@ -135,36 +143,36 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyDescription);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", "page title is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "charset is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyPageTitle);
+kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyCharset);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", "OG title is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "og:title is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGTitle);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "OG type is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "og:type is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGType);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", "OG url is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "og:url is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGUrl);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>")
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", "OG image is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "og:image is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGImage);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", "OG description is ");
+kraftyMessageArea.insertAdjacentHTML("beforeend", "og:description is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGDescription);
 
