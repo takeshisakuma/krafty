@@ -1,62 +1,76 @@
 @charset "UTF-8";
 
 .headCheckButton {
-    font-weight: bold;
-    color: #333;
-    transition: color 0.2s ease-in-out;
-    cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .headCheckButton:hover {
-    color: #fe5858;
+  color: #fe5858;
 }
 
 .headCheckButton.active {
-    color: #fe5858;
+  color: #fe5858;
 }
 
 .nestCheckButton {
-    font-weight: bold;
-    color: #333;
-    transition: color 0.2s ease-in-out;
-    cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .nestCheckButton:hover {
-    color: #4dc1ea;
+  color: #4dc1ea;
 }
 
 .nestCheckButton.active {
-    color: #4dc1ea;
+  color: #4dc1ea;
 }
 
 .outlineCheckButton {
-    font-weight: bold;
-    color: #333;
-    transition: color 0.2s ease-in-out;
-    cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .outlineCheckButton:hover {
-    color: #70d549;
+  color: #70d549;
 }
 
 .outlineCheckButton.active {
-    color: #70d549;
+  color: #70d549;
 }
 
-
 .altCheckButton {
-    font-weight: bold;
-    color: #333;
-    transition: color 0.2s ease-in-out;
-    cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .altCheckButton:hover {
-    color: #e3e730;
+  color: #e3e730;
 }
 
 .altCheckButton.active {
-    color: #e3e730;
+  color: #e3e730;
+}
+
+.brightnessCheckButton {
+  font-weight: bold;
+  color: #333;
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.brightnessCheckButton:hover {
+  color: #d2d2d2;
+}
+
+.brightnessCheckButton.active {
+  color: #d2d2d2;
 }

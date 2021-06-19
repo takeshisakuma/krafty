@@ -12,3 +12,6 @@ Display outline all elements.
 
 ## Alt Checker
 Display Alt.
+
+## Brightness Checker
+Make the page monochrome.
