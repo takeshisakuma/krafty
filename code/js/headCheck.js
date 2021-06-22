@@ -106,12 +106,26 @@ kraftyMessageArea.id = "js-kraftyHeadInformation";
 kraftyMessageArea.className = "kraftyHeadInformation";
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "title is ");
+
+if (!kraftyPageTitle == "") {
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `　(${kraftyPageTitle.length} characters)`
+  );
+}
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyPageTitle);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "description is ");
+
+if (!kraftyDescription == "") {
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `　(${kraftyDescription.length} characters)`
+  );
+}
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyDescription);
 
@@ -124,6 +138,13 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyCharset);
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "og:title is ");
+
+if (!kraftyOGTitle == "") {
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `　(${kraftyOGTitle.length} characters)`
+  );
+}
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGTitle);
 
@@ -147,7 +168,7 @@ if (!kraftyOGImage == "") {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="${kraftyOGImage}" width="200" style="border:1px solid #333" class="kraftyNoAlt"/>`
+    `<img src="${kraftyOGImage}" width="200" class="headImage"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 }
@@ -156,6 +177,13 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGImage);
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "og:description is ");
+
+if (!kraftyOGDescription == "") {
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `　(${kraftyOGDescription.length} characters)`
+  );
+}
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGDescription);
 
@@ -187,6 +215,16 @@ kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "favicon is ");
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
+
+if (!kraftyFavicon == "") {
+  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `<img src="${kraftyFavicon}" width="32" class="headImage"/>`
+  );
+  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
+}
+
 kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFavicon);
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
@@ -198,7 +236,7 @@ if (!kraftyAppleTouchIcon == "") {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="${kraftyAppleTouchIcon}" width="64" style="border:1px solid #333" class="kraftyNoAlt"/>`
+    `<img src="${kraftyAppleTouchIcon}" width="60" class="headImage"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 }

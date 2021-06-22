@@ -13,7 +13,7 @@ var kraftyImageGroup = document.getElementsByTagName("img");
 kraftyImageGroup = Array.from(kraftyImageGroup);
 
 kraftyImageGroup.forEach((kraftyImageMember) => {
-  if (!kraftyImageMember.classList.contains("kraftyNoAlt") == true) {
+  if (!kraftyImageMember.classList.contains("headImage") == true) {
     kraftyImageMember.insertAdjacentHTML(
       "beforebegin",
       '<p class="kraftyAltContent">alt:' +
