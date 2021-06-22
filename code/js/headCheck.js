@@ -223,9 +223,19 @@ if (!kraftyFavicon == "") {
     `<img src="${kraftyFavicon}" width="32" class="headImage"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
+
+  kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFavicon);
 }
 
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFavicon);
+if (kraftyFavicon == undefined) {
+  kraftyMessageArea.insertAdjacentHTML(
+    "beforeend",
+    `<img src="/favicon.ico" width="32" class="headImage"/>`
+  );
+  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
+
+  kraftyMessageArea.insertAdjacentHTML("beforeend", "/favicon.ico");
+}
 
 kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
 
