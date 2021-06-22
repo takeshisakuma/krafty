@@ -228,6 +228,7 @@ if (!kraftyFavicon == "") {
 }
 
 if (kraftyFavicon == undefined) {
+  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
     `<img src="/favicon.ico" width="32" class="headImage"/>`

@@ -1,6 +1,6 @@
 {
   "name": "Krafty",
-  "version": "0.4.5",
+  "version": "0.5",
   "description": "Krafty is HTML Checker for Web Director",
   "permissions": [
     "activeTab"
