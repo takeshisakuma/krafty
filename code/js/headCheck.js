@@ -89,7 +89,10 @@ if (document.getElementsByTagName("link")) {
     }
 
     /* get favicon */
-    if (linkMember.getAttribute("rel") === "icon") {
+    if (
+      linkMember.getAttribute("rel") === "icon" ||
+      linkMember.getAttribute("rel") === "shortcut icon"
+    ) {
       kraftyFavicon = linkMember.getAttribute("href");
     }
 
