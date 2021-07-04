@@ -171,7 +171,7 @@ if (!kraftyOGImage == "") {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="${kraftyOGImage}" width="200" class="headImage"/>`
+    `<img src="${kraftyOGImage}" class="headImage ogp"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 }
@@ -223,7 +223,7 @@ if (!kraftyFavicon == "") {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="${kraftyFavicon}" width="32" class="headImage"/>`
+    `<img src="${kraftyFavicon}" class="headImage favicon"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 
@@ -234,7 +234,7 @@ if (kraftyFavicon == undefined) {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="/favicon.ico" width="32" class="headImage"/>`
+    `<img src="/favicon.ico" class="headImage favicon"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 
@@ -250,7 +250,7 @@ if (!kraftyAppleTouchIcon == "") {
   kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
   kraftyMessageArea.insertAdjacentHTML(
     "beforeend",
-    `<img src="${kraftyAppleTouchIcon}" width="60" class="headImage"/>`
+    `<img src="${kraftyAppleTouchIcon}" class="headImage apple"/>`
   );
   kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
 }

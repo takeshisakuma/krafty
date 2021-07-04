@@ -41,6 +41,18 @@ $safeColor: #fff;
 
     img.headImage {
       box-shadow: 0 0 1px 0px #333;
+
+      &.ogp {
+        width: 200px;
+      }
+
+      &.favicon {
+        width: 32px;
+      }
+
+      &.apple {
+        width: 60px;
+      }
     }
   }
 }
