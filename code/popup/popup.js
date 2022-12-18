@@ -14,8 +14,9 @@ headCheckButton.addEventListener("click", () => {
       currentWindow: true,
     },
     (tabs) => {
-      chrome.tabs.executeScript(tabs[0].id, {
-        file: "js/headCheck.js",
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id, allFrames: true },
+        files: ["js/headCheck.js"],
       });
     }
   );
@@ -30,8 +31,9 @@ nestCheckButton.addEventListener("click", (element) => {
       currentWindow: true,
     },
     (tabs) => {
-      chrome.tabs.executeScript(tabs[0].id, {
-        file: "js/nestCheck.js",
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id, allFrames: true },
+        files: ["js/nestCheck.js"],
       });
     }
   );
@@ -46,8 +48,9 @@ outlineCheckButton.addEventListener("click", () => {
       currentWindow: true,
     },
     (tabs) => {
-      chrome.tabs.executeScript(tabs[0].id, {
-        file: "js/outlineCheck.js",
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id, allFrames: true },
+        files: ["js/outlineCheck.js"],
       });
     }
   );
@@ -62,8 +65,9 @@ altCheckButton.addEventListener("click", () => {
       currentWindow: true,
     },
     (tabs) => {
-      chrome.tabs.executeScript(tabs[0].id, {
-        file: "js/altCheck.js",
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id, allFrames: true },
+        files: ["js/altCheck.js"],
       });
     }
   );
@@ -79,8 +83,9 @@ brightnessButton.addEventListener("click", () => {
       currentWindow: true,
     },
     (tabs) => {
-      chrome.tabs.executeScript(tabs[0].id, {
-        file: "js/brightnessCheck.js",
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id, allFrames: true },
+        files: ["js/brightnessCheck.js"],
       });
     }
   );

@@ -1,17 +1,15 @@
 {
   "name": "Krafty",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Krafty is HTML Checker for Web Director",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
-    "persistent": false
+    "service_worker": "background.js"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -37,5 +35,5 @@
     "128": "icons/icon128.png"
   },
   "options_page": "option/option.html",
-  "manifest_version": 2
+  "manifest_version": 3
 }
