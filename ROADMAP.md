@@ -97,9 +97,30 @@ test. The wiring suite runs background.js against stubs instead, which
 catches a command routed to the wrong checker; that the worker registers at
 all still needs checking by hand.
 
-## Medium value
+## Waiting on real use
 
-### 6. Overlapping alt labels
+Neither of these can be settled by reasoning about them, and guessing would
+mean building something to fix a problem nobody has. They need the extension
+used on real work for a while first.
+
+### 6. Are the Head Check findings the ones worth having?
+
+The checks were chosen from what a machine *can* decide, not from what
+turned out to matter in practice. On Rakuten they were: no viewport, a 70
+character title, a 600×600 og:image. Whether that is the useful altitude is
+unknown.
+
+Things to watch for while using it:
+
+- A finding that is always noise on real pages. `checkTooLong` is the
+  likeliest candidate — the thresholds (60 and 160) are conventional rather
+  than measured, and the truncation they stand in for is decided by pixel
+  width anyway.
+- A problem repeatedly found by eye that no check caught, which is the
+  argument for adding one.
+- Whether the alert/note split matches what actually needs acting on.
+
+### 7. Overlapping alt labels
 
 The labels are absolutely positioned, so on image-dense pages (EC product
 grids, exactly the Rakuten case) they overlap and become unreadable.
