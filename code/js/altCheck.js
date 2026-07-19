@@ -1,3 +1,5 @@
+// @ts-check
+
 (() => {
   if (!document.body) {
     return;
@@ -13,16 +15,20 @@
     return;
   }
 
+  /**
+   * @param {Element} image
+   * @returns {{ text: string, state: string | null }}
+   */
   const describe = (image) => {
     const alt = image.getAttribute("alt");
 
     if (alt === null) {
-      return { text: "alt: (missing)", state: "kraftyAltMissing" };
+      return { text: kraftyMessage("altMissing"), state: "kraftyAltMissing" };
     }
     if (alt.trim() === "") {
-      return { text: "alt: (empty)", state: "kraftyAltEmpty" };
+      return { text: kraftyMessage("altEmpty"), state: "kraftyAltEmpty" };
     }
-    return { text: `alt: ${alt}`, state: null };
+    return { text: kraftyMessage("altPresent", [alt]), state: null };
   };
 
   for (const image of document.querySelectorAll('img, input[type="image"]')) {

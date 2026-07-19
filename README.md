@@ -44,10 +44,26 @@ loaded without building. Rebuild it whenever `code/content.scss` changes.
 To try a change: open `chrome://extensions`, enable developer mode, load
 `code/` via "Load unpacked", and press reload (⟳) after each edit.
 
+### Type checking
+
+```sh
+npm run typecheck
+```
+
+The source stays plain JavaScript — MV3 injected scripts must be, and the
+files ship exactly as they are committed. Type checking comes from
+`// @ts-check` at the top of each file plus `tsconfig.json` with `checkJs`,
+so `@types/chrome` catches a wrong `chrome.scripting` argument before it
+reaches a browser, with no build step and no change to the output.
+
+`strict` is on deliberately. Turning it down would mostly silence the
+null checks around `getElementById`, which is exactly the class of mistake
+worth catching in a popup whose markup and script must agree.
+
 ### Testing
 
 ```sh
-npm test          # builds, then runs the suite
+npm test          # builds, type checks, then runs the suite
 ```
 
 The nest checker is entirely CSS, so its behaviour depends on selector
@@ -63,6 +79,26 @@ injects its CSS into every page and will otherwise skew the results.
 Cases go through the HTML parser, so they must describe trees the parser
 actually produces. Writing `<p><div></div></p>` in a case would silently
 test two siblings, because the parser closes the `<p>` first.
+
+### Localisation
+
+Strings live in `code/_locales/<lang>/messages.json` and are looked up with
+`chrome.i18n`, which follows the browser's UI language, not the language of
+the page being checked. `en` is the default, so an unlisted language falls
+back to it.
+
+The injected checkers call `kraftyMessage` from `js/i18n.js`, which the
+popup injects ahead of each of them. It falls back to returning the key
+when `chrome.i18n` is absent, which is what happens when the test suite
+runs a checker in a plain page.
+
+Judging and phrasing are kept apart on purpose: `judge()` returns
+`{ parent, child, allowed }` and the wording is applied only at the point
+of display. That is why the tests can assert behaviour without pinning any
+particular English sentence, and why adding a locale cannot break them.
+
+Element and attribute names inside messages stay literal. `title`,
+`og:image` and `ul > div` are not words to translate.
 
 ### How the nest checker works
 

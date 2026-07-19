@@ -1,0 +1,106 @@
+{
+  "extensionName": {
+    "message": "Krafty",
+    "description": "Name shown in the browser and the store."
+  },
+  "extensionDescription": {
+    "message": "Web ディレクターのための HTML チェッカー",
+    "description": "Short description shown in the browser and the store."
+  },
+
+  "nestReasonNotAllowed": {
+    "message": "<$parent$> の中に <$child$> は置けません",
+    "description": "Tooltip on an element its parent may not contain.",
+    "placeholders": {
+      "child": { "content": "$1", "example": "div" },
+      "parent": { "content": "$2", "example": "ul" }
+    }
+  },
+  "nestReasonEmptyModel": {
+    "message": "<$parent$> は子要素を持てません",
+    "description": "Tooltip when the parent is a void or text-only element.",
+    "placeholders": {
+      "parent": { "content": "$1", "example": "img" }
+    }
+  },
+  "nestAllowedChildren": {
+    "message": "<$parent$> に置けるのは: $allowed$",
+    "description": "Second tooltip line listing what the parent does allow.",
+    "placeholders": {
+      "parent": { "content": "$1", "example": "ul" },
+      "allowed": { "content": "$2", "example": "li, script, template" }
+    }
+  },
+
+  "nestPanelTitle": {
+    "message": "ネストチェック",
+    "description": "Heading of the findings panel."
+  },
+  "nestPanelClean": {
+    "message": "入れ子の誤りは見つかりませんでした。",
+    "description": "Shown when the page has no findings."
+  },
+  "nestPanelCount": {
+    "message": "入れ子の誤り $count$ 件",
+    "description": "Total number of findings.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "57" }
+    }
+  },
+  "nestPanelCountOne": {
+    "message": "入れ子の誤り 1 件",
+    "description": "Total when there is exactly one finding."
+  },
+  "nestPanelScannedAt": {
+    "message": "$time$ 時点の結果です。以降に追加された要素は含まれません。",
+    "description": "Reminder that the scan is a snapshot of the DOM.",
+    "placeholders": {
+      "time": { "content": "$1", "example": "14:05:33" }
+    }
+  },
+  "nestPanelClose": {
+    "message": "閉じる",
+    "description": "Label of the button that dismisses a panel."
+  },
+
+  "headPanelTitle": {
+    "message": "ヘッドチェック",
+    "description": "Heading of the head metadata panel."
+  },
+  "headCharacterCount": {
+    "message": "($count$ 文字)",
+    "description": "Length of a metadata value, counted in code points.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "38" }
+    }
+  },
+  "valueNotSet": {
+    "message": "(未設定)",
+    "description": "Shown when a metadata tag is absent."
+  },
+  "valueEmpty": {
+    "message": "(空)",
+    "description": "Shown when a metadata tag is present but has no value."
+  },
+
+  "altPresent": {
+    "message": "alt: $value$",
+    "description": "Label showing an image's alt text.",
+    "placeholders": {
+      "value": { "content": "$1", "example": "A cat" }
+    }
+  },
+  "altMissing": {
+    "message": "alt: (未設定)",
+    "description": "Label for an image with no alt attribute at all."
+  },
+  "altEmpty": {
+    "message": "alt: (空)",
+    "description": "Label for an image with alt=\"\", i.e. marked decorative."
+  },
+
+  "popupCannotRun": {
+    "message": "このページでは Krafty を実行できません。",
+    "description": "Shown in the popup when the page cannot be scripted."
+  }
+}

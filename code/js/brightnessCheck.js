@@ -1,3 +1,5 @@
+// @ts-check
+
 (() => {
   if (!document.body) {
     return;

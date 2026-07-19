@@ -1,0 +1,106 @@
+{
+  "extensionName": {
+    "message": "Krafty",
+    "description": "Name shown in the browser and the store."
+  },
+  "extensionDescription": {
+    "message": "Krafty is HTML Checker for Web Director",
+    "description": "Short description shown in the browser and the store."
+  },
+
+  "nestReasonNotAllowed": {
+    "message": "<$child$> is not allowed inside <$parent$>",
+    "description": "Tooltip on an element its parent may not contain.",
+    "placeholders": {
+      "child": { "content": "$1", "example": "div" },
+      "parent": { "content": "$2", "example": "ul" }
+    }
+  },
+  "nestReasonEmptyModel": {
+    "message": "<$parent$> cannot contain any elements",
+    "description": "Tooltip when the parent is a void or text-only element.",
+    "placeholders": {
+      "parent": { "content": "$1", "example": "img" }
+    }
+  },
+  "nestAllowedChildren": {
+    "message": "<$parent$> may contain: $allowed$",
+    "description": "Second tooltip line listing what the parent does allow.",
+    "placeholders": {
+      "parent": { "content": "$1", "example": "ul" },
+      "allowed": { "content": "$2", "example": "li, script, template" }
+    }
+  },
+
+  "nestPanelTitle": {
+    "message": "Nest Check",
+    "description": "Heading of the findings panel."
+  },
+  "nestPanelClean": {
+    "message": "No nesting errors found.",
+    "description": "Shown when the page has no findings."
+  },
+  "nestPanelCount": {
+    "message": "$count$ nesting errors",
+    "description": "Total number of findings.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "57" }
+    }
+  },
+  "nestPanelCountOne": {
+    "message": "1 nesting error",
+    "description": "Total when there is exactly one finding."
+  },
+  "nestPanelScannedAt": {
+    "message": "Scanned $time$. Elements added later are not included.",
+    "description": "Reminder that the scan is a snapshot of the DOM.",
+    "placeholders": {
+      "time": { "content": "$1", "example": "14:05:33" }
+    }
+  },
+  "nestPanelClose": {
+    "message": "Close",
+    "description": "Label of the button that dismisses a panel."
+  },
+
+  "headPanelTitle": {
+    "message": "Head Check",
+    "description": "Heading of the head metadata panel."
+  },
+  "headCharacterCount": {
+    "message": "($count$ characters)",
+    "description": "Length of a metadata value, counted in code points.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "38" }
+    }
+  },
+  "valueNotSet": {
+    "message": "(not set)",
+    "description": "Shown when a metadata tag is absent."
+  },
+  "valueEmpty": {
+    "message": "(empty)",
+    "description": "Shown when a metadata tag is present but has no value."
+  },
+
+  "altPresent": {
+    "message": "alt: $value$",
+    "description": "Label showing an image's alt text.",
+    "placeholders": {
+      "value": { "content": "$1", "example": "A cat" }
+    }
+  },
+  "altMissing": {
+    "message": "alt: (missing)",
+    "description": "Label for an image with no alt attribute at all."
+  },
+  "altEmpty": {
+    "message": "alt: (empty)",
+    "description": "Label for an image with alt=\"\", i.e. marked decorative."
+  },
+
+  "popupCannotRun": {
+    "message": "Krafty cannot run on this page.",
+    "description": "Shown in the popup when the page cannot be scripted."
+  }
+}

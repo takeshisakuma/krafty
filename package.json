@@ -6,12 +6,16 @@
   "scripts": {
     "build": "sass --no-source-map --style=compressed code/content.scss code/content.css",
     "watch": "sass --no-source-map --style=compressed --watch code/content.scss code/content.css",
-    "pretest": "npm run build",
+    "pretest": "npm run build && npm run typecheck",
     "test": "node --test",
-    "package": "npm run build && node scripts/package.js"
+    "package": "npm run build && node scripts/package.js",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/chrome": "^0.2.2",
+    "@types/node": "^26.1.1",
     "puppeteer": "^25.3.0",
-    "sass": "^1.101.0"
+    "sass": "^1.101.0",
+    "typescript": "^7.0.2"
   }
 }
