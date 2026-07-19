@@ -76,6 +76,10 @@ so `npm install` does not download a browser. It also runs in a clean
 profile, which matters: a Krafty build installed in your own Chrome
 injects its CSS into every page and will otherwise skew the results.
 
+`test/support.js` builds the page and injects the checkers in the order the
+popup does. It is not a test file itself, which is why `npm test` matches
+`test/*.test.js` rather than the whole directory.
+
 Cases go through the HTML parser, so they must describe trees the parser
 actually produces. Writing `<p><div></div></p>` in a case would silently
 test two siblings, because the parser closes the `<p>` first.
@@ -102,21 +106,55 @@ Element and attribute names inside messages stay literal. `title`,
 
 ### How the nest checker works
 
-`code/content.scss` defines a `$content-models` map from each element to
-the child elements it may contain, and generates one rule per entry that
-highlights every child outside that list. To change what counts as valid
-nesting, edit the map rather than the generated selectors.
+`code/js/nestCheck.js` holds a `MODELS` table mapping each element to the
+child elements it may contain. It walks the document, and `judge()` returns
+either `null` or `{ parent, child, allowed }` for every element its parent
+is not allowed to contain. Offending elements get a class and a `title`
+explaining why. To change what counts as valid nesting, edit that table.
 
-The generated `:not()` chains are wrapped in `:where()` so they carry no
-specificity. Without that, a chain of ~80 `:not()` clauses would outweigh
-the hand written exceptions at the bottom of the file (`dl > div > dt`,
-`map area`, and the checker's own UI) and silently override them.
+A parent absent from the table is not checked at all. Transparent content
+models — `a`, `ins`, `del`, `video`, `map`, `svg`, `button`, `template` and
+the rest — depend on the context of their own parent, which a flat table
+cannot express, so guessing would be worse than staying quiet.
 
-Autonomous custom elements are the one case CSS cannot express, since no
-selector matches "tag name contains a hyphen". `nestCheck.js` marks them
-with a class and the stylesheet excludes that class. They are flow and
-phrasing content per spec, so leaving them flagged buries everything else
-on a component based page.
+The exceptions live in `judge()` as ordinary conditions: a `dl` wrapping
+each `dt`/`dd` group in a `div`, an `area` anywhere inside a `map`, `meta`
+and `link` carrying microdata or a body-ok `rel`, and autonomous custom
+elements, which are flow and phrasing content per spec and would otherwise
+bury every real finding on a component based page.
+
+The judging used to be done by CSS, generating one rule per element from a
+map in `content.scss`. That is worth knowing only because of why it moved:
+a checker has to be able to explain a finding, CSS can flag an element but
+cannot report one, and keeping a second copy of the table in SCSS for the
+colouring would have let the two drift. The stylesheet now only colours what
+the script marks, which also retired a `:where()` wrapper and a set of
+exception rules that existed purely to win specificity fights.
+
+### Keyboard shortcuts
+
+Declared as `commands` in the manifest and handled by the service worker.
+**No `suggested_key` is shipped**, deliberately.
+
+Defaults were tried first — `Alt+Shift+H/N/O/A` — and every one of them came
+out unassigned at `chrome://extensions/shortcuts`, on a fresh install as well
+as a reload. Chrome drops a suggested key that anything else already claims
+and reports nothing: not in the manifest, not in the service worker console,
+not on the shortcuts page beyond the empty field. There is no way from inside
+the extension to tell a working default from a discarded one, and a discarded
+one is indistinguishable from a broken feature.
+
+Two related behaviours are worth knowing if defaults are ever reconsidered:
+suggested keys are applied when an extension is **installed**, not when it is
+reloaded, and Chrome caps them at four per extension.
+
+Users assign their own keys at `chrome://extensions/shortcuts`, which the
+manual page in `code/option/option.html` points them to.
+
+`--load-extension` was removed in Chrome 137, so the service worker cannot
+be started from a test. `test/wiring.test.js` runs `background.js` against
+stubs to prove a command reaches the checker it names; that the worker
+registers at all still has to be checked by hand.
 
 ## Release
 

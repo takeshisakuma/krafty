@@ -9,43 +9,63 @@ $alertColor: #f00;
    copies of the table would have drifted. The models now live in
    js/nestCheck.js, which marks offending elements with a class. */
 
+/* Two rules the panels hold to, both easy to undo by accident:
+
+   Backgrounds are opaque. They were translucent so the page could be
+   glimpsed underneath, which stopped being worth anything once the panels
+   could be dragged out of the way. What it cost was legibility of the
+   lowest contrast text in the panel - the grey notes saying what was *not*
+   checked, which are the lines least affordable to skim past.
+
+   Grey text is #767676 or darker. That is the lightest grey clearing 4.5:1
+   on white, the WCAG AA floor for body text. The greys here were #999, #888
+   and #777, at 2.9:1, 3.5:1 and 4.5:1 - a tool that reports missing alt
+   text has no business failing the same bar in its own interface. */
+
 @mixin panel {
   color: #333;
   font-family: system-ui, sans-serif;
   font-size: 12px;
   position: fixed;
   bottom: 50px;
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 34px 20px 20px;
+  background-color: #fff;
+  padding: 0;
   outline: none !important;
   box-shadow: 2px 2px 4px #999;
   z-index: 2147483647;
   line-height: 1.3;
-  display: block;
+  display: flex;
+  flex-direction: column;
   border-radius: 2px;
   max-height: 80%;
+  /* Width follows the content, within bounds: without a floor a page whose
+     metadata is mostly absent collapses the panel to a sliver. */
+  min-width: 280px;
   max-width: 420px;
-  overflow-y: auto;
-  word-break: break-all;
   text-align: left;
 
-  hr {
-    outline: none !important;
-    height: 1px !important;
-    border: 1px solid #999 !important;
-    margin: 5px 0 !important;
-    background-image: none;
-    display: block;
-    width: 100%;
-    padding: 0;
+  /* The bar is the drag handle. Selection has to be off, or dragging
+     highlights the title instead of moving the panel. */
+  .kraftyPanelBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex: none;
+    padding: 7px 7px 7px 16px;
+    border-bottom: 1px solid #ddd;
+    cursor: move;
+    user-select: none;
+  }
+
+  .kraftyPanelTitle {
+    font-weight: bold;
   }
 
   .kraftyPanelClose {
-    position: absolute;
-    top: 6px;
-    right: 8px;
+    flex: none;
     margin: 0;
-    padding: 2px 6px;
+    padding: 2px 7px;
     border: 0;
     border-radius: 2px;
     background: none;
@@ -59,6 +79,37 @@ $alertColor: #f00;
       background-color: #eee;
       color: #000;
     }
+  }
+
+  .kraftyPanelBody {
+    padding: 12px 16px 16px;
+    overflow-y: auto;
+    word-break: break-all;
+  }
+
+  /* A count on the left, the button that copies the whole breakdown on the
+     right. Both panels report findings, so both use it. */
+  .kraftyChecksHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  &.kraftyPanelDragging {
+    box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  hr {
+    outline: none !important;
+    height: 1px !important;
+    border: 1px solid #999 !important;
+    margin: 5px 0 !important;
+    background-image: none;
+    display: block;
+    width: 100%;
+    padding: 0;
   }
 }
 
@@ -114,7 +165,7 @@ $alertColor: #f00;
 
     .kraftyPanelNote {
       margin-top: 10px;
-      color: #888;
+      color: #767676;
     }
   }
 }
@@ -149,10 +200,238 @@ $alertColor: #f00;
     }
 
     .kraftyMissing {
-      color: #999;
+      color: #767676;
       font-style: italic;
     }
+
+    .kraftySection + .kraftySection {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 2px solid #ddd;
+    }
+
+    .kraftySectionTitle {
+      margin: 0 0 8px;
+      padding: 0;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #767676;
+      border: 0;
+    }
+
+    /* The wording of this line is deliberately narrow, so it must not read
+       as a clean bill of health. Green is reserved for nothing. */
+    .kraftyChecksSummary {
+      font-weight: bold;
+
+      &.kraftyChecksClean {
+        font-weight: normal;
+        color: #666;
+      }
+    }
+
+    .kraftyChecks {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* The body breaks anywhere so long URLs cannot widen the panel. Prose
+       must not inherit that, or sentences break mid-word. */
+    .kraftyCheck,
+    .kraftyNote,
+    .kraftyFallbackNote,
+    .kraftyChecksSummary {
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .kraftyCheck {
+      margin: 0 0 4px;
+      padding: 5px 8px;
+      border-radius: 2px;
+      border-left: 3px solid;
+
+      &.kraftyCheck-alert {
+        border-left-color: #c00;
+        background-color: #fdeaea;
+        color: #900;
+      }
+
+      &.kraftyCheck-note {
+        border-left-color: #c98a00;
+        background-color: #fdf5e4;
+        color: #7a5400;
+      }
+    }
+
+    .kraftyNote {
+      margin: 0 0 10px;
+      padding: 0;
+      color: #767676;
+    }
+
+    .kraftyPreviewLabel {
+      margin: 12px 0 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .kraftyFallbackNote {
+      margin-top: 5px;
+      color: #7a5400;
+    }
+
+    /* An impression of a search result, not a reproduction of one. */
+    .kraftySerp {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      word-break: normal;
+      overflow-wrap: anywhere;
+
+      .kraftySerpUrl {
+        color: #4d5156;
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+
+      .kraftySerpTitle {
+        color: #1a0dab;
+        font-size: 15px;
+        line-height: 1.3;
+        margin-bottom: 3px;
+      }
+
+      .kraftySerpDescription {
+        color: #4d5156;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+    }
+
+    .kraftyCard {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      background-color: #fff;
+      word-break: normal;
+      overflow-wrap: anywhere;
+
+      .kraftyCardImage {
+        display: block;
+        background-color: #f0f0f0;
+
+        img {
+          display: block;
+          width: 100%;
+          max-height: 200px;
+          object-fit: cover;
+        }
+
+        &.kraftyCardImageEmpty {
+          padding: 22px 0;
+          text-align: center;
+          color: #767676;
+          font-style: italic;
+        }
+      }
+
+      .kraftyCardBody {
+        padding: 9px 12px;
+      }
+
+      .kraftyCardDomain {
+        color: #767676;
+        font-size: 11px;
+        text-transform: lowercase;
+      }
+
+      .kraftyCardTitle {
+        font-weight: bold;
+        margin: 2px 0;
+      }
+
+      .kraftyCardDescription {
+        color: #555;
+      }
+    }
+
+    .kraftyRow {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .kraftyRowHead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .kraftyRowValue {
+      margin-top: 1px;
+    }
+
+    .kraftyLink {
+      color: #1a0dab !important;
+      text-decoration: underline !important;
+
+      &:hover {
+        color: #7b1fa2 !important;
+      }
+    }
+
   }
+}
+
+/* Copy buttons.
+
+   Twenty-six of these would crowd a panel that is only 420px wide, so a row's
+   button stays out of the way until the row is hovered. Hiding with opacity
+   rather than display keeps it focusable, and :focus-visible brings it back
+   for anyone arriving by keyboard - a control reachable only by pointer
+   would be a poor thing to ship in an accessibility tool. */
+
+.kraftyPanel .kraftyCopy {
+  flex: none;
+  margin: 0;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #767676;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+
+  &:hover {
+    background-color: #eee;
+    color: #000;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid #4d90fe;
+    outline-offset: -2px;
+  }
+
+  &.kraftyCopyDone {
+    opacity: 1;
+    color: #1a7f37;
+  }
+}
+
+.kraftyPanel .kraftyRow:hover .kraftyCopy,
+.kraftyPanel .kraftyCopyAll {
+  opacity: 1;
 }
 
 /* --- alt checker --- */
@@ -167,7 +446,7 @@ $alertColor: #f00;
     color: $alertColor;
     font-size: 12px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: #fff;
     box-shadow: 1px 1px 2px #999;
     margin-top: 10px;
     margin-left: 10px;

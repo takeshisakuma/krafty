@@ -1,47 +1,9 @@
 // @ts-check
 
-/**
- * @typedef {object} Checker
- * @property {string} id Element id of the button that toggles it.
- * @property {string} file Script injected into the page.
- * @property {string} bodyClass Class the script toggles on <body>.
- * @property {boolean} allFrames Whether subframes are checked too.
- */
+/* The checker table and the injection live in ../checkers.js, because the
+   service worker that handles keyboard shortcuts needs them too. */
 
-/** @type {Checker[]} */
-const CHECKERS = [
-  {
-    id: "js-headCheckButton",
-    file: "js/headCheck.js",
-    bodyClass: "kraftyHeadChecker",
-    /* The head of a subframe is not the head the user is auditing. */
-    allFrames: false,
-  },
-  {
-    id: "js-nestCheckButton",
-    file: "js/nestCheck.js",
-    bodyClass: "kraftyNestChecker",
-    allFrames: true,
-  },
-  {
-    id: "js-outlineCheckButton",
-    file: "js/outlineCheck.js",
-    bodyClass: "kraftyOutlineChecker",
-    allFrames: true,
-  },
-  {
-    id: "js-altCheckButton",
-    file: "js/altCheck.js",
-    bodyClass: "kraftyAltChecker",
-    allFrames: true,
-  },
-  {
-    id: "js-brightnessCheckButton",
-    file: "js/brightnessCheck.js",
-    bodyClass: "kraftyBrightnessChecker",
-    allFrames: false,
-  },
-];
+const statusArea = element("js-status");
 
 /**
  * Throws rather than returning null: every id here is in popup.html, so a
@@ -73,8 +35,6 @@ function button(id) {
   return found;
 }
 
-const statusArea = element("js-status");
-
 /** @param {string} message */
 const showStatus = (message) => {
   statusArea.textContent = message;
@@ -88,46 +48,10 @@ const clearStatus = () => {
 
 /** @param {boolean} enabled */
 const setEnabled = (enabled) => {
-  for (const { id } of CHECKERS) {
+  for (const { id } of kraftyCheckers) {
     button(id).disabled = !enabled;
   }
 };
-
-/** @returns {Promise<number>} */
-async function getActiveTabId() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (!tab || tab.id === undefined || tab.id === chrome.tabs.TAB_ID_NONE) {
-    throw new Error("No active tab.");
-  }
-  return tab.id;
-}
-
-/**
- * Inject content.css once per page load rather than declaring a content
- * script for <all_urls>, which would demand host permission for every site
- * the user visits.
- *
- * @param {number} tabId
- */
-async function ensureStyles(tabId) {
-  const [injection] = await chrome.scripting.executeScript({
-    target: { tabId },
-    func: () => {
-      const root = document.documentElement;
-      const already = root.dataset.kraftyStyled === "1";
-      root.dataset.kraftyStyled = "1";
-      return already;
-    },
-  });
-
-  if (!injection?.result) {
-    await chrome.scripting.insertCSS({
-      target: { tabId, allFrames: true },
-      files: ["content.css"],
-    });
-  }
-}
 
 /**
  * Read the state back off the page instead of tracking it in the popup:
@@ -144,7 +68,7 @@ async function syncButtons(tabId) {
 
   const active = new Set(injection?.result ?? []);
 
-  for (const { id, bodyClass } of CHECKERS) {
+  for (const { id, bodyClass } of kraftyCheckers) {
     button(id).classList.toggle("active", active.has(bodyClass));
   }
 }
@@ -154,8 +78,14 @@ async function init() {
   let tabId;
 
   try {
-    tabId = await getActiveTabId();
-    await ensureStyles(tabId);
+    const found = await kraftyActiveTabId();
+
+    if (found === null) {
+      throw new Error("No active tab.");
+    }
+    tabId = found;
+
+    await kraftyEnsureStyles(tabId);
     await syncButtons(tabId);
   } catch (error) {
     setEnabled(false);
@@ -163,17 +93,12 @@ async function init() {
     return;
   }
 
-  for (const checker of CHECKERS) {
+  for (const checker of kraftyCheckers) {
     button(checker.id).addEventListener("click", async () => {
       clearStatus();
 
       try {
-        await chrome.scripting.executeScript({
-          target: { tabId, allFrames: checker.allFrames },
-          /* i18n.js runs first, in the same context, so the checker can
-             look up localised strings. */
-          files: ["js/i18n.js", checker.file],
-        });
+        await kraftyRunChecker(tabId, checker);
         await syncButtons(tabId);
       } catch (error) {
         showStatus(chrome.i18n.getMessage("popupCannotRun"));

@@ -7,7 +7,7 @@
     "build": "sass --no-source-map --style=compressed code/content.scss code/content.css",
     "watch": "sass --no-source-map --style=compressed --watch code/content.scss code/content.css",
     "pretest": "npm run build && npm run typecheck",
-    "test": "node --test",
+    "test": "node --test \"test/*.test.js\"",
     "package": "npm run build && node scripts/package.js",
     "typecheck": "tsc --noEmit"
   },

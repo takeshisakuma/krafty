@@ -3,32 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Krafty Manual</title>
+  <title data-i18n="manualTitle">Krafty Manual</title>
   <link rel="stylesheet" type="text/css" href="option.css">
 </head>
 <body>
 
-  <h1>Krafty Manual</h1>
+  <!-- The English here is the fallback if the script does not run. It is
+       also the source of the en messages, and a test asserts the two still
+       match, so the duplication cannot drift unnoticed. -->
+
+  <h1 data-i18n="manualTitle">Krafty Manual</h1>
+
   <section>
-    <h2>Head Checker</h2>
-    <p>Display title, description, OGP and other head metadata.</p>
+    <h2 data-i18n="manualHeadTitle">Head Checker</h2>
+    <p data-i18n="manualHeadBody">Report what can be checked automatically, preview how the page appears in search results and when shared, and list every value in the head.</p>
   </section>
   <section>
-    <h2>Nest Checker</h2>
-    <p>Highlight elements that their parent element is not allowed to contain. If nothing turns red, the nesting is valid.</p>
+    <h2 data-i18n="manualNestTitle">Nest Checker</h2>
+    <p data-i18n="manualNestBody">Highlight elements that their parent element is not allowed to contain, explain each one on hover, and count them by kind.</p>
   </section>
   <section>
-    <h2>Outline Checker</h2>
-    <p>Display an outline around every element.</p>
+    <h2 data-i18n="manualOutlineTitle">Outline Checker</h2>
+    <p data-i18n="manualOutlineBody">Display an outline around every element.</p>
   </section>
   <section>
-    <h2>Alt Checker</h2>
-    <p>Display the alt attribute of every image, and flag images whose alt is missing or empty.</p>
+    <h2 data-i18n="manualAltTitle">Alt Checker</h2>
+    <p data-i18n="manualAltBody">Display the alt attribute of every image, and flag images whose alt is missing or empty.</p>
   </section>
   <section>
-    <h2>Brightness Checker</h2>
-    <p>Make the page monochrome.</p>
+    <h2 data-i18n="manualBrightnessTitle">Brightness Checker</h2>
+    <p data-i18n="manualBrightnessBody">Make the page monochrome.</p>
   </section>
 
+  <section>
+    <h2 data-i18n="manualShortcutsTitle">Keyboard shortcuts</h2>
+    <p data-i18n="manualShortcutsIntro">Every checker can be toggled from the keyboard, but none come with a key already assigned. Pick your own here:</p>
+    <!-- Deliberately not a link: Chrome blocks navigation to chrome:// URLs
+         from an extension page, so a link here would do nothing when
+         clicked. -->
+    <p><code>chrome://extensions/shortcuts</code></p>
+    <p data-i18n="manualShortcutsWhy">Krafty ships no default keys on purpose. Chrome drops a suggested key that anything else already claims, and does so without an error anywhere, so a default that looks reasonable can simply never work and leave the feature looking broken. Choosing your own takes a moment and always works.</p>
+  </section>
+
+  <script src="options.js"></script>
 </body>
 </html>

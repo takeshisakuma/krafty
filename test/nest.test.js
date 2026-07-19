@@ -1,36 +1,12 @@
 // @ts-check
 
 /* Checks that the nest checker flags exactly the invalid nesting and
-   nothing else.
-
-   The markup is rendered in a real browser rather than a DOM shim on
-   purpose: the checker is entirely CSS, so the assertions depend on
-   selector matching and specificity that only a browser resolves
-   correctly. A clean profile is used, so a Krafty build installed in the
-   developer's own Chrome cannot skew the result. */
+   nothing else. Assertions read the computed background colour, so they
+   cover the judging in nestCheck.js and the stylesheet together. */
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const fs = require("node:fs");
-const path = require("node:path");
-const puppeteer = require("puppeteer");
-
-const root = path.join(__dirname, "..");
-const css = fs.readFileSync(path.join(root, "code", "content.css"), "utf8");
-const nestCheck = fs.readFileSync(
-  path.join(root, "code", "js", "nestCheck.js"),
-  "utf8"
-);
-const i18n = fs.readFileSync(path.join(root, "code", "js", "i18n.js"), "utf8");
-
-/* The real message file, so a mistyped key or a broken placeholder fails
-   here rather than showing up as a blank tooltip in the browser. */
-const messages = JSON.parse(
-  fs.readFileSync(
-    path.join(root, "code", "_locales", "en", "messages.json"),
-    "utf8"
-  )
-);
+const { withPage, SCRIPTS } = require("./support.js");
 
 /* The element under test carries data-t. Cases go through the HTML parser,
    so they describe trees the parser actually produces - writing
@@ -73,66 +49,13 @@ const CASES = [
    into that attribute, so it has to put the page's own value back. */
 const TITLE_CASE = `<ul><div data-titled title="page tooltip">x</div></ul>`;
 
+const HTML =
+  CASES.map(
+    ([, , html], index) => `<div data-case="${index}">${html}</div>`
+  ).join("\n") + TITLE_CASE;
+
 async function collect() {
-  /* Drive the Chrome already installed on this machine rather than a
-     Chromium that puppeteer downloads: it is the browser the extension
-     actually ships to, and it keeps `npm install` from pulling ~150MB. */
-  const browser = await puppeteer.launch({ channel: "chrome" });
-
-  try {
-    const page = await browser.newPage();
-    const body = CASES.map(
-      ([, , html], index) => `<div data-case="${index}">${html}</div>`
-    ).join("\n");
-
-    await page.setContent(
-      `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${body}${TITLE_CASE}</body></html>`
-    );
-    await page.addStyleTag({ content: css });
-
-    /* Stand in for chrome.i18n, which content scripts have but a plain page
-       does not. Mirrors Chrome's behaviour of returning "" for an unknown
-       key, so a typo surfaces as the bare key via the fallback in i18n.js. */
-    await page.evaluate((table) => {
-      globalThis.chrome = /** @type {any} */ ({
-        i18n: {
-          /**
-           * @param {string} key
-           * @param {string | string[]} [substitutions]
-           */
-          getMessage(key, substitutions) {
-            const entry = table[key];
-            if (!entry) return "";
-
-            /** @type {string[]} */
-            const values =
-              substitutions === undefined
-                ? []
-                : Array.isArray(substitutions)
-                  ? substitutions
-                  : [substitutions];
-
-            let text = entry.message;
-
-            for (const [name, spec] of Object.entries(
-              entry.placeholders ?? {}
-            )) {
-              const index = Number(String(spec.content).slice(1)) - 1;
-              text = text.split(`$${name}$`).join(values[index] ?? "");
-            }
-            return text;
-          },
-        },
-      });
-    }, messages);
-
-    /* i18n.js defines kraftyMessage, which the checker calls. Injected the
-       same way the popup injects it, ahead of the checker. */
-    await page.evaluate(i18n);
-    await page.evaluate(nestCheck);
-
-    /* Must be awaited inside the try: returning the pending promise would
-       let the finally close the browser before it settles. */
+  return withPage({ html: HTML, checkers: ["nestCheck"] }, async (page) => {
     const scan = await page.evaluate((total) => {
       /** @type {Record<number, boolean | null>} */
       const flagged = {};
@@ -151,19 +74,48 @@ async function collect() {
       const anError = document.querySelector(".kraftyNestError");
 
       const summary = panel?.querySelector(".kraftyPanelSummary");
+      const pairs = panel?.querySelectorAll(".kraftyPanelList li") ?? [];
 
       return {
         flagged,
         panelText: panel ? (panel.textContent ?? "") : null,
         summaryText: summary ? (summary.textContent ?? "") : null,
+        pairCount: pairs.length,
         errorCount: document.querySelectorAll(".kraftyNestError").length,
         reason: anError ? anError.getAttribute("title") : null,
         titleWhileOn: titled ? titled.getAttribute("title") : null,
       };
     }, CASES.length);
 
+    /* Press the button and catch what it actually writes. Rebuilding the
+       expected text from the DOM instead would pass even if the button
+       assembled something else entirely. */
+    const copied = await page.evaluate(async () => {
+      const button = document.querySelector(".kraftyCopyAll");
+
+      if (!(button instanceof HTMLElement)) {
+        return null;
+      }
+
+      /** @type {string | null} */
+      let written = null;
+
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (/** @type {string} */ text) => {
+            written = text;
+          },
+        },
+      });
+
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return written;
+    });
+
     /* Toggle off and confirm the page is left as it was found. */
-    await page.evaluate(nestCheck);
+    await page.evaluate(SCRIPTS.nestCheck);
 
     const after = await page.evaluate(() => {
       const titled = document.querySelector("[data-titled]");
@@ -176,10 +128,8 @@ async function collect() {
       };
     });
 
-    return { ...scan, after };
-  } finally {
-    await browser.close();
-  }
+    return { ...scan, copied, after };
+  });
 }
 
 test("nest checker", async (t) => {
@@ -226,6 +176,22 @@ test("nest checker", async (t) => {
   await t.test("does not destroy a title the page already had", () => {
     assert.match(String(result.titleWhileOn), /ul/);
     assert.strictEqual(result.after.restoredTitle, "page tooltip");
+  });
+
+  await t.test("offers the breakdown as one block to copy", () => {
+    assert.ok(result.copied, "expected the button to write something");
+
+    /* The address leads: a list of counts means nothing without knowing
+       which page produced it. */
+    assert.match(String(result.copied), /^https?:\/\/|^about:/);
+    assert.match(String(result.copied), /- ul > div × 2/);
+
+    const lines = String(result.copied).split("\n");
+    assert.strictEqual(
+      lines.length,
+      2 + result.pairCount,
+      "expected the address, the total, and one line per pair"
+    );
   });
 
   await t.test("leaves nothing behind when toggled off", () => {
