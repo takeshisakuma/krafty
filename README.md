@@ -4,27 +4,108 @@ chrome extension for web director
 
 ## Checkers
 
+This section and the Japanese one below it are the Chrome Web Store
+listing's description, one per locale. Paste them in as they are, minus the
+heading markers.
+
+Five checks you can turn on over any page, from the toolbar or from a
+keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
+runs in your own browser, on the tab you are looking at, and Krafty collects
+no data at all. Available in English and Japanese, following your browser's
+language.
+
 ### Head Checker
 
-Display title, description, OGP and other head metadata.
+Reports the problems in a page's head that software can actually decide:
+a robots tag asking search engines to ignore the page, a missing viewport,
+title, description or lang, a missing doctype, a canonical pointing at a
+different page, duplicated tags, text long enough to be cut off, and an
+og:image smaller than sharing platforms want.
+
+It will not tell you whether the title is the right title. Nothing can — a
+title can be correctly formed and still say "Home | Home" or carry a staging
+site's name. So the page is drawn the way visitors meet it, as a search
+result and as a shared link, for you to read and judge.
+
+Every value in the head is listed underneath, each with a button to copy it,
+and the URLs open in a new tab.
 
 ### Nest Checker
 
-Highlight elements that their parent element is not allowed to contain.
-If nothing turns red, the nesting is valid.
+Highlights every element its parent element is not allowed to contain, such
+as a div directly inside a ul, or an li with no list around it. Hover any
+highlighted element and it tells you the rule it breaks and what the parent
+may contain instead.
+
+The panel totals them and breaks them down by pair, and copies the whole
+list in one go so it can go straight into a ticket.
 
 ### Outline Checker
 
-Display an outline around every element.
+Draws an outline around every element, so the structure and spacing of a
+layout can be seen at a glance.
 
 ### Alt Checker
 
-Display the alt attribute of every image, and flag images whose alt is
-missing or empty.
+Shows the alt text of every image, and separates an image with no alt
+attribute at all from one deliberately marked decorative with an empty alt.
+The two look identical in a browser and mean opposite things.
 
 ### Brightness Checker
 
-Make the page monochrome.
+Turns the page monochrome, which shows up anything that relies on colour
+alone to be understood.
+
+## Checkers (Japanese)
+
+The store's Japanese locale. Written rather than translated, so the two say
+the same things without matching sentence for sentence. Both need updating
+when a checker changes.
+
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。
+5つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
+ショートカットから、任意のページに重ねて表示できます。処理はすべてお使いの
+ブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。
+表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+
+### ヘッドチェッカー
+
+head の中で機械が判断できる問題を報告します。検索避けの robots 指定、
+viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が
+別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには
+小さすぎる og:image。
+
+ただし、そのタイトルが適切かどうかまでは分かりません。どんなツールにも
+分かりません。「ホーム | ホーム」もステージング環境の名前が残ったままの
+タイトルも、形式としては何も間違っていないからです。そこで、検索結果と
+SNS で共有したときの見た目をそのまま描画します。判断はご自身の目で。
+
+head の全項目はその下に一覧で並びます。値ごとにコピーボタンが付き、URL は
+別タブで開けます。
+
+### ネストチェッカー
+
+親要素が含むことのできない要素を強調します。ul の直下に置かれた div、
+リストの外にある li、といったものです。強調された要素にカーソルを合わせると、
+どの規則に反しているか、その親に本来置ける要素は何かが表示されます。
+
+パネルには件数と、親子の組み合わせごとの内訳が出ます。まとめてコピーできる
+ので、そのまま不具合票に貼れます。
+
+### アウトラインチェッカー
+
+すべての要素に輪郭線を表示します。レイアウトの構造と余白の取り方が一目で
+分かります。
+
+### alt チェッカー
+
+すべての画像の alt を表示します。alt が未設定の画像と、装飾目的として
+意図的に空の alt を指定した画像は区別して表示します。ブラウザ上では
+まったく同じに見えるのに、意味は正反対だからです。
+
+### 明度チェッカー
+
+ページをモノクロにします。色だけで情報を伝えている箇所が浮かび上がります。
 
 ## Development
 
