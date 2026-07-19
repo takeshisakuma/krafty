@@ -7,31 +7,44 @@
     "message": "Krafty is HTML Checker for Web Director",
     "description": "Short description shown in the browser and the store."
   },
-
   "nestReasonNotAllowed": {
     "message": "<$child$> is not allowed inside <$parent$>",
     "description": "Tooltip on an element its parent may not contain.",
     "placeholders": {
-      "child": { "content": "$1", "example": "div" },
-      "parent": { "content": "$2", "example": "ul" }
+      "child": {
+        "content": "$1",
+        "example": "div"
+      },
+      "parent": {
+        "content": "$2",
+        "example": "ul"
+      }
     }
   },
   "nestReasonEmptyModel": {
     "message": "<$parent$> cannot contain any elements",
     "description": "Tooltip when the parent is a void or text-only element.",
     "placeholders": {
-      "parent": { "content": "$1", "example": "img" }
+      "parent": {
+        "content": "$1",
+        "example": "img"
+      }
     }
   },
   "nestAllowedChildren": {
     "message": "<$parent$> may contain: $allowed$",
     "description": "Second tooltip line listing what the parent does allow.",
     "placeholders": {
-      "parent": { "content": "$1", "example": "ul" },
-      "allowed": { "content": "$2", "example": "li, script, template" }
+      "parent": {
+        "content": "$1",
+        "example": "ul"
+      },
+      "allowed": {
+        "content": "$2",
+        "example": "li, script, template"
+      }
     }
   },
-
   "nestPanelTitle": {
     "message": "Nest Check",
     "description": "Heading of the findings panel."
@@ -44,7 +57,10 @@
     "message": "$count$ nesting errors",
     "description": "Total number of findings.",
     "placeholders": {
-      "count": { "content": "$1", "example": "57" }
+      "count": {
+        "content": "$1",
+        "example": "57"
+      }
     }
   },
   "nestPanelCountOne": {
@@ -55,23 +71,178 @@
     "message": "Scanned $time$. Elements added later are not included.",
     "description": "Reminder that the scan is a snapshot of the DOM.",
     "placeholders": {
-      "time": { "content": "$1", "example": "14:05:33" }
+      "time": {
+        "content": "$1",
+        "example": "14:05:33"
+      }
     }
   },
   "panelClose": {
     "message": "Close",
     "description": "Label of the button that dismisses a panel."
   },
-
   "headPanelTitle": {
     "message": "Head Check",
     "description": "Heading of the head metadata panel."
+  },
+  "headSectionChecks": {
+    "message": "Checked automatically",
+    "description": "Heading of the section listing mechanical findings."
+  },
+  "headSectionReview": {
+    "message": "Read these yourself",
+    "description": "Heading of the section holding the previews."
+  },
+  "headSectionReference": {
+    "message": "All values",
+    "description": "Heading of the section listing every tag."
+  },
+  "headChecksClean": {
+    "message": "Nothing wrong in what can be checked automatically.",
+    "description": "Deliberately narrow: presence and shape were checked, not whether the content is correct."
+  },
+  "headChecksCount": {
+    "message": "$count$ things to look at",
+    "description": "Number of mechanical findings.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "headChecksCountOne": {
+    "message": "1 thing to look at",
+    "description": "Used when there is exactly one mechanical finding."
+  },
+  "headReviewNote": {
+    "message": "Whether this is the right text cannot be decided automatically. Read it as a visitor would see it.",
+    "description": "Explains why the previews exist."
+  },
+  "headPreviewSearch": {
+    "message": "Search result",
+    "description": "Label above the search result preview."
+  },
+  "headPreviewCard": {
+    "message": "Shared link",
+    "description": "Label above the social card preview."
+  },
+  "headPreviewApproximate": {
+    "message": "Approximate. Search engines rewrite these often, and cut them off by width rather than by character count.",
+    "description": "Honesty note: the previews are not a promise of how anything will actually render."
+  },
+  "headCardFallbackTitle": {
+    "message": "no og:title, falling back to title",
+    "description": "Noted on the card preview when og:title is absent."
+  },
+  "headCardFallbackDescription": {
+    "message": "no og:description, falling back to description",
+    "description": "Noted on the card preview when og:description is absent."
+  },
+  "headCardNoImage": {
+    "message": "no og:image",
+    "description": "Shown in place of the card image when og:image is absent."
+  },
+  "checkNoindex": {
+    "message": "robots contains noindex: this page asks not to be listed in search results",
+    "description": "The most consequential thing to find on a production page."
+  },
+  "checkNofollow": {
+    "message": "robots contains nofollow: links on this page ask not to be followed",
+    "description": "Less severe than noindex but worth surfacing."
+  },
+  "checkQuirks": {
+    "message": "No usable doctype: the page is rendering in quirks mode",
+    "description": "Explains otherwise invisible layout differences."
+  },
+  "checkLangMissing": {
+    "message": "<html> has no lang attribute",
+    "description": "Affects screen readers and translation."
+  },
+  "checkTitleMissing": {
+    "message": "No title",
+    "description": "Title element absent or empty."
+  },
+  "checkDescriptionMissing": {
+    "message": "No description",
+    "description": "Meta description absent."
+  },
+  "checkViewportMissing": {
+    "message": "No viewport: the page will not scale on phones",
+    "description": "Meta viewport absent."
+  },
+  "checkCanonicalMissing": {
+    "message": "No canonical",
+    "description": "Canonical link absent."
+  },
+  "checkCanonicalElsewhere": {
+    "message": "canonical points at another page, so this one asks not to be treated as the original: $url$",
+    "description": "Fine when deliberate, serious when not.",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "https://example.com/other"
+      }
+    }
+  },
+  "checkDuplicate": {
+    "message": "$tag$ appears $count$ times",
+    "description": "Duplicated tags leave the outcome up to whoever reads them.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "canonical"
+      },
+      "count": {
+        "content": "$2",
+        "example": "2"
+      }
+    }
+  },
+  "checkTooLong": {
+    "message": "$tag$ is $count$ characters, long enough to be cut off",
+    "description": "Length only - whether the text is right is a human question.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "description"
+      },
+      "count": {
+        "content": "$2",
+        "example": "220"
+      }
+    }
+  },
+  "checkRefresh": {
+    "message": "meta http-equiv=refresh sends visitors elsewhere",
+    "description": "A redirect hidden in the markup."
+  },
+  "checkOgImageSmall": {
+    "message": "og:image is $width$x$height$, smaller than the 1200x630 most platforms want",
+    "description": "Measured after the image loads.",
+    "placeholders": {
+      "width": {
+        "content": "$1",
+        "example": "400"
+      },
+      "height": {
+        "content": "$2",
+        "example": "210"
+      }
+    }
+  },
+  "checkOgImageFailed": {
+    "message": "og:image could not be loaded",
+    "description": "The URL is set but nothing came back."
   },
   "headCharacterCount": {
     "message": "($count$ characters)",
     "description": "Length of a metadata value, counted in code points.",
     "placeholders": {
-      "count": { "content": "$1", "example": "38" }
+      "count": {
+        "content": "$1",
+        "example": "38"
+      }
     }
   },
   "valueNotSet": {
@@ -82,12 +253,14 @@
     "message": "(empty)",
     "description": "Shown when a metadata tag is present but has no value."
   },
-
   "altPresent": {
     "message": "alt: $value$",
     "description": "Label showing an image's alt text.",
     "placeholders": {
-      "value": { "content": "$1", "example": "A cat" }
+      "value": {
+        "content": "$1",
+        "example": "A cat"
+      }
     }
   },
   "altMissing": {
@@ -98,7 +271,6 @@
     "message": "alt: (empty)",
     "description": "Label for an image with alt=\"\", i.e. marked decorative."
   },
-
   "popupCannotRun": {
     "message": "Krafty cannot run on this page.",
     "description": "Shown in the popup when the page cannot be scripted."

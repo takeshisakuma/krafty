@@ -47,14 +47,41 @@ content can be anywhere, and a handful of preset corners would only move
 the problem around. Positions are remembered per panel for the life of the
 page, so toggling a checker does not throw it back into the corner.
 
+### 4. Head Check: separate what a machine can decide — done
+
+The panel is in three parts: findings a machine can reach, the values a
+person has to read, and everything else for reference.
+
+The split came from noticing that "problems at the top, the rest below"
+would have been dishonest. A title can be present, well formed and the
+right length while still reading "ホーム | ホーム" or carrying a staging
+name. Putting the mechanical checks first under a heading that implies the
+rest is fine would present unchecked ground as checked. Hence the summary
+says *nothing wrong in what can be checked automatically*, and never
+"no problems".
+
+For the values only a person can judge, the panel draws a search result and
+a shared-link card rather than printing the strings. Judging "does this look
+wrong" is fast; judging a bare string is not. Krafty already did this for
+favicon and og:image by showing the picture — this is the same move for
+text. The previews are labelled as approximate, because search engines
+rewrite titles and truncate by width, and promising a faithful rendering
+would be a lie.
+
+Collapsible sections were considered and dropped. Tabs would eat horizontal
+room a 420px panel needs for URLs and would hide the very thing an
+unfamiliar reader is looking for. Plain headings inside the existing scroll
+turned out to be enough. Revisit only if the reference section becomes
+unwieldy.
+
 ## Medium value
 
-### 4. Keyboard shortcuts
+### 5. Keyboard shortcuts
 
 The checkers are toggled repeatedly during a review. `commands` in the
 manifest would remove a two-click round trip each time.
 
-### 5. Overlapping alt labels
+### 6. Overlapping alt labels
 
 The labels are absolutely positioned, so on image-dense pages (EC product
 grids, exactly the Rakuten case) they overlap and become unreadable.

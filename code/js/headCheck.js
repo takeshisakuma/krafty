@@ -1,14 +1,25 @@
 // @ts-check
 
+/* The panel is in three parts, and the split is the point of it.
+
+   What a machine can decide - whether a tag is present, duplicated, or of a
+   sane length - is decided and reported. What it cannot decide is whether
+   the text is the *right* text: a title can be present, well formed, and
+   still read "ホーム | ホーム" or carry a staging environment's name. Those
+   values are put in front of the reader instead, drawn the way a visitor
+   would meet them, because judging "does this look wrong" is quick and
+   judging a bare string is not.
+
+   Hence the wording of the summary: nothing wrong in what can be checked
+   automatically. Claiming more than that would be a lie the reader has no
+   way to catch. */
+
 (() => {
   const PANEL_ID = "js-kraftyHeadInformation";
 
   /* Always start from a clean slate: the previous panel must go, otherwise
      repeated runs stack duplicate elements sharing the same id. */
-  const previous = document.getElementById(PANEL_ID);
-  if (previous) {
-    previous.remove();
-  }
+  document.getElementById(PANEL_ID)?.remove();
 
   if (!document.body) {
     return;
@@ -20,23 +31,22 @@
     return;
   }
 
-  /**
-   * @param {string} name
-   * @returns {string | null}
-   */
-  const metaByName = (name) => {
-    const meta = document.querySelector(`meta[name="${name}"]`);
-    return meta ? meta.getAttribute("content") : null;
-  };
+  /* --- reading the document --- */
 
   /**
-   * @param {string} property
+   * @param {string} selector
    * @returns {string | null}
    */
-  const metaByProperty = (property) => {
-    const meta = document.querySelector(`meta[property="${property}"]`);
-    return meta ? meta.getAttribute("content") : null;
+  const attr = (selector) => {
+    const element = document.querySelector(selector);
+    return element ? element.getAttribute("content") : null;
   };
+
+  /** @param {string} name */
+  const metaByName = (name) => attr(`meta[name="${name}" i]`);
+
+  /** @param {string} property */
+  const metaByProperty = (property) => attr(`meta[property="${property}" i]`);
 
   /**
    * @param {...string} wanted
@@ -45,6 +55,7 @@
   const linkByRel = (...wanted) => {
     for (const link of document.querySelectorAll("link[rel][href]")) {
       const rels = (link.getAttribute("rel") ?? "").toLowerCase().split(/\s+/);
+
       if (wanted.some((rel) => rels.includes(rel))) {
         return link.getAttribute("href");
       }
@@ -64,32 +75,19 @@
     }
   };
 
-  const favicon = linkByRel("icon") || "/favicon.ico";
+  /** @param {string | null} value */
+  const length = (value) => (value ? [...value].length : 0);
 
-  const rows = [
-    { label: "title", value: document.title, count: true },
-    { label: "description", value: metaByName("description"), count: true },
-    { label: "charset", value: document.characterSet },
-    { label: "og:title", value: metaByProperty("og:title"), count: true },
-    { label: "og:type", value: metaByProperty("og:type") },
-    { label: "og:url", value: metaByProperty("og:url") },
-    { label: "og:image", value: metaByProperty("og:image"), image: "ogp" },
-    {
-      label: "og:description",
-      value: metaByProperty("og:description"),
-      count: true,
-    },
-    { label: "fb:app_id", value: metaByProperty("fb:app_id") },
-    { label: "twitter:card", value: metaByName("twitter:card") },
-    { label: "viewport", value: metaByName("viewport") },
-    { label: "canonical", value: linkByRel("canonical") },
-    { label: "favicon", value: favicon, image: "favicon" },
-    {
-      label: "apple touch icon",
-      value: linkByRel("apple-touch-icon", "apple-touch-icon-precomposed"),
-      image: "apple",
-    },
-  ];
+  const pageTitle = document.title;
+  const description = metaByName("description");
+  const robots = metaByName("robots");
+  const canonical = linkByRel("canonical");
+  const ogTitle = metaByProperty("og:title");
+  const ogDescription = metaByProperty("og:description");
+  const ogImage = metaByProperty("og:image");
+  const documentLang = document.documentElement.getAttribute("lang");
+
+  /* --- what a machine can decide --- */
 
   const { panel, body } = kraftyPanel({
     id: PANEL_ID,
@@ -103,8 +101,302 @@
     },
   });
 
+  /**
+   * @param {string} key
+   * @returns {HTMLElement}
+   */
+  const section = (key) => {
+    const wrapper = document.createElement("section");
+    wrapper.className = "kraftySection";
+
+    const heading = document.createElement("h2");
+    heading.className = "kraftySectionTitle";
+    heading.textContent = kraftyMessage(key);
+    wrapper.appendChild(heading);
+
+    body.appendChild(wrapper);
+    return wrapper;
+  };
+
+  const checksSection = section("headSectionChecks");
+
+  const checksSummary = document.createElement("div");
+  checksSummary.className = "kraftyChecksSummary";
+  checksSection.appendChild(checksSummary);
+
+  const checksList = document.createElement("ul");
+  checksList.className = "kraftyChecks";
+  checksSection.appendChild(checksList);
+
+  let found = 0;
+
+  const describeCount = () => {
+    checksSummary.textContent =
+      found === 0
+        ? kraftyMessage("headChecksClean")
+        : found === 1
+          ? kraftyMessage("headChecksCountOne")
+          : kraftyMessage("headChecksCount", [String(found)]);
+    checksSummary.classList.toggle("kraftyChecksClean", found === 0);
+  };
+
+  /**
+   * Findings are appended as they are discovered, so a check that has to
+   * wait for a network round trip reports through the same path.
+   *
+   * @param {"alert" | "note"} level
+   * @param {string} key
+   * @param {string[]} [substitutions]
+   */
+  const report = (level, key, substitutions) => {
+    found += 1;
+
+    const item = document.createElement("li");
+    item.className = `kraftyCheck kraftyCheck-${level}`;
+    item.textContent = kraftyMessage(key, substitutions);
+    checksList.appendChild(item);
+
+    describeCount();
+  };
+
+  /** @param {string} selector @param {string} label */
+  const reportDuplicates = (selector, label) => {
+    const count = document.querySelectorAll(selector).length;
+
+    if (count > 1) {
+      report("note", "checkDuplicate", [label, String(count)]);
+    }
+  };
+
+  const robotDirectives = (robots ?? "").toLowerCase();
+
+  if (robotDirectives.includes("noindex")) {
+    report("alert", "checkNoindex");
+  }
+  if (robotDirectives.includes("nofollow")) {
+    report("note", "checkNofollow");
+  }
+
+  if (document.compatMode === "BackCompat") {
+    report("alert", "checkQuirks");
+  }
+
+  if (document.querySelector('meta[http-equiv="refresh" i]')) {
+    report("alert", "checkRefresh");
+  }
+
+  if (pageTitle.trim() === "") {
+    report("alert", "checkTitleMissing");
+  }
+  if (description === null) {
+    report("note", "checkDescriptionMissing");
+  }
+  if (metaByName("viewport") === null) {
+    report("note", "checkViewportMissing");
+  }
+  if (!documentLang || documentLang.trim() === "") {
+    report("note", "checkLangMissing");
+  }
+
+  if (canonical === null) {
+    report("note", "checkCanonicalMissing");
+  } else {
+    const target = resolve(canonical);
+    const here = location.href.split("#")[0];
+
+    if (target && target.split("#")[0] !== here) {
+      report("note", "checkCanonicalElsewhere", [target]);
+    }
+  }
+
+  /* Length only. Whether the words are the right words is the reader's
+     call, which is what the previews below are for. */
+  if (length(pageTitle) > 60) {
+    report("note", "checkTooLong", ["title", String(length(pageTitle))]);
+  }
+  if (length(description) > 160) {
+    report("note", "checkTooLong", [
+      "description",
+      String(length(description)),
+    ]);
+  }
+
+  reportDuplicates("title", "title");
+  reportDuplicates('meta[name="description" i]', "description");
+  reportDuplicates('link[rel~="canonical" i]', "canonical");
+  reportDuplicates('meta[property="og:title" i]', "og:title");
+  reportDuplicates('meta[property="og:image" i]', "og:image");
+
+  describeCount();
+
+  /* --- what only a person can decide --- */
+
+  const reviewSection = section("headSectionReview");
+
+  const reviewNote = document.createElement("p");
+  reviewNote.className = "kraftyNote";
+  reviewNote.textContent = kraftyMessage("headReviewNote");
+  reviewSection.appendChild(reviewNote);
+
+  /**
+   * @param {string} key
+   * @returns {HTMLElement}
+   */
+  const preview = (key) => {
+    const label = document.createElement("div");
+    label.className = "kraftyPreviewLabel";
+    label.textContent = kraftyMessage(key);
+    reviewSection.appendChild(label);
+
+    const frame = document.createElement("div");
+    reviewSection.appendChild(frame);
+    return frame;
+  };
+
+  /* Search result. */
+  const serp = preview("headPreviewSearch");
+  serp.className = "kraftySerp";
+
+  const serpUrl = document.createElement("div");
+  serpUrl.className = "kraftySerpUrl";
+  serpUrl.textContent = [
+    location.hostname,
+    ...location.pathname.split("/"),
+  ]
+    .filter(Boolean)
+    .join(" › ");
+  serp.appendChild(serpUrl);
+
+  const serpTitle = document.createElement("div");
+  serpTitle.className = "kraftySerpTitle";
+  serpTitle.textContent = pageTitle || kraftyMessage("valueNotSet");
+  serp.appendChild(serpTitle);
+
+  const serpDescription = document.createElement("div");
+  serpDescription.className = "kraftySerpDescription";
+  serpDescription.textContent = description || kraftyMessage("valueNotSet");
+  serp.appendChild(serpDescription);
+
+  /* Social card. Platforms fall back to title and description when the og:
+     equivalents are missing, so the preview does too - and says so, because
+     "the card looks fine" and "og:title is set" are different facts. */
+  const card = preview("headPreviewCard");
+  card.className = "kraftyCard";
+
+  const cardImage = document.createElement("div");
+  cardImage.className = "kraftyCardImage";
+  card.appendChild(cardImage);
+
+  const resolvedOgImage = ogImage ? resolve(ogImage) : null;
+
+  if (resolvedOgImage) {
+    const image = document.createElement("img");
+    image.src = resolvedOgImage;
+    image.alt = "";
+
+    image.addEventListener("load", () => {
+      if (image.naturalWidth < 1200 || image.naturalHeight < 630) {
+        report("note", "checkOgImageSmall", [
+          String(image.naturalWidth),
+          String(image.naturalHeight),
+        ]);
+      }
+    });
+    image.addEventListener("error", () => {
+      report("note", "checkOgImageFailed");
+      cardImage.textContent = kraftyMessage("checkOgImageFailed");
+    });
+
+    cardImage.appendChild(image);
+  } else {
+    cardImage.textContent = kraftyMessage("headCardNoImage");
+    cardImage.classList.add("kraftyCardImageEmpty");
+  }
+
+  const cardBody = document.createElement("div");
+  cardBody.className = "kraftyCardBody";
+
+  const cardDomain = document.createElement("div");
+  cardDomain.className = "kraftyCardDomain";
+  cardDomain.textContent = location.hostname;
+  cardBody.appendChild(cardDomain);
+
+  const cardTitle = document.createElement("div");
+  cardTitle.className = "kraftyCardTitle";
+  cardTitle.textContent = ogTitle || pageTitle || kraftyMessage("valueNotSet");
+  cardBody.appendChild(cardTitle);
+
+  const cardDescription = document.createElement("div");
+  cardDescription.className = "kraftyCardDescription";
+  cardDescription.textContent =
+    ogDescription || description || kraftyMessage("valueNotSet");
+  cardBody.appendChild(cardDescription);
+
+  card.appendChild(cardBody);
+
+  for (const [value, key] of [
+    [ogTitle, "headCardFallbackTitle"],
+    [ogDescription, "headCardFallbackDescription"],
+  ]) {
+    if (!value) {
+      const fallback = document.createElement("div");
+      fallback.className = "kraftyFallbackNote";
+      fallback.textContent = kraftyMessage(String(key));
+      reviewSection.appendChild(fallback);
+    }
+  }
+
+  const approximate = document.createElement("p");
+  approximate.className = "kraftyNote";
+  approximate.textContent = kraftyMessage("headPreviewApproximate");
+  reviewSection.appendChild(approximate);
+
+  /* --- everything, for reference --- */
+
+  const favicon = linkByRel("icon") || "/favicon.ico";
+
+  const rows = [
+    { label: "title", value: pageTitle, count: true },
+    { label: "description", value: description, count: true },
+    { label: "robots", value: robots },
+    { label: "html lang", value: documentLang },
+    { label: "charset", value: document.characterSet },
+    {
+      label: "compatMode",
+      value:
+        document.compatMode === "BackCompat" ? "quirks" : "standards",
+    },
+    { label: "canonical", value: canonical },
+    { label: "base", value: document.querySelector("base")?.getAttribute("href") ?? null },
+    { label: "og:title", value: ogTitle, count: true },
+    { label: "og:type", value: metaByProperty("og:type") },
+    { label: "og:url", value: metaByProperty("og:url") },
+    { label: "og:image", value: ogImage, image: "ogp" },
+    { label: "og:description", value: ogDescription, count: true },
+    { label: "og:site_name", value: metaByProperty("og:site_name") },
+    { label: "og:locale", value: metaByProperty("og:locale") },
+    { label: "fb:app_id", value: metaByProperty("fb:app_id") },
+    { label: "twitter:card", value: metaByName("twitter:card") },
+    { label: "twitter:site", value: metaByName("twitter:site") },
+    { label: "twitter:title", value: metaByName("twitter:title") },
+    { label: "twitter:description", value: metaByName("twitter:description") },
+    { label: "twitter:image", value: metaByName("twitter:image") },
+    { label: "viewport", value: metaByName("viewport") },
+    { label: "theme-color", value: metaByName("theme-color") },
+    { label: "manifest", value: linkByRel("manifest") },
+    { label: "favicon", value: favicon, image: "favicon" },
+    {
+      label: "apple touch icon",
+      value: linkByRel("apple-touch-icon", "apple-touch-icon-precomposed"),
+      image: "apple",
+    },
+  ];
+
+  const referenceSection = section("headSectionReference");
+
   for (const { label, value, count, image } of rows) {
     const row = document.createElement("div");
+    row.className = "kraftyRow";
 
     /* The label is a literal tag name, so it stays as it is in every
        locale. It used to read "title is", which needed English grammar to
@@ -117,9 +409,7 @@
     if (count && value) {
       row.appendChild(
         document.createTextNode(
-          `　${kraftyMessage("headCharacterCount", [
-            String([...value].length),
-          ])}`
+          `　${kraftyMessage("headCharacterCount", [String(length(value))])}`
         )
       );
     }
@@ -137,11 +427,11 @@
       const source = image ? resolve(value) : null;
 
       if (source) {
-        const preview = document.createElement("img");
-        preview.className = `headImage ${image}`;
-        preview.src = source;
-        preview.alt = "";
-        row.appendChild(preview);
+        const thumbnail = document.createElement("img");
+        thumbnail.className = `headImage ${image}`;
+        thumbnail.src = source;
+        thumbnail.alt = "";
+        row.appendChild(thumbnail);
         row.appendChild(document.createTextNode("　"));
       }
 
@@ -150,8 +440,7 @@
       row.appendChild(document.createTextNode(value));
     }
 
-    row.appendChild(document.createElement("hr"));
-    body.appendChild(row);
+    referenceSection.appendChild(row);
   }
 
   document.body.appendChild(panel);

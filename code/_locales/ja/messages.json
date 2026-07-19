@@ -7,31 +7,44 @@
     "message": "Web ディレクターのための HTML チェッカー",
     "description": "Short description shown in the browser and the store."
   },
-
   "nestReasonNotAllowed": {
     "message": "<$parent$> の中に <$child$> は置けません",
     "description": "Tooltip on an element its parent may not contain.",
     "placeholders": {
-      "child": { "content": "$1", "example": "div" },
-      "parent": { "content": "$2", "example": "ul" }
+      "child": {
+        "content": "$1",
+        "example": "div"
+      },
+      "parent": {
+        "content": "$2",
+        "example": "ul"
+      }
     }
   },
   "nestReasonEmptyModel": {
     "message": "<$parent$> は子要素を持てません",
     "description": "Tooltip when the parent is a void or text-only element.",
     "placeholders": {
-      "parent": { "content": "$1", "example": "img" }
+      "parent": {
+        "content": "$1",
+        "example": "img"
+      }
     }
   },
   "nestAllowedChildren": {
     "message": "<$parent$> に置けるのは: $allowed$",
     "description": "Second tooltip line listing what the parent does allow.",
     "placeholders": {
-      "parent": { "content": "$1", "example": "ul" },
-      "allowed": { "content": "$2", "example": "li, script, template" }
+      "parent": {
+        "content": "$1",
+        "example": "ul"
+      },
+      "allowed": {
+        "content": "$2",
+        "example": "li, script, template"
+      }
     }
   },
-
   "nestPanelTitle": {
     "message": "ネストチェック",
     "description": "Heading of the findings panel."
@@ -44,7 +57,10 @@
     "message": "入れ子の誤り $count$ 件",
     "description": "Total number of findings.",
     "placeholders": {
-      "count": { "content": "$1", "example": "57" }
+      "count": {
+        "content": "$1",
+        "example": "57"
+      }
     }
   },
   "nestPanelCountOne": {
@@ -55,23 +71,178 @@
     "message": "$time$ 時点の結果です。以降に追加された要素は含まれません。",
     "description": "Reminder that the scan is a snapshot of the DOM.",
     "placeholders": {
-      "time": { "content": "$1", "example": "14:05:33" }
+      "time": {
+        "content": "$1",
+        "example": "14:05:33"
+      }
     }
   },
   "panelClose": {
     "message": "閉じる",
     "description": "Label of the button that dismisses a panel."
   },
-
   "headPanelTitle": {
     "message": "ヘッドチェック",
     "description": "Heading of the head metadata panel."
+  },
+  "headSectionChecks": {
+    "message": "自動で確認した範囲",
+    "description": "Heading of the section listing mechanical findings."
+  },
+  "headSectionReview": {
+    "message": "目視で確認してください",
+    "description": "Heading of the section holding the previews."
+  },
+  "headSectionReference": {
+    "message": "全項目",
+    "description": "Heading of the section listing every tag."
+  },
+  "headChecksClean": {
+    "message": "自動で確認できる範囲では問題ありません。",
+    "description": "Deliberately narrow: presence and shape were checked, not whether the content is correct."
+  },
+  "headChecksCount": {
+    "message": "確認すべき項目 $count$ 件",
+    "description": "Number of mechanical findings.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "headChecksCountOne": {
+    "message": "確認すべき項目 1 件",
+    "description": "Used when there is exactly one mechanical finding."
+  },
+  "headReviewNote": {
+    "message": "内容が適切かどうかは自動では判断できません。訪問者に見える形で確認してください。",
+    "description": "Explains why the previews exist."
+  },
+  "headPreviewSearch": {
+    "message": "検索結果",
+    "description": "Label above the search result preview."
+  },
+  "headPreviewCard": {
+    "message": "SNS で共有したとき",
+    "description": "Label above the social card preview."
+  },
+  "headPreviewApproximate": {
+    "message": "おおよその見え方です。検索エンジンは文言を書き換えることが多く、省略位置も文字数ではなく幅で決まります。",
+    "description": "Honesty note: the previews are not a promise of how anything will actually render."
+  },
+  "headCardFallbackTitle": {
+    "message": "og:title が無いため title を表示",
+    "description": "Noted on the card preview when og:title is absent."
+  },
+  "headCardFallbackDescription": {
+    "message": "og:description が無いため description を表示",
+    "description": "Noted on the card preview when og:description is absent."
+  },
+  "headCardNoImage": {
+    "message": "og:image なし",
+    "description": "Shown in place of the card image when og:image is absent."
+  },
+  "checkNoindex": {
+    "message": "robots に noindex が指定されています。このページは検索結果に載らないよう要求しています",
+    "description": "The most consequential thing to find on a production page."
+  },
+  "checkNofollow": {
+    "message": "robots に nofollow が指定されています。このページのリンクは辿られません",
+    "description": "Less severe than noindex but worth surfacing."
+  },
+  "checkQuirks": {
+    "message": "DOCTYPE が無効なため、後方互換モードで描画されています",
+    "description": "Explains otherwise invisible layout differences."
+  },
+  "checkLangMissing": {
+    "message": "<html> に lang 属性がありません",
+    "description": "Affects screen readers and translation."
+  },
+  "checkTitleMissing": {
+    "message": "title がありません",
+    "description": "Title element absent or empty."
+  },
+  "checkDescriptionMissing": {
+    "message": "description がありません",
+    "description": "Meta description absent."
+  },
+  "checkViewportMissing": {
+    "message": "viewport がありません。スマートフォンで拡大縮小されません",
+    "description": "Meta viewport absent."
+  },
+  "checkCanonicalMissing": {
+    "message": "canonical がありません",
+    "description": "Canonical link absent."
+  },
+  "checkCanonicalElsewhere": {
+    "message": "canonical が別ページを指しています。このページは正規版でないと宣言しています: $url$",
+    "description": "Fine when deliberate, serious when not.",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "https://example.com/other"
+      }
+    }
+  },
+  "checkDuplicate": {
+    "message": "$tag$ が $count$ 個あります",
+    "description": "Duplicated tags leave the outcome up to whoever reads them.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "canonical"
+      },
+      "count": {
+        "content": "$2",
+        "example": "2"
+      }
+    }
+  },
+  "checkTooLong": {
+    "message": "$tag$ が $count$ 文字あり、省略される可能性があります",
+    "description": "Length only - whether the text is right is a human question.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "description"
+      },
+      "count": {
+        "content": "$2",
+        "example": "220"
+      }
+    }
+  },
+  "checkRefresh": {
+    "message": "meta http-equiv=refresh により別ページへ転送されます",
+    "description": "A redirect hidden in the markup."
+  },
+  "checkOgImageSmall": {
+    "message": "og:image が $width$x$height$ です。多くのサービスが推奨する 1200x630 を下回ります",
+    "description": "Measured after the image loads.",
+    "placeholders": {
+      "width": {
+        "content": "$1",
+        "example": "400"
+      },
+      "height": {
+        "content": "$2",
+        "example": "210"
+      }
+    }
+  },
+  "checkOgImageFailed": {
+    "message": "og:image を読み込めませんでした",
+    "description": "The URL is set but nothing came back."
   },
   "headCharacterCount": {
     "message": "($count$ 文字)",
     "description": "Length of a metadata value, counted in code points.",
     "placeholders": {
-      "count": { "content": "$1", "example": "38" }
+      "count": {
+        "content": "$1",
+        "example": "38"
+      }
     }
   },
   "valueNotSet": {
@@ -82,12 +253,14 @@
     "message": "(空)",
     "description": "Shown when a metadata tag is present but has no value."
   },
-
   "altPresent": {
     "message": "alt: $value$",
     "description": "Label showing an image's alt text.",
     "placeholders": {
-      "value": { "content": "$1", "example": "A cat" }
+      "value": {
+        "content": "$1",
+        "example": "A cat"
+      }
     }
   },
   "altMissing": {
@@ -98,7 +271,6 @@
     "message": "alt: (空)",
     "description": "Label for an image with alt=\"\", i.e. marked decorative."
   },
-
   "popupCannotRun": {
     "message": "このページでは Krafty を実行できません。",
     "description": "Shown in the popup when the page cannot be scripted."

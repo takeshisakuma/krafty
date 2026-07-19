@@ -180,6 +180,169 @@ $alertColor: #f00;
       color: #999;
       font-style: italic;
     }
+
+    .kraftySection + .kraftySection {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 2px solid #ddd;
+    }
+
+    .kraftySectionTitle {
+      margin: 0 0 8px;
+      padding: 0;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #888;
+      border: 0;
+    }
+
+    /* The wording of this line is deliberately narrow, so it must not read
+       as a clean bill of health. Green is reserved for nothing. */
+    .kraftyChecksSummary {
+      font-weight: bold;
+      margin-bottom: 6px;
+
+      &.kraftyChecksClean {
+        font-weight: normal;
+        color: #666;
+      }
+    }
+
+    .kraftyChecks {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* The body breaks anywhere so long URLs cannot widen the panel. Prose
+       must not inherit that, or sentences break mid-word. */
+    .kraftyCheck,
+    .kraftyNote,
+    .kraftyFallbackNote,
+    .kraftyChecksSummary {
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .kraftyCheck {
+      margin: 0 0 4px;
+      padding: 5px 8px;
+      border-radius: 2px;
+      border-left: 3px solid;
+
+      &.kraftyCheck-alert {
+        border-left-color: #c00;
+        background-color: #fdeaea;
+        color: #900;
+      }
+
+      &.kraftyCheck-note {
+        border-left-color: #c98a00;
+        background-color: #fdf5e4;
+        color: #7a5400;
+      }
+    }
+
+    .kraftyNote {
+      margin: 0 0 10px;
+      padding: 0;
+      color: #777;
+    }
+
+    .kraftyPreviewLabel {
+      margin: 12px 0 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .kraftyFallbackNote {
+      margin-top: 5px;
+      color: #7a5400;
+    }
+
+    /* An impression of a search result, not a reproduction of one. */
+    .kraftySerp {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      word-break: normal;
+      overflow-wrap: anywhere;
+
+      .kraftySerpUrl {
+        color: #4d5156;
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+
+      .kraftySerpTitle {
+        color: #1a0dab;
+        font-size: 15px;
+        line-height: 1.3;
+        margin-bottom: 3px;
+      }
+
+      .kraftySerpDescription {
+        color: #4d5156;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+    }
+
+    .kraftyCard {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      background-color: #fff;
+      word-break: normal;
+      overflow-wrap: anywhere;
+
+      .kraftyCardImage {
+        display: block;
+        background-color: #f0f0f0;
+
+        img {
+          display: block;
+          width: 100%;
+          max-height: 200px;
+          object-fit: cover;
+        }
+
+        &.kraftyCardImageEmpty {
+          padding: 22px 0;
+          text-align: center;
+          color: #999;
+          font-style: italic;
+        }
+      }
+
+      .kraftyCardBody {
+        padding: 9px 12px;
+      }
+
+      .kraftyCardDomain {
+        color: #777;
+        font-size: 11px;
+        text-transform: lowercase;
+      }
+
+      .kraftyCardTitle {
+        font-weight: bold;
+        margin: 2px 0;
+      }
+
+      .kraftyCardDescription {
+        color: #555;
+      }
+    }
+
+    .kraftyRow {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eee;
+    }
   }
 }
 
