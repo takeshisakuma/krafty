@@ -111,14 +111,23 @@ async function getActiveTabId() {
  * @param {number} tabId
  */
 async function ensureStyles(tabId) {
+  /* Keyed on the version, not a bare flag. The marker lives on the page and
+     survives the extension being updated underneath it, so a flag would
+     leave a long-open tab running new scripts against the previous
+     stylesheet - which looks exactly like the CSS having stopped working.
+     Within one version the marker still short circuits, so reloading the
+     page is still the way to pick up an edit during development. */
+  const version = chrome.runtime.getManifest().version;
+
   const [injection] = await chrome.scripting.executeScript({
     target: { tabId },
-    func: () => {
+    func: (expected) => {
       const root = document.documentElement;
-      const already = root.dataset.kraftyStyled === "1";
-      root.dataset.kraftyStyled = "1";
+      const already = root.dataset.kraftyStyled === expected;
+      root.dataset.kraftyStyled = expected;
       return already;
     },
+    args: [version],
   });
 
   if (!injection?.result) {
