@@ -195,33 +195,151 @@
     return { parent, child, allowed };
   };
 
+  const PANEL_ID = "js-kraftyNestInformation";
+  const SAVED_TITLE = "data-kraftyTitle";
+
+  /* A tooltip listing 80 permitted elements helps nobody; the list is only
+     worth showing when it is short enough to act on. */
+  const MAX_LISTED_CHILDREN = 12;
+
+  /** Undo everything this checker writes onto the page. */
+  const clear = () => {
+    document.getElementById(PANEL_ID)?.remove();
+
+    for (const marked of document.querySelectorAll(`.${ERROR_CLASS}`)) {
+      marked.classList.remove(ERROR_CLASS);
+
+      /* Put back whatever title the page had, rather than destroying it. */
+      const saved = marked.getAttribute(SAVED_TITLE);
+
+      if (saved === null) {
+        marked.removeAttribute("title");
+      } else {
+        marked.setAttribute("title", saved);
+        marked.removeAttribute(SAVED_TITLE);
+      }
+    }
+  };
+
   if (!document.body) {
     return;
   }
 
-  for (const marked of document.querySelectorAll(`.${ERROR_CLASS}`)) {
-    marked.classList.remove(ERROR_CLASS);
-  }
+  clear();
 
   if (!document.body.classList.toggle(BODY_CLASS)) {
     return;
   }
 
+  /** @type {Map<string, number>} */
+  const totals = new Map();
+
   /* The judging sees the DOM as it is now, so elements a single page app
      inserts later are not marked. Toggle the checker off and on to re-scan. */
-  const panel = document.getElementById("js-kraftyHeadInformation");
-
   for (const element of document.body.querySelectorAll("*")) {
     /* Never report the checker's own UI. */
     if (
-      panel?.contains(element) ||
+      element.closest(".kraftyPanel") ||
       element.classList.contains("kraftyAltContent")
     ) {
       continue;
     }
 
-    if (judge(element)) {
-      element.classList.add(ERROR_CLASS);
+    const finding = judge(element);
+
+    if (!finding) {
+      continue;
     }
+
+    const { parent, child, allowed } = finding;
+
+    element.classList.add(ERROR_CLASS);
+
+    const lines = [
+      allowed.length === 0
+        ? kraftyMessage("nestReasonEmptyModel", [parent])
+        : kraftyMessage("nestReasonNotAllowed", [child, parent]),
+    ];
+
+    if (allowed.length > 0 && allowed.length <= MAX_LISTED_CHILDREN) {
+      lines.push(
+        kraftyMessage("nestAllowedChildren", [parent, allowed.join(", ")])
+      );
+    }
+
+    const existing = element.getAttribute("title");
+
+    if (existing !== null) {
+      element.setAttribute(SAVED_TITLE, existing);
+    }
+    element.setAttribute("title", lines.join("\n"));
+
+    const key = `${parent} > ${child}`;
+    totals.set(key, (totals.get(key) ?? 0) + 1);
   }
+
+  /* --- findings panel --- */
+
+  const total = [...totals.values()].reduce((sum, n) => sum + n, 0);
+
+  const panel = document.createElement("div");
+  panel.id = PANEL_ID;
+  panel.className = "kraftyPanel kraftyNestInformation";
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "kraftyPanelClose";
+  close.textContent = "×";
+  close.title = kraftyMessage("nestPanelClose");
+  close.addEventListener("click", () => {
+    clear();
+    document.body.classList.remove(BODY_CLASS);
+  });
+  panel.appendChild(close);
+
+  const heading = document.createElement("strong");
+  heading.textContent = kraftyMessage("nestPanelTitle");
+  panel.appendChild(heading);
+  panel.appendChild(document.createElement("hr"));
+
+  const summary = document.createElement("div");
+  summary.className = "kraftyPanelSummary";
+  summary.textContent =
+    total === 0
+      ? kraftyMessage("nestPanelClean")
+      : total === 1
+        ? kraftyMessage("nestPanelCountOne")
+        : kraftyMessage("nestPanelCount", [String(total)]);
+  panel.appendChild(summary);
+
+  if (total > 0) {
+    const list = document.createElement("ul");
+    list.className = "kraftyPanelList";
+
+    for (const [key, count] of [...totals].sort((a, b) => b[1] - a[1])) {
+      const item = document.createElement("li");
+
+      const label = document.createElement("code");
+      label.textContent = key;
+      item.appendChild(label);
+
+      const times = document.createElement("span");
+      times.className = "kraftyPanelCount";
+      times.textContent = `× ${count}`;
+      item.appendChild(times);
+
+      list.appendChild(item);
+    }
+
+    panel.appendChild(list);
+  }
+
+  const scanned = document.createElement("div");
+  scanned.className = "kraftyPanelNote";
+  scanned.textContent = kraftyMessage("nestPanelScannedAt", [
+    new Date().toLocaleTimeString(),
+  ]);
+  panel.appendChild(scanned);
+
+  document.body.appendChild(panel);
 })();

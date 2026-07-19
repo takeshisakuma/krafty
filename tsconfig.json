@@ -5,11 +5,23 @@
     "target": "ES2022",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["chrome", "node"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "chrome",
+      "node"
+    ],
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["code/**/*.js", "scripts/**/*.js", "test/**/*.js"]
+  "include": [
+    "code/**/*.js",
+    "scripts/**/*.js",
+    "test/**/*.js",
+    "types/**/*.d.ts"
+  ]
 }

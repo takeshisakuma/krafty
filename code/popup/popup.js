@@ -159,7 +159,7 @@ async function init() {
     await syncButtons(tabId);
   } catch (error) {
     setEnabled(false);
-    showStatus("Krafty cannot run on this page.");
+    showStatus(chrome.i18n.getMessage("popupCannotRun"));
     return;
   }
 
@@ -170,11 +170,13 @@ async function init() {
       try {
         await chrome.scripting.executeScript({
           target: { tabId, allFrames: checker.allFrames },
-          files: [checker.file],
+          /* i18n.js runs first, in the same context, so the checker can
+             look up localised strings. */
+          files: ["js/i18n.js", checker.file],
         });
         await syncButtons(tabId);
       } catch (error) {
-        showStatus("Krafty cannot run on this page.");
+        showStatus(chrome.i18n.getMessage("popupCannotRun"));
       }
     });
   }

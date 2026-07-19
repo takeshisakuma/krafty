@@ -93,19 +93,44 @@
 
   const panel = document.createElement("div");
   panel.id = PANEL_ID;
-  panel.className = "kraftyHeadInformation";
+  panel.className = "kraftyPanel kraftyHeadInformation";
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "kraftyPanelClose";
+  close.textContent = "×";
+  close.title = kraftyMessage("nestPanelClose");
+  close.addEventListener("click", () => {
+    panel.remove();
+    /* Drop the class too, or the popup would keep showing this checker as
+       active with nothing on screen. */
+    document.body.classList.remove("kraftyHeadChecker");
+  });
+  panel.appendChild(close);
+
+  const heading = document.createElement("strong");
+  heading.textContent = kraftyMessage("headPanelTitle");
+  panel.appendChild(heading);
+  panel.appendChild(document.createElement("hr"));
 
   for (const { label, value, count, image } of rows) {
     const row = document.createElement("div");
 
+    /* The label is a literal tag name, so it stays as it is in every
+       locale. It used to read "title is", which needed English grammar to
+       make sense of. */
     const heading = document.createElement("strong");
-    heading.textContent = `${label} is`;
+    heading.textContent = label;
     row.appendChild(heading);
 
     /* Count code points, so an emoji or a surrogate pair counts as one. */
     if (count && value) {
       row.appendChild(
-        document.createTextNode(`　(${[...value].length} characters)`)
+        document.createTextNode(
+          `　${kraftyMessage("headCharacterCount", [
+            String([...value].length),
+          ])}`
+        )
       );
     }
 
@@ -114,7 +139,9 @@
     if (value === null || value === "") {
       const missing = document.createElement("span");
       missing.className = "kraftyMissing";
-      missing.textContent = value === "" ? "(empty)" : "(not set)";
+      missing.textContent = kraftyMessage(
+        value === "" ? "valueEmpty" : "valueNotSet"
+      );
       row.appendChild(missing);
     } else {
       const source = image ? resolve(value) : null;

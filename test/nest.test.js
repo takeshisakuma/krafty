@@ -21,6 +21,16 @@ const nestCheck = fs.readFileSync(
   path.join(root, "code", "js", "nestCheck.js"),
   "utf8"
 );
+const i18n = fs.readFileSync(path.join(root, "code", "js", "i18n.js"), "utf8");
+
+/* The real message file, so a mistyped key or a broken placeholder fails
+   here rather than showing up as a blank tooltip in the browser. */
+const messages = JSON.parse(
+  fs.readFileSync(
+    path.join(root, "code", "_locales", "en", "messages.json"),
+    "utf8"
+  )
+);
 
 /* The element under test carries data-t. Cases go through the HTML parser,
    so they describe trees the parser actually produces - writing
@@ -59,6 +69,10 @@ const CASES = [
   ["div > style is invalid", true, `<div><style data-t></style></div>`],
 ];
 
+/* An element that already has a title: the checker writes its explanation
+   into that attribute, so it has to put the page's own value back. */
+const TITLE_CASE = `<ul><div data-titled title="page tooltip">x</div></ul>`;
+
 async function collect() {
   /* Drive the Chrome already installed on this machine rather than a
      Chromium that puppeteer downloads: it is the browser the extension
@@ -72,14 +86,54 @@ async function collect() {
     ).join("\n");
 
     await page.setContent(
-      `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${body}</body></html>`
+      `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${body}${TITLE_CASE}</body></html>`
     );
     await page.addStyleTag({ content: css });
+
+    /* Stand in for chrome.i18n, which content scripts have but a plain page
+       does not. Mirrors Chrome's behaviour of returning "" for an unknown
+       key, so a typo surfaces as the bare key via the fallback in i18n.js. */
+    await page.evaluate((table) => {
+      globalThis.chrome = /** @type {any} */ ({
+        i18n: {
+          /**
+           * @param {string} key
+           * @param {string | string[]} [substitutions]
+           */
+          getMessage(key, substitutions) {
+            const entry = table[key];
+            if (!entry) return "";
+
+            /** @type {string[]} */
+            const values =
+              substitutions === undefined
+                ? []
+                : Array.isArray(substitutions)
+                  ? substitutions
+                  : [substitutions];
+
+            let text = entry.message;
+
+            for (const [name, spec] of Object.entries(
+              entry.placeholders ?? {}
+            )) {
+              const index = Number(String(spec.content).slice(1)) - 1;
+              text = text.split(`$${name}$`).join(values[index] ?? "");
+            }
+            return text;
+          },
+        },
+      });
+    }, messages);
+
+    /* i18n.js defines kraftyMessage, which the checker calls. Injected the
+       same way the popup injects it, ahead of the checker. */
+    await page.evaluate(i18n);
     await page.evaluate(nestCheck);
 
     /* Must be awaited inside the try: returning the pending promise would
        let the finally close the browser before it settles. */
-    return await page.evaluate((total) => {
+    const scan = await page.evaluate((total) => {
       /** @type {Record<number, boolean | null>} */
       const flagged = {};
 
@@ -92,24 +146,91 @@ async function collect() {
           : null;
       }
 
-      return flagged;
+      const panel = document.getElementById("js-kraftyNestInformation");
+      const titled = document.querySelector("[data-titled]");
+      const anError = document.querySelector(".kraftyNestError");
+
+      const summary = panel?.querySelector(".kraftyPanelSummary");
+
+      return {
+        flagged,
+        panelText: panel ? (panel.textContent ?? "") : null,
+        summaryText: summary ? (summary.textContent ?? "") : null,
+        errorCount: document.querySelectorAll(".kraftyNestError").length,
+        reason: anError ? anError.getAttribute("title") : null,
+        titleWhileOn: titled ? titled.getAttribute("title") : null,
+      };
     }, CASES.length);
+
+    /* Toggle off and confirm the page is left as it was found. */
+    await page.evaluate(nestCheck);
+
+    const after = await page.evaluate(() => {
+      const titled = document.querySelector("[data-titled]");
+
+      return {
+        panel: document.getElementById("js-kraftyNestInformation") !== null,
+        errors: document.querySelectorAll(".kraftyNestError").length,
+        restoredTitle: titled ? titled.getAttribute("title") : null,
+        leftovers: document.querySelectorAll("[data-kraftyTitle]").length,
+      };
+    });
+
+    return { ...scan, after };
   } finally {
     await browser.close();
   }
 }
 
 test("nest checker", async (t) => {
-  const flagged = await collect();
+  const result = await collect();
 
   for (const [index, [name, expected]] of CASES.entries()) {
     await t.test(name, () => {
       assert.notStrictEqual(
-        flagged[index],
+        result.flagged[index],
         null,
         "the element under test is missing - the parser rewrote the markup"
       );
-      assert.strictEqual(flagged[index], expected);
+      assert.strictEqual(result.flagged[index], expected);
     });
   }
+
+  /* These assert the data in the message, not its wording: rephrasing a
+     string or adding a locale must not break the suite, but a missing key
+     or a broken placeholder must. */
+
+  await t.test("explains a finding in the title attribute", () => {
+    const reason = String(result.reason);
+
+    assert.notStrictEqual(
+      reason.split("\n")[0],
+      "nestReasonNotAllowed",
+      "the message key did not resolve - check _locales/en/messages.json"
+    );
+    assert.match(reason, /ul/);
+    assert.match(reason, /div/);
+  });
+
+  await t.test("counts every finding in the panel", () => {
+    const expected = CASES.filter(([, flagged]) => flagged).length + 1;
+
+    assert.strictEqual(result.errorCount, expected);
+    assert.match(String(result.summaryText), new RegExp(`\\b${expected}\\b`));
+  });
+
+  await t.test("lists the offending pairs in the panel", () => {
+    assert.match(String(result.panelText), /ul > div/);
+  });
+
+  await t.test("does not destroy a title the page already had", () => {
+    assert.match(String(result.titleWhileOn), /ul/);
+    assert.strictEqual(result.after.restoredTitle, "page tooltip");
+  });
+
+  await t.test("leaves nothing behind when toggled off", () => {
+    assert.strictEqual(result.after.panel, false);
+    assert.strictEqual(result.after.errors, 0);
+    assert.strictEqual(result.after.leftovers, 0);
+  });
 });

@@ -18,38 +18,32 @@ Around 1% is a usable signal, and the findings are genuine (`ul > div` ×25,
 `span > div` ×15, `section > li`, `ul > ul` on Rakuten). The problem is not
 accuracy any more — it is that the output is hard to act on.
 
-## High value
+## Done
 
-### 1. Explain why an element is flagged
+### 1. Explain why an element is flagged — done
 
-A flagged element turns red and says nothing else. Only someone who has
-memorised the HTML content models can act on it. On Rakuten that means
-walking 57 red boxes and inspecting each parent by hand.
+Each flagged element carries a `title` naming the violation, and the
+permitted children when that list is short enough to be worth reading.
 
-`nestCheck.js` already walks the DOM to mark custom elements, so it can set
-a `title` on each violation in the same pass ("div is not allowed inside
-ul"). Hover-to-explain would be a large gain for a small change.
+### 2. Report a count and a summary — done
 
-Doing this well means the content model table has to exist in JS as well as
-in SCSS, or move to JS entirely. Decide that before starting — two copies
-of the table will drift.
+A panel at the bottom right gives the total and a breakdown by
+`parent > child`, which reads as a defect list.
 
-### 2. Report a count and a summary
+Both required deciding where the content model table lives. It moved out of
+`content.scss` into `js/nestCheck.js` entirely: CSS can flag an element but
+cannot report one, so the table had to exist in JS regardless, and a second
+copy kept in SCSS for the colouring would have drifted. The stylesheet now
+only presents what the script decides.
 
-There is no way to know how many problems a page has, or to get a list. The
-only method is scrolling and looking. A panel in the same style as the head
-checker, listing `ul > div × 25`, would double as a defect report a
-director could hand to a developer.
+### 3. Close button on the panels — done
 
-This is the same feature as (1) and should be built with it.
+Both panels close themselves. Closing also drops the body class, so the
+popup does not keep showing a checker as active with nothing on screen.
+The head panel is still fixed at the bottom left and still covers whatever
+is there; moving or flipping it is not done.
 
 ## Medium value
-
-### 3. Close button on the head panel
-
-Dismissing the panel currently requires reopening the popup and pressing
-Head Check again. The panel is `position: fixed` at the bottom left and
-covers whatever is there, so it also wants a way to move or flip sides.
 
 ### 4. Keyboard shortcuts
 

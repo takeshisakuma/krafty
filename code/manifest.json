@@ -1,7 +1,8 @@
 {
-  "name": "Krafty",
+  "name": "__MSG_extensionName__",
   "version": "0.6.0",
-  "description": "Krafty is HTML Checker for Web Director",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
   "permissions": [
     "activeTab",
     "scripting"
