@@ -73,18 +73,18 @@ function installI18n(table) {
  * hand it to the caller, and close the browser afterwards.
  *
  * @template T
- * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number }} options
+ * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean }} options
  * @param {(page: import("puppeteer").Page) => Promise<T>} run
  * @returns {Promise<T>}
  */
-async function withPage({ html, checkers = [], width, height }, run) {
+async function withPage({ html, checkers = [], width, height, hasTouch }, run) {
   const browser = await puppeteer.launch({ channel: "chrome" });
 
   try {
     const page = await browser.newPage();
 
     if (width && height) {
-      await page.setViewport({ width, height });
+      await page.setViewport({ width, height, hasTouch: Boolean(hasTouch) });
     }
 
     await page.setContent(

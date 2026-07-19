@@ -60,6 +60,12 @@ $alertColor: #f00;
     border-bottom: 1px solid #ddd;
     cursor: move;
     user-select: none;
+    /* Without this the browser claims a drag down the bar as a scroll
+       gesture, stops sending pointermove, and pans the page instead - the
+       panel jumps once and then sits still while everything behind it
+       moves. It shows up wherever input is treated as touch: devtools with
+       the device toolbar on, and touchscreen laptops. */
+    touch-action: none;
   }
 
   .kraftyPanelTitle {

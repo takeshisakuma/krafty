@@ -177,6 +177,77 @@ test("panel dragging", async (t) => {
     );
   });
 
+  /* With devtools open the browser can treat input as touch, and a bar
+     without touch-action lets it claim the gesture as a scroll: the panel
+     jumps once, then sits still while the page pans behind it. Reported as
+     "the window cannot be grabbed once devtools is showing". */
+  await t.test("drags rather than scrolling the page under touch", async () => {
+    const result = await withPage(
+      {
+        html: `<div style="height:4000px">${PAGE}</div>`,
+        checkers: ["nestCheck"],
+        width: 1000,
+        height: 600,
+        hasTouch: true,
+      },
+      async (page) => {
+        const bar = await boxOf(page, BAR);
+        const startX = Math.round(bar.x + bar.width / 2);
+        const startY = Math.round(bar.y + bar.height / 2);
+
+        const before = await page.evaluate(() => ({
+          top: document
+            .querySelector("#js-kraftyNestInformation")
+            ?.getBoundingClientRect().top,
+          scrollY: window.scrollY,
+        }));
+
+        /* page.mouse would not exercise this; the gesture has to arrive as
+           touch for the browser to consider scrolling instead. */
+        const cdp = await page.createCDPSession();
+        /**
+         * @param {"touchStart" | "touchMove" | "touchEnd"} type
+         * @param {number} y
+         */
+        const send = (type, y) =>
+          cdp.send("Input.dispatchTouchEvent", {
+            type,
+            touchPoints: type === "touchEnd" ? [] : [{ x: startX, y }],
+          });
+
+        await send("touchStart", startY);
+        for (let step = 1; step <= 6; step += 1) {
+          await send("touchMove", startY - step * 30);
+          await new Promise((resolve) => setTimeout(resolve, 16));
+        }
+        await send("touchEnd", 0);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+
+        const after = await page.evaluate(() => ({
+          top: document
+            .querySelector("#js-kraftyNestInformation")
+            ?.getBoundingClientRect().top,
+          scrollY: window.scrollY,
+        }));
+
+        return {
+          moved: (after.top ?? 0) - (before.top ?? 0),
+          scrolled: after.scrollY - before.scrollY,
+        };
+      }
+    );
+
+    assert.strictEqual(
+      result.scrolled,
+      0,
+      "the page scrolled, so the browser took the gesture"
+    );
+    assert.ok(
+      result.moved < -100,
+      `the panel barely moved: ${result.moved}px of an intended -180`
+    );
+  });
+
   await t.test("closing does not drag, and closes", async () => {
     const result = await withPage(
       { html: PAGE, checkers: ["nestCheck"], width: 1000, height: 700 },
