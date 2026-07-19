@@ -44,6 +44,26 @@ loaded without building. Rebuild it whenever `code/content.scss` changes.
 To try a change: open `chrome://extensions`, enable developer mode, load
 `code/` via "Load unpacked", and press reload (⟳) after each edit.
 
+### Testing
+
+```sh
+npm test          # builds, then runs the suite
+```
+
+The nest checker is entirely CSS, so its behaviour depends on selector
+matching and specificity that only a browser resolves correctly. The suite
+therefore drives a real Chrome through puppeteer rather than a DOM shim,
+and asserts the computed background colour of each element under test.
+
+It uses the Chrome already installed on the machine (`channel: "chrome"`),
+so `npm install` does not download a browser. It also runs in a clean
+profile, which matters: a Krafty build installed in your own Chrome
+injects its CSS into every page and will otherwise skew the results.
+
+Cases go through the HTML parser, so they must describe trees the parser
+actually produces. Writing `<p><div></div></p>` in a case would silently
+test two siblings, because the parser closes the `<p>` first.
+
 ### How the nest checker works
 
 `code/content.scss` defines a `$content-models` map from each element to
@@ -55,6 +75,12 @@ The generated `:not()` chains are wrapped in `:where()` so they carry no
 specificity. Without that, a chain of ~80 `:not()` clauses would outweigh
 the hand written exceptions at the bottom of the file (`dl > div > dt`,
 `map area`, and the checker's own UI) and silently override them.
+
+Autonomous custom elements are the one case CSS cannot express, since no
+selector matches "tag name contains a hyphen". `nestCheck.js` marks them
+with a class and the stylesheet excludes that class. They are flow and
+phrasing content per spec, so leaving them flagged buries everything else
+on a component based page.
 
 ## Release
 
