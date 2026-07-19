@@ -108,21 +108,23 @@ workload before designing a fix.
 
 ## Deferred, with reasons
 
-### TypeScript
+### TypeScript — decided, and re-checked
 
-Full TypeScript is not recommended at this size. The JavaScript is about
-350 lines and mostly DOM manipulation; the genuinely complex part is the
-content model table in `content.scss`, which TypeScript cannot check at
-all. MV3 injected scripts must be plain JS, so adopting TS adds a build
-step to the one part of the pipeline that currently ships as-is.
+Not adopted. // ts-check with JSDoc and @types/chrome is used instead:
+same output, no build step, and it has caught real mistakes (a .disabled
+set on an HTMLElement, unchecked getElementById results, an optional tab
+id passed to executeScript).
 
-Recommended instead: a `tsconfig.json` with `checkJs`, `// @ts-check` in
-each file, and `@types/chrome`. Same output, no build step, and mistakes in
-`chrome.scripting` arguments get caught before runtime. Roughly 15 minutes
-of work.
+The original note said to revisit if the reporting work landed, on the
+grounds that the intricate part - the content model table - lived in SCSS
+where TypeScript could not see it. That trigger has fired and the premise
+is gone: the table moved into js/nestCheck.js and is now type checked
+along with everything else, and code/ has grown from ~350 lines to ~1450.
 
-Revisit full TypeScript if (1) and (2) land, since those add several
-hundred lines and real data structures.
+Re-checked on those terms, the answer is still no, for a different reason.
+ts-check already provides the checking; what full TypeScript adds beyond it
+does not pay for putting a build step in front of files that currently ship
+exactly as committed, which MV3 injected scripts have to do anyway.
 
 ### `<style>` in the body stays flagged
 
@@ -130,13 +132,15 @@ Non-conforming per spec, and only 10 occurrences on the noisiest page
 measured. Suppressing it would mean building a settings system this
 extension does not otherwise have, which would cost more than it saves. If
 it turns out to be noisy in practice, the fix is one entry in
-`$content-models`, not a preferences screen.
+the `MODELS` table in `js/nestCheck.js`, not a preferences screen.
 
 ## Known limitations
 
-- `nestCheck.js` marks custom elements at the moment it runs, so elements
-  a single page app inserts afterwards are not marked and will be flagged.
-  Toggling the checker off and on re-scans. A `MutationObserver` would fix
-  it properly but needs teardown handling.
+- Both checkers judge the document as it stands when they run, so anything
+  a single page app inserts afterwards is neither flagged nor explained.
+  Toggling off and on re-scans, and the nest panel states the time it
+  scanned for that reason. A `MutationObserver` would follow the page
+  properly but needs teardown and a guard against reacting to the classes
+  and titles the checker writes itself.
 - The checkers write classes onto the page's own `<body>`, so a page that
   rewrites `class` on `<body>` can clear them.

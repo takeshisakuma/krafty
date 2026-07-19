@@ -106,21 +106,30 @@ Element and attribute names inside messages stay literal. `title`,
 
 ### How the nest checker works
 
-`code/content.scss` defines a `$content-models` map from each element to
-the child elements it may contain, and generates one rule per entry that
-highlights every child outside that list. To change what counts as valid
-nesting, edit the map rather than the generated selectors.
+`code/js/nestCheck.js` holds a `MODELS` table mapping each element to the
+child elements it may contain. It walks the document, and `judge()` returns
+either `null` or `{ parent, child, allowed }` for every element its parent
+is not allowed to contain. Offending elements get a class and a `title`
+explaining why. To change what counts as valid nesting, edit that table.
 
-The generated `:not()` chains are wrapped in `:where()` so they carry no
-specificity. Without that, a chain of ~80 `:not()` clauses would outweigh
-the hand written exceptions at the bottom of the file (`dl > div > dt`,
-`map area`, and the checker's own UI) and silently override them.
+A parent absent from the table is not checked at all. Transparent content
+models — `a`, `ins`, `del`, `video`, `map`, `svg`, `button`, `template` and
+the rest — depend on the context of their own parent, which a flat table
+cannot express, so guessing would be worse than staying quiet.
 
-Autonomous custom elements are the one case CSS cannot express, since no
-selector matches "tag name contains a hyphen". `nestCheck.js` marks them
-with a class and the stylesheet excludes that class. They are flow and
-phrasing content per spec, so leaving them flagged buries everything else
-on a component based page.
+The exceptions live in `judge()` as ordinary conditions: a `dl` wrapping
+each `dt`/`dd` group in a `div`, an `area` anywhere inside a `map`, `meta`
+and `link` carrying microdata or a body-ok `rel`, and autonomous custom
+elements, which are flow and phrasing content per spec and would otherwise
+bury every real finding on a component based page.
+
+The judging used to be done by CSS, generating one rule per element from a
+map in `content.scss`. That is worth knowing only because of why it moved:
+a checker has to be able to explain a finding, CSS can flag an element but
+cannot report one, and keeping a second copy of the table in SCSS for the
+colouring would have let the two drift. The stylesheet now only colours what
+the script marks, which also retired a `:where()` wrapper and a set of
+exception rules that existed purely to win specificity fights.
 
 ### Keyboard shortcuts
 
