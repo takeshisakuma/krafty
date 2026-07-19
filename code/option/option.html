@@ -30,5 +30,24 @@
     <p>Make the page monochrome.</p>
   </section>
 
+  <section>
+    <h2>Keyboard shortcuts</h2>
+    <p>
+      Each checker can be toggled from the keyboard. To see or change the
+      keys, open this address in a new tab:
+    </p>
+    <!-- Deliberately not a link: Chrome blocks navigation to chrome:// URLs
+         from an extension page, so a link here would do nothing when
+         clicked. -->
+    <p><code>chrome://extensions/shortcuts</code></p>
+    <p>
+      Chrome accepts at most four suggested keys per extension, so Brightness
+      Checker starts unassigned. A suggested key is also dropped silently when
+      something else already claims it, and is only applied when the extension
+      is installed, not when it is reloaded. If a shortcut does nothing, that
+      page is where to look and where to set your own.
+    </p>
+  </section>
+
 </body>
 </html>

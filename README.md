@@ -122,6 +122,27 @@ with a class and the stylesheet excludes that class. They are flow and
 phrasing content per spec, so leaving them flagged buries everything else
 on a component based page.
 
+### Keyboard shortcuts
+
+Declared as `commands` in the manifest and handled by the service worker.
+Two things about `suggested_key` are worth knowing before assuming a
+binding is broken:
+
+- Chrome applies suggested keys when the extension is **installed**, not
+  when it is reloaded. Adding a command and reloading an already-loaded
+  unpacked extension leaves it unassigned. Remove and re-add it to test.
+- A suggested key that something else already claims is dropped **without
+  any error**, in the manifest or the console.
+
+Either way the binding shows as unset at `chrome://extensions/shortcuts`,
+which is also where a user assigns their own. Chrome caps suggested keys at
+four, so Brightness Checker ships without one.
+
+`--load-extension` was removed in Chrome 137, so the service worker cannot
+be started from a test. `test/wiring.test.js` runs `background.js` against
+stubs to prove a command reaches the checker it names; that the worker
+registers at all still has to be checked by hand.
+
 ## Release
 
 ```sh
