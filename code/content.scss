@@ -1,180 +1,22 @@
-@use "sass:list";
-
 $color: #fff;
 $alertColor: #f00;
 
-/* ------------------------------------------------------------------
-   HTML content models
-   ------------------------------------------------------------------
-   $content-models maps a parent element to the child elements it is
-   allowed to contain. The nest checker highlights every child that is
-   NOT in that list, so an empty list means "any child element here is a
-   markup error" and an omitted parent means "not checked".
+/* This stylesheet only presents what the injected scripts decide.
 
-   Elements with a transparent content model (a, ins, del, video, audio,
-   map, math, svg, button, canvas, noscript, template) are deliberately
-   omitted: their validity depends on the context of their own parent,
-   which a static selector cannot express.
-   ------------------------------------------------------------------ */
-
-$flow: article, section, nav, aside, h1, h2, h3, h4, h5, h6, header, footer,
-  address, p, hr, pre, blockquote, ol, ul, dl, figure, div, main, a, em, strong,
-  small, s, cite, q, dfn, abbr, data, time, code, var, samp, kbd, sub, sup, i,
-  b, u, mark, ruby, bdi, bdo, span, br, wbr, ins, del, picture, img, iframe,
-  embed, object, video, audio, map, math, svg, table, form, label, input,
-  button, select, datalist, textarea, keygen, output, progress, meter, fieldset,
-  details, dialog, script, noscript, template, canvas;
-
-$phrasing: a, em, strong, small, s, cite, q, dfn, abbr, data, time, code, var,
-  samp, kbd, sub, sup, i, b, u, mark, ruby, bdi, bdo, span, br, wbr, ins, del,
-  picture, img, iframe, embed, object, video, audio, map, math, svg, label,
-  input, button, select, datalist, textarea, keygen, output, progress, meter,
-  script, noscript, template, canvas;
-
-$headings: h1, h2, h3, h4, h5, h6;
-
-/* Elements that may not appear inside address, dt, th, header or footer. */
-$sectioning: article, section, nav, aside, h1, h2, h3, h4, h5, h6, header,
-  footer, main;
-
-@function without($list, $remove) {
-  $out: ();
-
-  @each $item in $list {
-    @if not list.index($remove, $item) {
-      $out: list.append($out, $item, comma);
-    }
-  }
-
-  @return $out;
-}
-
-@function plus($list, $extra) {
-  @return list.join($list, $extra, comma);
-}
-
-/* Build ":where(:not(a):not(b):not(c))" from a list of allowed children.
-   The :where() wrapper matters: a bare chain of ~80 :not() clauses carries
-   the specificity of ~80 type selectors, which would outweigh any hand
-   written exception below. :where() contributes zero specificity, so the
-   generic rules stay at "one class plus one type" and the exceptions can
-   actually override them. An empty list yields "", because :where() with
-   an empty argument list is invalid. */
-@function deny($allowed) {
-  @if list.length($allowed) == 0 {
-    @return "";
-  }
-
-  $selector: "";
-
-  @each $tag in $allowed {
-    $selector: $selector + ":not(#{$tag})";
-  }
-
-  @return ":where(#{$selector})";
-}
-
-$flow-no-sectioning: without($flow, $sectioning);
-$flow-no-header-footer: without($flow, (header, footer, main));
-
-$content-models: (
-  article: $flow,
-  section: $flow,
-  nav: $flow,
-  aside: $flow,
-  header: $flow-no-header-footer,
-  footer: $flow-no-header-footer,
-  main: $flow,
-  address: $flow-no-sectioning,
-  h1: $phrasing,
-  h2: $phrasing,
-  h3: $phrasing,
-  h4: $phrasing,
-  h5: $phrasing,
-  h6: $phrasing,
-  p: $phrasing,
-  pre: $phrasing,
-  blockquote: $flow,
-  ol: (li, script, template),
-  ul: (li, script, template),
-  li: $flow,
-  dl: (dt, dd, div, script, template),
-  dt: $flow-no-sectioning,
-  dd: $flow,
-  figure: plus($flow, figcaption),
-  figcaption: $flow,
-  div: $flow,
-  details: plus($flow, summary),
-  summary: plus($phrasing, $headings),
-  dialog: $flow,
-  fieldset: plus($flow, legend),
-  legend: plus($phrasing, $headings),
-  form: without($flow, form),
-  em: $phrasing,
-  strong: $phrasing,
-  small: $phrasing,
-  s: $phrasing,
-  cite: $phrasing,
-  q: $phrasing,
-  dfn: $phrasing,
-  abbr: $phrasing,
-  data: $phrasing,
-  time: $phrasing,
-  code: $phrasing,
-  var: $phrasing,
-  samp: $phrasing,
-  kbd: $phrasing,
-  sub: $phrasing,
-  sup: $phrasing,
-  i: $phrasing,
-  b: $phrasing,
-  u: $phrasing,
-  mark: $phrasing,
-  span: $phrasing,
-  bdi: $phrasing,
-  bdo: $phrasing,
-  output: $phrasing,
-  label: without($phrasing, label),
-  ruby: plus($phrasing, (rb, rt, rtc, rp)),
-  rb: $phrasing,
-  rt: $phrasing,
-  rtc: plus($phrasing, rt),
-  rp: $phrasing,
-  picture: (source, img),
-  object: plus($flow, param),
-  table: (caption, colgroup, tbody, thead, tfoot, tr, script, template),
-  caption: without($flow, table),
-  colgroup: (col, template),
-  thead: (tr, script, template),
-  tbody: (tr, script, template),
-  tfoot: (tr, script, template),
-  tr: (th, td, script, template),
-  th: $flow-no-sectioning,
-  td: $flow,
-  select: (optgroup, option, hr, script, template),
-  optgroup: (option, script, template),
-  datalist: plus($phrasing, option),
-  hr: (),
-  br: (),
-  wbr: (),
-  img: (),
-  iframe: (),
-  embed: (),
-  param: (),
-  source: (),
-  track: (),
-  area: (),
-  col: (),
-  input: (),
-  textarea: (),
-  keygen: (),
-  option: (),
-  script: ()
-);
+   The nest checker used to do its own judging here, generating one rule per
+   element from a content model map. That is gone: the checker has to explain
+   its findings, CSS can flag an element but cannot report one, and two
+   copies of the table would have drifted. The models now live in
+   js/nestCheck.js, which marks offending elements with a class. */
 
 .kraftyOutlineChecker
   *:not(#js-kraftyHeadInformation, #js-kraftyHeadInformation *) {
   outline: $alertColor solid 1px;
+}
+
+.kraftyNestChecker .kraftyNestError {
+  color: $color !important;
+  background-color: $alertColor !important;
 }
 
 #js-kraftyHeadInformation.kraftyHeadInformation {
@@ -269,73 +111,4 @@ $content-models: (
 
 .kraftyBrightnessChecker {
   filter: grayscale(100%);
-}
-
-/* ------------------------------------------------------------------
-   Nest checker: flag every child its parent may not contain.
-   ------------------------------------------------------------------ */
-
-body.kraftyNestChecker > *#{deny($flow)} {
-  color: $color !important;
-  background-color: $alertColor !important;
-}
-
-body.kraftyNestChecker {
-  @each $parent, $allowed in $content-models {
-    #{$parent} > *#{deny($allowed)} {
-      color: $color !important;
-      background-color: $alertColor !important;
-    }
-  }
-
-}
-
-/* Exceptions: valid markup that the generic rules above would still flag.
-   The class is repeated so these win on specificity rather than on source
-   order, which would silently break if the rules were ever reordered. */
-body.kraftyNestChecker.kraftyNestChecker {
-  /* A dl may wrap each dt/dd group in a div. */
-  dl > div > dt,
-  dl > div > dd {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
-
-  /* area is only meaningful inside a map, at any depth. */
-  map area {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
-
-  /* Autonomous custom elements are flow and phrasing content, so they are
-     valid nearly anywhere. nestCheck.js marks them, because no selector
-     can match "tag name contains a hyphen". */
-  .kraftyCustomElement {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
-
-  /* meta and link carrying microdata are valid in the body, and link is
-     also valid there with a body-ok rel value. <style> in the body stays
-     flagged: it is non-conforming, and rare enough not to drown anything. */
-  meta[itemprop],
-  link[itemprop],
-  link[rel~="dns-prefetch"],
-  link[rel~="modulepreload"],
-  link[rel~="pingback"],
-  link[rel~="preconnect"],
-  link[rel~="prefetch"],
-  link[rel~="preload"],
-  link[rel~="stylesheet"] {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
-
-  /* Never flag the checker's own UI. */
-  #js-kraftyHeadInformation,
-  #js-kraftyHeadInformation *,
-  .kraftyAltContent {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
 }
