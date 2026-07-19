@@ -1,262 +1,123 @@
-if (document.body) {
+(() => {
+  const PANEL_ID = "js-kraftyHeadInformation";
+
+  /* Always start from a clean slate: the previous panel must go, otherwise
+     repeated runs stack duplicate elements sharing the same id. */
+  const previous = document.getElementById(PANEL_ID);
+  if (previous) {
+    previous.remove();
+  }
+
+  if (!document.body) {
+    return;
+  }
+
   document.body.classList.remove("kraftyBrightnessChecker");
-  document.body.classList.toggle("kraftyHeadChecker");
-}
 
-/* get title */
-var kraftyPageTitle = document.title;
+  if (!document.body.classList.toggle("kraftyHeadChecker")) {
+    return;
+  }
 
-/* get meta charset */
-var kraftyCharset = document.charset;
+  const metaByName = (name) => {
+    const meta = document.querySelector(`meta[name="${name}"]`);
+    return meta ? meta.getAttribute("content") : null;
+  };
 
-/* get meta description */
+  const metaByProperty = (property) => {
+    const meta = document.querySelector(`meta[property="${property}"]`);
+    return meta ? meta.getAttribute("content") : null;
+  };
 
-if (document.getElementsByName("description")[0]) {
-  var kraftyDescription = document.getElementsByName("description")[0].content;
-}
+  const linkByRel = (...wanted) => {
+    for (const link of document.querySelectorAll("link[rel][href]")) {
+      const rels = link.getAttribute("rel").toLowerCase().split(/\s+/);
+      if (wanted.some((rel) => rels.includes(rel))) {
+        return link.getAttribute("href");
+      }
+    }
+    return null;
+  };
 
-/* get meta twitter:card */
-if (document.getElementsByName("twitter:card")[0]) {
-  var kraftyTwitterCard = document.getElementsByName("twitter:card")[0].content;
-}
+  const resolve = (url) => {
+    try {
+      return new URL(url, document.baseURI).href;
+    } catch (error) {
+      return null;
+    }
+  };
 
-/* get meta viewport */
-if (document.getElementsByName("viewport")[0]) {
-  var kraftyViewport = document.getElementsByName("viewport")[0].content;
-}
+  const favicon = linkByRel("icon") || "/favicon.ico";
 
-/* get meta */
-var kraftyOGTitle;
-var kraftyOGType;
-var kraftyOGUrl;
-var kraftyOGImage;
-var kraftyOGDescription;
-var kraftyFBAppId;
+  const rows = [
+    { label: "title", value: document.title, count: true },
+    { label: "description", value: metaByName("description"), count: true },
+    { label: "charset", value: document.characterSet },
+    { label: "og:title", value: metaByProperty("og:title"), count: true },
+    { label: "og:type", value: metaByProperty("og:type") },
+    { label: "og:url", value: metaByProperty("og:url") },
+    { label: "og:image", value: metaByProperty("og:image"), image: "ogp" },
+    {
+      label: "og:description",
+      value: metaByProperty("og:description"),
+      count: true,
+    },
+    { label: "fb:app_id", value: metaByProperty("fb:app_id") },
+    { label: "twitter:card", value: metaByName("twitter:card") },
+    { label: "viewport", value: metaByName("viewport") },
+    { label: "canonical", value: linkByRel("canonical") },
+    { label: "favicon", value: favicon, image: "favicon" },
+    {
+      label: "apple touch icon",
+      value: linkByRel("apple-touch-icon", "apple-touch-icon-precomposed"),
+      image: "apple",
+    },
+  ];
 
-if (document.getElementsByTagName("meta")) {
-  var metaGroup = document.getElementsByTagName("meta");
+  const panel = document.createElement("div");
+  panel.id = PANEL_ID;
+  panel.className = "kraftyHeadInformation";
 
-  //HTMLCollection to Array
-  metaGroup = Array.from(metaGroup);
+  for (const { label, value, count, image } of rows) {
+    const row = document.createElement("div");
 
-  metaGroup.forEach((metaMember) => {
-    /* get OG:title */
-    if (metaMember.getAttribute("property") === "og:title") {
-      kraftyOGTitle = metaMember.getAttribute("content");
+    const heading = document.createElement("strong");
+    heading.textContent = `${label} is`;
+    row.appendChild(heading);
+
+    /* Count code points, so an emoji or a surrogate pair counts as one. */
+    if (count && value) {
+      row.appendChild(
+        document.createTextNode(`　(${[...value].length} characters)`)
+      );
     }
 
-    /* get OG:type */
-    if (metaMember.getAttribute("property") === "og:type") {
-      kraftyOGType = metaMember.getAttribute("content");
+    row.appendChild(document.createElement("br"));
+
+    if (value === null || value === "") {
+      const missing = document.createElement("span");
+      missing.className = "kraftyMissing";
+      missing.textContent = value === "" ? "(empty)" : "(not set)";
+      row.appendChild(missing);
+    } else {
+      const source = image ? resolve(value) : null;
+
+      if (source) {
+        const preview = document.createElement("img");
+        preview.className = `headImage ${image}`;
+        preview.src = source;
+        preview.alt = "";
+        row.appendChild(preview);
+        row.appendChild(document.createTextNode("　"));
+      }
+
+      /* textContent, not insertAdjacentHTML: these values come from the
+         page and must never be parsed as markup. */
+      row.appendChild(document.createTextNode(value));
     }
 
-    /* get OG:url */
-    if (metaMember.getAttribute("property") === "og:url") {
-      kraftyOGUrl = metaMember.getAttribute("content");
-    }
+    row.appendChild(document.createElement("hr"));
+    panel.appendChild(row);
+  }
 
-    /* get OG:image */
-    if (metaMember.getAttribute("property") === "og:image") {
-      kraftyOGImage = metaMember.getAttribute("content");
-    }
-    /* get OG:description */
-    if (metaMember.getAttribute("property") === "og:description") {
-      kraftyOGDescription = metaMember.getAttribute("content");
-    }
-
-    /* get fb:app_id */
-    if (metaMember.getAttribute("property") === "fb:app_id") {
-      kraftyFBAppId = metaMember.getAttribute("content");
-    }
-  });
-}
-
-/* get link */
-var kraftyCanonical;
-var kraftyFavicon;
-var kraftyAppleTouchIcon;
-
-if (document.getElementsByTagName("link")) {
-  var linkGroup = document.getElementsByTagName("link");
-
-  //HTMLCollection to Array
-  linkGroup = Array.from(linkGroup);
-
-  linkGroup.forEach((linkMember) => {
-    /* get canonical */
-    if (linkMember.getAttribute("rel") === "canonical") {
-      kraftyCanonical = linkMember.getAttribute("href");
-    }
-
-    /* get favicon */
-    if (
-      linkMember.getAttribute("rel") === "icon" ||
-      linkMember.getAttribute("rel") === "shortcut icon"
-    ) {
-      kraftyFavicon = linkMember.getAttribute("href");
-    }
-
-    /* get apple-touch-icon */
-    if (linkMember.getAttribute("rel") === "apple-touch-icon") {
-      kraftyAppleTouchIcon = linkMember.getAttribute("href");
-    }
-  });
-}
-
-var kraftyMessageArea = document.createElement("div");
-
-kraftyMessageArea.id = "js-kraftyHeadInformation";
-kraftyMessageArea.className = "kraftyHeadInformation";
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "title is ");
-
-if (!kraftyPageTitle == "") {
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `　(${kraftyPageTitle.length} characters)`
-  );
-}
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyPageTitle);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "description is ");
-
-if (!kraftyDescription == "") {
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `　(${kraftyDescription.length} characters)`
-  );
-}
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyDescription);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "charset is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyCharset);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "og:title is ");
-
-if (!kraftyOGTitle == "") {
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `　(${kraftyOGTitle.length} characters)`
-  );
-}
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGTitle);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "og:type is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGType);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "og:url is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGUrl);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "og:image is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-
-if (!kraftyOGImage == "") {
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `<img src="${kraftyOGImage}" class="headImage ogp"/>`
-  );
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
-}
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGImage);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "og:description is ");
-
-if (!kraftyOGDescription == "") {
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `　(${kraftyOGDescription.length} characters)`
-  );
-}
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyOGDescription);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "fb:app_id is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFBAppId);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "twitter:card is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyTwitterCard);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "viewport is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyViewport);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "canonical is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyCanonical);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "favicon is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-
-if (!kraftyFavicon == "") {
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `<img src="${kraftyFavicon}" class="headImage favicon"/>`
-  );
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
-
-  kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyFavicon);
-}
-
-if (kraftyFavicon == undefined) {
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `<img src="/favicon.ico" class="headImage favicon"/>`
-  );
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
-
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "/favicon.ico");
-}
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "apple touch icon is ");
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-
-if (!kraftyAppleTouchIcon == "") {
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "<br>");
-  kraftyMessageArea.insertAdjacentHTML(
-    "beforeend",
-    `<img src="${kraftyAppleTouchIcon}" class="headImage apple"/>`
-  );
-  kraftyMessageArea.insertAdjacentHTML("beforeend", "　");
-}
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", kraftyAppleTouchIcon);
-
-kraftyMessageArea.insertAdjacentHTML("beforeend", "<hr>");
-
-document.body.appendChild(kraftyMessageArea);
+  document.body.appendChild(panel);
+})();

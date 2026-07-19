@@ -1,16 +1,14 @@
 {
   "name": "Krafty",
-  "version": "0.5.7",
+  "version": "0.6.0",
   "description": "Krafty is HTML Checker for Web Director",
   "permissions": [
     "activeTab",
     "scripting"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
     "default_popup": "popup/popup.html",
+    "default_title": "Krafty",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -18,16 +16,6 @@
       "128": "icons/icon128.png"
     }
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "css": [
-        "content.css"
-      ]
-    }
-  ],
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

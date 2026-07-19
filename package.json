@@ -1,0 +1,17 @@
+{
+  "name": "krafty",
+  "private": true,
+  "description": "Krafty is HTML Checker for Web Director",
+  "license": "MIT",
+  "scripts": {
+    "build": "sass --no-source-map --style=compressed code/content.scss code/content.css",
+    "watch": "sass --no-source-map --style=compressed --watch code/content.scss code/content.css",
+    "pretest": "npm run build",
+    "test": "node --test",
+    "package": "npm run build && node scripts/package.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.3.0",
+    "sass": "^1.101.0"
+  }
+}
