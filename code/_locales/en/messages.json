@@ -294,5 +294,61 @@
   "commandBrightnessCheck": {
     "message": "Toggle Brightness Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "manualTitle": {
+    "message": "Krafty Manual",
+    "description": "Heading and browser tab title of the manual page."
+  },
+  "manualHeadTitle": {
+    "message": "Head Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadBody": {
+    "message": "Report what can be checked automatically, preview how the page appears in search results and when shared, and list every value in the head.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualNestTitle": {
+    "message": "Nest Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualNestBody": {
+    "message": "Highlight elements that their parent element is not allowed to contain, explain each one on hover, and count them by kind.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualOutlineTitle": {
+    "message": "Outline Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualOutlineBody": {
+    "message": "Display an outline around every element.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualAltTitle": {
+    "message": "Alt Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualAltBody": {
+    "message": "Display the alt attribute of every image, and flag images whose alt is missing or empty.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualBrightnessTitle": {
+    "message": "Brightness Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualBrightnessBody": {
+    "message": "Make the page monochrome.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsTitle": {
+    "message": "Keyboard shortcuts",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsIntro": {
+    "message": "Every checker can be toggled from the keyboard, but none come with a key already assigned. Pick your own here:",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsWhy": {
+    "message": "Krafty ships no default keys on purpose. Chrome drops a suggested key that anything else already claims, and does so without an error anywhere, so a default that looks reasonable can simply never work and leave the feature looking broken. Choosing your own takes a moment and always works.",
+    "description": "Shown on the manual page (option.html)."
   }
 }

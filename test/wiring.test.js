@@ -188,6 +188,46 @@ test("wiring", async (t) => {
     }
   });
 
+  /* option.html carries the English so the manual still reads correctly if
+     the script does not run, which means the same words live in two places.
+     Asserting they match turns that duplication into something that cannot
+     drift silently. */
+  await t.test("the manual's markup matches its English messages", () => {
+    const en = readJson("code", "_locales", "en", "messages.json");
+    const html = fs.readFileSync(
+      path.join(code, "option", "option.html"),
+      "utf8"
+    );
+
+    const localised = [
+      ...html.matchAll(/<(\w+)[^>]*\sdata-i18n="(\w+)"[^>]*>([\s\S]*?)<\/\1>/g),
+    ];
+
+    assert.ok(localised.length > 0, "expected the manual to be localised");
+
+    for (const [, , key, text] of localised) {
+      assert.ok(en[key], `option.html references ${key}, which has no entry`);
+      assert.strictEqual(
+        text.trim(),
+        en[key].message,
+        `option.html and the en message for ${key} have drifted`
+      );
+    }
+  });
+
+  await t.test("the manual loads the script that localises it", () => {
+    const html = fs.readFileSync(
+      path.join(code, "option", "option.html"),
+      "utf8"
+    );
+
+    assert.match(html, /<script src="options\.js"><\/script>/);
+    assert.ok(
+      fs.existsSync(path.join(code, "option", "options.js")),
+      "option.html loads options.js, which is missing"
+    );
+  });
+
   await t.test("every message the source looks up exists", () => {
     const en = readJson("code", "_locales", "en", "messages.json");
     const sources = fs

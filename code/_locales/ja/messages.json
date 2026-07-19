@@ -294,5 +294,61 @@
   "commandBrightnessCheck": {
     "message": "明度チェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "manualTitle": {
+    "message": "Krafty マニュアル",
+    "description": "Heading and browser tab title of the manual page."
+  },
+  "manualHeadTitle": {
+    "message": "ヘッドチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadBody": {
+    "message": "自動で確認できる範囲を報告し、検索結果や SNS で共有したときの見え方をプレビューし、head の全項目を一覧表示します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualNestTitle": {
+    "message": "ネストチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualNestBody": {
+    "message": "親要素が含むことのできない要素を強調し、理由をホバーで表示し、種類ごとに件数を集計します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualOutlineTitle": {
+    "message": "アウトラインチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualOutlineBody": {
+    "message": "すべての要素に輪郭線を表示します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualAltTitle": {
+    "message": "alt チェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualAltBody": {
+    "message": "すべての画像の alt 属性を表示し、alt が未設定または空の画像を指摘します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualBrightnessTitle": {
+    "message": "明度チェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualBrightnessBody": {
+    "message": "ページをモノクロ表示にします。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsTitle": {
+    "message": "キーボードショートカット",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsIntro": {
+    "message": "各チェッカーはキーボードから切り替えられますが、既定のキーは割り当てていません。次の場所でご自身で設定してください:",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualShortcutsWhy": {
+    "message": "既定キーを用意していないのは意図的です。Chrome は他が既に使っているキーをエラーも出さずに破棄するため、一見妥当な既定値がまったく機能せず、機能が壊れているようにしか見えない状態になります。ご自身で設定すれば確実に動きます。",
+    "description": "Shown on the manual page (option.html)."
   }
 }
