@@ -307,6 +307,30 @@ body.kraftyNestChecker.kraftyNestChecker {
     background-color: inherit !important;
   }
 
+  /* Autonomous custom elements are flow and phrasing content, so they are
+     valid nearly anywhere. nestCheck.js marks them, because no selector
+     can match "tag name contains a hyphen". */
+  .kraftyCustomElement {
+    color: inherit !important;
+    background-color: inherit !important;
+  }
+
+  /* meta and link carrying microdata are valid in the body, and link is
+     also valid there with a body-ok rel value. <style> in the body stays
+     flagged: it is non-conforming, and rare enough not to drown anything. */
+  meta[itemprop],
+  link[itemprop],
+  link[rel~="dns-prefetch"],
+  link[rel~="modulepreload"],
+  link[rel~="pingback"],
+  link[rel~="preconnect"],
+  link[rel~="prefetch"],
+  link[rel~="preload"],
+  link[rel~="stylesheet"] {
+    color: inherit !important;
+    background-color: inherit !important;
+  }
+
   /* Never flag the checker's own UI. */
   #js-kraftyHeadInformation,
   #js-kraftyHeadInformation *,
