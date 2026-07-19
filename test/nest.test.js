@@ -1,3 +1,5 @@
+// @ts-check
+
 /* Checks that the nest checker flags exactly the invalid nesting and
    nothing else.
 
@@ -23,6 +25,8 @@ const nestCheck = fs.readFileSync(
 /* The element under test carries data-t. Cases go through the HTML parser,
    so they describe trees the parser actually produces - writing
    "<p><div></div></p>" here would silently test two siblings instead. */
+
+/** @type {[name: string, flagged: boolean, html: string][]} */
 const CASES = [
   ["body > article is valid", false, `<article data-t>x</article>`],
   ["ul > li is valid", false, `<ul><li data-t>x</li></ul>`],
@@ -76,12 +80,12 @@ async function collect() {
     /* Must be awaited inside the try: returning the pending promise would
        let the finally close the browser before it settles. */
     return await page.evaluate((total) => {
+      /** @type {Record<number, boolean | null>} */
       const flagged = {};
 
       for (let index = 0; index < total; index += 1) {
-        const target = document
-          .querySelector(`[data-case="${index}"]`)
-          .querySelector("[data-t]");
+        const box = document.querySelector(`[data-case="${index}"]`);
+        const target = box ? box.querySelector("[data-t]") : null;
 
         flagged[index] = target
           ? getComputedStyle(target).backgroundColor === "rgb(255, 0, 0)"

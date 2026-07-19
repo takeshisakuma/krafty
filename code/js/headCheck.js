@@ -1,3 +1,5 @@
+// @ts-check
+
 (() => {
   const PANEL_ID = "js-kraftyHeadInformation";
 
@@ -18,19 +20,31 @@
     return;
   }
 
+  /**
+   * @param {string} name
+   * @returns {string | null}
+   */
   const metaByName = (name) => {
     const meta = document.querySelector(`meta[name="${name}"]`);
     return meta ? meta.getAttribute("content") : null;
   };
 
+  /**
+   * @param {string} property
+   * @returns {string | null}
+   */
   const metaByProperty = (property) => {
     const meta = document.querySelector(`meta[property="${property}"]`);
     return meta ? meta.getAttribute("content") : null;
   };
 
+  /**
+   * @param {...string} wanted
+   * @returns {string | null}
+   */
   const linkByRel = (...wanted) => {
     for (const link of document.querySelectorAll("link[rel][href]")) {
-      const rels = link.getAttribute("rel").toLowerCase().split(/\s+/);
+      const rels = (link.getAttribute("rel") ?? "").toLowerCase().split(/\s+/);
       if (wanted.some((rel) => rels.includes(rel))) {
         return link.getAttribute("href");
       }
@@ -38,6 +52,10 @@
     return null;
   };
 
+  /**
+   * @param {string} url
+   * @returns {string | null}
+   */
   const resolve = (url) => {
     try {
       return new URL(url, document.baseURI).href;

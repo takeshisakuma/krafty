@@ -1,3 +1,5 @@
+// @ts-check
+
 (() => {
   if (!document.body) {
     return;
@@ -13,6 +15,10 @@
     return;
   }
 
+  /**
+   * @param {Element} image
+   * @returns {{ text: string, state: string | null }}
+   */
   const describe = (image) => {
     const alt = image.getAttribute("alt");
 

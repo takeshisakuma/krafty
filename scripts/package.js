@@ -1,3 +1,5 @@
+// @ts-check
+
 /* Builds the ZIP that gets uploaded to the Chrome Web Store.
    manifest.json is at the root of the archive, because the store rejects
    packages where it is nested inside a folder. */
@@ -30,6 +32,7 @@ if (!fs.existsSync(path.join(staging, "content.css"))) {
 }
 
 if (process.platform === "win32") {
+  /** @param {string} value */
   const quote = (value) => `'${value.replace(/'/g, "''")}'`;
 
   execFileSync(

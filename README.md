@@ -44,10 +44,26 @@ loaded without building. Rebuild it whenever `code/content.scss` changes.
 To try a change: open `chrome://extensions`, enable developer mode, load
 `code/` via "Load unpacked", and press reload (⟳) after each edit.
 
+### Type checking
+
+```sh
+npm run typecheck
+```
+
+The source stays plain JavaScript — MV3 injected scripts must be, and the
+files ship exactly as they are committed. Type checking comes from
+`// @ts-check` at the top of each file plus `tsconfig.json` with `checkJs`,
+so `@types/chrome` catches a wrong `chrome.scripting` argument before it
+reaches a browser, with no build step and no change to the output.
+
+`strict` is on deliberately. Turning it down would mostly silence the
+null checks around `getElementById`, which is exactly the class of mistake
+worth catching in a popup whose markup and script must agree.
+
 ### Testing
 
 ```sh
-npm test          # builds, then runs the suite
+npm test          # builds, type checks, then runs the suite
 ```
 
 The nest checker is entirely CSS, so its behaviour depends on selector
