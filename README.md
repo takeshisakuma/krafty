@@ -76,6 +76,10 @@ so `npm install` does not download a browser. It also runs in a clean
 profile, which matters: a Krafty build installed in your own Chrome
 injects its CSS into every page and will otherwise skew the results.
 
+`test/support.js` builds the page and injects the checkers in the order the
+popup does. It is not a test file itself, which is why `npm test` matches
+`test/*.test.js` rather than the whole directory.
+
 Cases go through the HTML parser, so they must describe trees the parser
 actually produces. Writing `<p><div></div></p>` in a case would silently
 test two siblings, because the parser closes the `<p>` first.

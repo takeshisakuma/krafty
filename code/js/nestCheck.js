@@ -282,25 +282,15 @@
 
   const total = [...totals.values()].reduce((sum, n) => sum + n, 0);
 
-  const panel = document.createElement("div");
-  panel.id = PANEL_ID;
-  panel.className = "kraftyPanel kraftyNestInformation";
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = "kraftyPanelClose";
-  close.textContent = "×";
-  close.title = kraftyMessage("nestPanelClose");
-  close.addEventListener("click", () => {
-    clear();
-    document.body.classList.remove(BODY_CLASS);
+  const { panel, body } = kraftyPanel({
+    id: PANEL_ID,
+    className: "kraftyNestInformation",
+    title: kraftyMessage("nestPanelTitle"),
+    onClose: () => {
+      clear();
+      document.body.classList.remove(BODY_CLASS);
+    },
   });
-  panel.appendChild(close);
-
-  const heading = document.createElement("strong");
-  heading.textContent = kraftyMessage("nestPanelTitle");
-  panel.appendChild(heading);
-  panel.appendChild(document.createElement("hr"));
 
   const summary = document.createElement("div");
   summary.className = "kraftyPanelSummary";
@@ -310,7 +300,7 @@
       : total === 1
         ? kraftyMessage("nestPanelCountOne")
         : kraftyMessage("nestPanelCount", [String(total)]);
-  panel.appendChild(summary);
+  body.appendChild(summary);
 
   if (total > 0) {
     const list = document.createElement("ul");
@@ -331,7 +321,7 @@
       list.appendChild(item);
     }
 
-    panel.appendChild(list);
+    body.appendChild(list);
   }
 
   const scanned = document.createElement("div");
@@ -339,7 +329,7 @@
   scanned.textContent = kraftyMessage("nestPanelScannedAt", [
     new Date().toLocaleTimeString(),
   ]);
-  panel.appendChild(scanned);
+  body.appendChild(scanned);
 
   document.body.appendChild(panel);
 })();

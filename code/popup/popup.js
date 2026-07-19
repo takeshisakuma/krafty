@@ -172,7 +172,7 @@ async function init() {
           target: { tabId, allFrames: checker.allFrames },
           /* i18n.js runs first, in the same context, so the checker can
              look up localised strings. */
-          files: ["js/i18n.js", checker.file],
+          files: ["js/i18n.js", "js/panel.js", checker.file],
         });
         await syncButtons(tabId);
       } catch (error) {

@@ -91,27 +91,17 @@
     },
   ];
 
-  const panel = document.createElement("div");
-  panel.id = PANEL_ID;
-  panel.className = "kraftyPanel kraftyHeadInformation";
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = "kraftyPanelClose";
-  close.textContent = "×";
-  close.title = kraftyMessage("nestPanelClose");
-  close.addEventListener("click", () => {
-    panel.remove();
-    /* Drop the class too, or the popup would keep showing this checker as
-       active with nothing on screen. */
-    document.body.classList.remove("kraftyHeadChecker");
+  const { panel, body } = kraftyPanel({
+    id: PANEL_ID,
+    className: "kraftyHeadInformation",
+    title: kraftyMessage("headPanelTitle"),
+    onClose: () => {
+      panel.remove();
+      /* Drop the class too, or the popup would keep showing this checker
+         as active with nothing on screen. */
+      document.body.classList.remove("kraftyHeadChecker");
+    },
   });
-  panel.appendChild(close);
-
-  const heading = document.createElement("strong");
-  heading.textContent = kraftyMessage("headPanelTitle");
-  panel.appendChild(heading);
-  panel.appendChild(document.createElement("hr"));
 
   for (const { label, value, count, image } of rows) {
     const row = document.createElement("div");
@@ -161,7 +151,7 @@
     }
 
     row.appendChild(document.createElement("hr"));
-    panel.appendChild(row);
+    body.appendChild(row);
   }
 
   document.body.appendChild(panel);

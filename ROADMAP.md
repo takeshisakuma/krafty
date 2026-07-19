@@ -36,12 +36,16 @@ cannot report one, so the table had to exist in JS regardless, and a second
 copy kept in SCSS for the colouring would have drifted. The stylesheet now
 only presents what the script decides.
 
-### 3. Close button on the panels — done
+### 3. Close button and moving the panels — done
 
 Both panels close themselves. Closing also drops the body class, so the
 popup does not keep showing a checker as active with nothing on screen.
-The head panel is still fixed at the bottom left and still covers whatever
-is there; moving or flipping it is not done.
+
+They are also draggable by the title bar. Dragging won over a left/right
+flip: the panels report on the page while covering part of it, the covered
+content can be anywhere, and a handful of preset corners would only move
+the problem around. Positions are remembered per panel for the life of the
+page, so toggling a checker does not throw it back into the corner.
 
 ## Medium value
 

@@ -58,7 +58,7 @@
       "time": { "content": "$1", "example": "14:05:33" }
     }
   },
-  "nestPanelClose": {
+  "panelClose": {
     "message": "閉じる",
     "description": "Label of the button that dismisses a panel."
   },
