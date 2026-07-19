@@ -274,5 +274,25 @@
   "popupCannotRun": {
     "message": "このページでは Krafty を実行できません。",
     "description": "Shown in the popup when the page cannot be scripted."
+  },
+  "commandHeadCheck": {
+    "message": "ヘッドチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandNestCheck": {
+    "message": "ネストチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandOutlineCheck": {
+    "message": "アウトラインチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandAltCheck": {
+    "message": "alt チェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandBrightnessCheck": {
+    "message": "明度チェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
   }
 }

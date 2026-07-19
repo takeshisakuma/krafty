@@ -1,16 +1,19 @@
-/* Globals the injected checkers share. js/i18n.js is injected ahead of each
-   checker and defines kraftyMessage; declaring it here keeps `npm run
-   typecheck` honest at both the definition and every call site.
+/* Globals the parts of the extension share.
+
+   Chrome loads each of these as a plain script rather than a module: the
+   injected checkers must be standalone files, and the service worker pulls
+   checkers.js in with importScripts. Declaring the globals here keeps
+   `npm run typecheck` honest at both the definition and every call site.
 
    This file lives outside code/ so it is not packaged. */
 
+/* js/i18n.js, injected ahead of every checker. */
 declare var kraftyMessage: (
   key: string,
   substitutions?: string | string[]
 ) => string;
 
-/* js/panel.js, injected the same way, builds the floating panels. */
-
+/* js/panel.js builds the floating panels. */
 declare var kraftyPanel: (options: {
   id: string;
   className: string;
@@ -23,3 +26,29 @@ declare var kraftyPanel: (options: {
 declare var kraftyPanelPositions:
   | Record<string, { left: number; top: number }>
   | undefined;
+
+/* checkers.js, shared by the popup and the service worker. */
+interface Checker {
+  /** Element id of the popup button that toggles it. */
+  id: string;
+  /** Name of the matching entry in the manifest's commands. */
+  command: string;
+  /** Script injected into the page. */
+  file: string;
+  /** Class the script toggles on <body>. */
+  bodyClass: string;
+  /** Whether subframes are checked too. */
+  allFrames: boolean;
+}
+
+declare var kraftyCheckers: Checker[];
+declare var kraftyEnsureStyles: (tabId: number) => Promise<void>;
+declare var kraftyRunChecker: (
+  tabId: number,
+  checker: Checker
+) => Promise<void>;
+declare var kraftyActiveTabId: () => Promise<number | null>;
+
+/* Available to the service worker, which is a classic worker rather than a
+   module. lib.webworker cannot be pulled in alongside lib.dom. */
+declare function importScripts(...urls: string[]): void;

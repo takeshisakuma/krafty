@@ -7,6 +7,9 @@
     "activeTab",
     "scripting"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "Krafty",
@@ -15,6 +18,35 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
+    }
+  },
+  "commands": {
+    "head-check": {
+      "suggested_key": {
+        "default": "Alt+Shift+H"
+      },
+      "description": "__MSG_commandHeadCheck__"
+    },
+    "nest-check": {
+      "suggested_key": {
+        "default": "Alt+Shift+N"
+      },
+      "description": "__MSG_commandNestCheck__"
+    },
+    "outline-check": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      },
+      "description": "__MSG_commandOutlineCheck__"
+    },
+    "alt-check": {
+      "suggested_key": {
+        "default": "Alt+Shift+A"
+      },
+      "description": "__MSG_commandAltCheck__"
+    },
+    "brightness-check": {
+      "description": "__MSG_commandBrightnessCheck__"
     }
   },
   "icons": {

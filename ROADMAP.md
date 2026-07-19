@@ -74,12 +74,23 @@ unfamiliar reader is looking for. Plain headings inside the existing scroll
 turned out to be enough. Revisit only if the reference section becomes
 unwieldy.
 
+### 5. Keyboard shortcuts — done
+
+Alt+Shift+H / N / O / A toggle the head, nest, outline and alt checkers.
+Brightness has no suggested key because Chrome accepts at most four; it can
+be bound by hand at chrome://extensions/shortcuts.
+
+Shortcuts need a service worker, which cannot see the popup's script, so the
+checker table and the injection moved to code/checkers.js and are shared.
+A second copy would have drifted the moment a checker was added, and the
+symptom would have been quiet: the button working and the shortcut not.
+
+Chrome 137 removed --load-extension, so the service worker cannot be booted
+from a test. The wiring suite runs background.js against stubs instead,
+which catches a command routed to the wrong checker; that the worker
+registers at all still needs checking by hand.
+
 ## Medium value
-
-### 5. Keyboard shortcuts
-
-The checkers are toggled repeatedly during a review. `commands` in the
-manifest would remove a two-click round trip each time.
 
 ### 6. Overlapping alt labels
 

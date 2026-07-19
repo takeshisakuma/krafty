@@ -274,5 +274,25 @@
   "popupCannotRun": {
     "message": "Krafty cannot run on this page.",
     "description": "Shown in the popup when the page cannot be scripted."
+  },
+  "commandHeadCheck": {
+    "message": "Toggle Head Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandNestCheck": {
+    "message": "Toggle Nest Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandOutlineCheck": {
+    "message": "Toggle Outline Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandAltCheck": {
+    "message": "Toggle alt Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandBrightnessCheck": {
+    "message": "Toggle Brightness Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
   }
 }
