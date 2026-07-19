@@ -125,18 +125,22 @@ on a component based page.
 ### Keyboard shortcuts
 
 Declared as `commands` in the manifest and handled by the service worker.
-Two things about `suggested_key` are worth knowing before assuming a
-binding is broken:
+**No `suggested_key` is shipped**, deliberately.
 
-- Chrome applies suggested keys when the extension is **installed**, not
-  when it is reloaded. Adding a command and reloading an already-loaded
-  unpacked extension leaves it unassigned. Remove and re-add it to test.
-- A suggested key that something else already claims is dropped **without
-  any error**, in the manifest or the console.
+Defaults were tried first — `Alt+Shift+H/N/O/A` — and every one of them came
+out unassigned at `chrome://extensions/shortcuts`, on a fresh install as well
+as a reload. Chrome drops a suggested key that anything else already claims
+and reports nothing: not in the manifest, not in the service worker console,
+not on the shortcuts page beyond the empty field. There is no way from inside
+the extension to tell a working default from a discarded one, and a discarded
+one is indistinguishable from a broken feature.
 
-Either way the binding shows as unset at `chrome://extensions/shortcuts`,
-which is also where a user assigns their own. Chrome caps suggested keys at
-four, so Brightness Checker ships without one.
+Two related behaviours are worth knowing if defaults are ever reconsidered:
+suggested keys are applied when an extension is **installed**, not when it is
+reloaded, and Chrome caps them at four per extension.
+
+Users assign their own keys at `chrome://extensions/shortcuts`, which the
+manual page in `code/option/option.html` points them to.
 
 `--load-extension` was removed in Chrome 137, so the service worker cannot
 be started from a test. `test/wiring.test.js` runs `background.js` against

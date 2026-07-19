@@ -63,15 +63,21 @@ test("wiring", async (t) => {
     }
   });
 
-  await t.test("stays within Chrome's four suggested keys", () => {
+  /* Defaults were tried and every one came out unassigned: Chrome discards a
+     suggested key that anything else claims, silently, leaving the feature
+     looking broken with nothing to diagnose. Users assign their own instead.
+     The four-key cap is asserted too, in case defaults are ever revisited. */
+  await t.test("ships no default keys", () => {
     const suggested = Object.values(manifest.commands).filter(
       (command) => /** @type {any} */ (command).suggested_key
     );
 
-    assert.ok(
-      suggested.length <= 4,
-      `${suggested.length} suggested keys; Chrome rejects a manifest with more than 4`
+    assert.deepStrictEqual(
+      suggested,
+      [],
+      "a silently discarded default is worse than no default"
     );
+    assert.ok(suggested.length <= 4, "Chrome rejects more than four");
   });
 
   await t.test("every popup button has a checker", () => {

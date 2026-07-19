@@ -22,27 +22,15 @@
   },
   "commands": {
     "head-check": {
-      "suggested_key": {
-        "default": "Alt+Shift+H"
-      },
       "description": "__MSG_commandHeadCheck__"
     },
     "nest-check": {
-      "suggested_key": {
-        "default": "Alt+Shift+N"
-      },
       "description": "__MSG_commandNestCheck__"
     },
     "outline-check": {
-      "suggested_key": {
-        "default": "Alt+Shift+O"
-      },
       "description": "__MSG_commandOutlineCheck__"
     },
     "alt-check": {
-      "suggested_key": {
-        "default": "Alt+Shift+A"
-      },
       "description": "__MSG_commandAltCheck__"
     },
     "brightness-check": {

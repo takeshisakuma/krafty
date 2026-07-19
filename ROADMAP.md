@@ -76,19 +76,26 @@ unwieldy.
 
 ### 5. Keyboard shortcuts — done
 
-Alt+Shift+H / N / O / A toggle the head, nest, outline and alt checkers.
-Brightness has no suggested key because Chrome accepts at most four; it can
-be bound by hand at chrome://extensions/shortcuts.
+Every checker has a command, handled by the service worker. None ship with
+a key assigned.
 
-Shortcuts need a service worker, which cannot see the popup's script, so the
+Defaults were tried first: Alt+Shift+H/N/O/A. All four came out unassigned
+at chrome://extensions/shortcuts, on a fresh install as well as a reload.
+Chrome discards a suggested key that anything else already claims and says
+nothing about it anywhere, so from inside the extension a working default
+and a discarded one are indistinguishable - and a discarded one looks
+exactly like a broken feature. Pressing Alt+Shift+N split the browser
+window instead, which is how this surfaced.
+
+Shortcuts need a service worker, which cannot see the popup script, so the
 checker table and the injection moved to code/checkers.js and are shared.
 A second copy would have drifted the moment a checker was added, and the
 symptom would have been quiet: the button working and the shortcut not.
 
-Chrome 137 removed --load-extension, so the service worker cannot be booted
-from a test. The wiring suite runs background.js against stubs instead,
-which catches a command routed to the wrong checker; that the worker
-registers at all still needs checking by hand.
+Chrome 137 removed --load-extension, so the worker cannot be booted from a
+test. The wiring suite runs background.js against stubs instead, which
+catches a command routed to the wrong checker; that the worker registers at
+all still needs checking by hand.
 
 ## Medium value
 
