@@ -103,6 +103,40 @@
     });
   };
 
+  /* A dragged panel carries an absolute top and left, which stop being
+     sensible the moment the viewport changes size. Docking devtools is the
+     everyday case: the page shrinks, and a panel that was near the bottom
+     ends up below the visible area, with no title bar left to grab. Pull
+     everything back inside whenever the viewport changes.
+
+     Bound once. This file is injected again on every click, so without the
+     guard each run would add another listener. */
+  if (!globalThis.kraftyResizeBound) {
+    globalThis.kraftyResizeBound = true;
+
+    let scheduled = 0;
+
+    window.addEventListener("resize", () => {
+      cancelAnimationFrame(scheduled);
+
+      scheduled = requestAnimationFrame(() => {
+        for (const element of document.querySelectorAll(".kraftyPanel")) {
+          /* An untouched panel is still anchored by the stylesheet, which
+             follows the viewport on its own. Only moved ones need help. */
+          if (!(element instanceof HTMLElement) || !element.style.left) {
+            continue;
+          }
+
+          const before = element.getBoundingClientRect();
+          place(element, before.left, before.top);
+
+          const after = element.getBoundingClientRect();
+          positions[element.id] = { left: after.left, top: after.top };
+        }
+      });
+    });
+  }
+
   /**
    * @param {string} text
    * @returns {Promise<boolean>}
