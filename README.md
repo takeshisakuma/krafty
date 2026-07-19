@@ -4,27 +4,53 @@ chrome extension for web director
 
 ## Checkers
 
+Five checks you can turn on over any page, from the toolbar or from a
+keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
+runs in your own browser, on the tab you are looking at, and Krafty collects
+no data at all. Available in English and Japanese, following your browser's
+language.
+
 ### Head Checker
 
-Display title, description, OGP and other head metadata.
+Reports the problems in a page's head that software can actually decide:
+a robots tag asking search engines to ignore the page, a missing viewport,
+title, description or lang, a missing doctype, a canonical pointing at a
+different page, duplicated tags, text long enough to be cut off, and an
+og:image smaller than sharing platforms want.
+
+It will not tell you whether the title is the right title. Nothing can — a
+title can be correctly formed and still say "Home | Home" or carry a staging
+site's name. So the page is drawn the way visitors meet it, as a search
+result and as a shared link, for you to read and judge.
+
+Every value in the head is listed underneath, each with a button to copy it,
+and the URLs open in a new tab.
 
 ### Nest Checker
 
-Highlight elements that their parent element is not allowed to contain.
-If nothing turns red, the nesting is valid.
+Highlights every element its parent element is not allowed to contain, such
+as a div directly inside a ul, or an li with no list around it. Hover any
+highlighted element and it tells you the rule it breaks and what the parent
+may contain instead.
+
+The panel totals them and breaks them down by pair, and copies the whole
+list in one go so it can go straight into a ticket.
 
 ### Outline Checker
 
-Display an outline around every element.
+Draws an outline around every element, so the structure and spacing of a
+layout can be seen at a glance.
 
 ### Alt Checker
 
-Display the alt attribute of every image, and flag images whose alt is
-missing or empty.
+Shows the alt text of every image, and separates an image with no alt
+attribute at all from one deliberately marked decorative with an empty alt.
+The two look identical in a browser and mean opposite things.
 
 ### Brightness Checker
 
-Make the page monochrome.
+Turns the page monochrome, which shows up anything that relies on colour
+alone to be understood.
 
 ## Development
 
