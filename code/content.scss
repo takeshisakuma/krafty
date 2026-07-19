@@ -1,10 +1,180 @@
+@use "sass:list";
+
 $color: #fff;
-$alartColor: #f00;
-$safeColor: #fff;
+$alertColor: #f00;
+
+/* ------------------------------------------------------------------
+   HTML content models
+   ------------------------------------------------------------------
+   $content-models maps a parent element to the child elements it is
+   allowed to contain. The nest checker highlights every child that is
+   NOT in that list, so an empty list means "any child element here is a
+   markup error" and an omitted parent means "not checked".
+
+   Elements with a transparent content model (a, ins, del, video, audio,
+   map, math, svg, button, canvas, noscript, template) are deliberately
+   omitted: their validity depends on the context of their own parent,
+   which a static selector cannot express.
+   ------------------------------------------------------------------ */
+
+$flow: article, section, nav, aside, h1, h2, h3, h4, h5, h6, header, footer,
+  address, p, hr, pre, blockquote, ol, ul, dl, figure, div, main, a, em, strong,
+  small, s, cite, q, dfn, abbr, data, time, code, var, samp, kbd, sub, sup, i,
+  b, u, mark, ruby, bdi, bdo, span, br, wbr, ins, del, picture, img, iframe,
+  embed, object, video, audio, map, math, svg, table, form, label, input,
+  button, select, datalist, textarea, keygen, output, progress, meter, fieldset,
+  details, dialog, script, noscript, template, canvas;
+
+$phrasing: a, em, strong, small, s, cite, q, dfn, abbr, data, time, code, var,
+  samp, kbd, sub, sup, i, b, u, mark, ruby, bdi, bdo, span, br, wbr, ins, del,
+  picture, img, iframe, embed, object, video, audio, map, math, svg, label,
+  input, button, select, datalist, textarea, keygen, output, progress, meter,
+  script, noscript, template, canvas;
+
+$headings: h1, h2, h3, h4, h5, h6;
+
+/* Elements that may not appear inside address, dt, th, header or footer. */
+$sectioning: article, section, nav, aside, h1, h2, h3, h4, h5, h6, header,
+  footer, main;
+
+@function without($list, $remove) {
+  $out: ();
+
+  @each $item in $list {
+    @if not list.index($remove, $item) {
+      $out: list.append($out, $item, comma);
+    }
+  }
+
+  @return $out;
+}
+
+@function plus($list, $extra) {
+  @return list.join($list, $extra, comma);
+}
+
+/* Build ":where(:not(a):not(b):not(c))" from a list of allowed children.
+   The :where() wrapper matters: a bare chain of ~80 :not() clauses carries
+   the specificity of ~80 type selectors, which would outweigh any hand
+   written exception below. :where() contributes zero specificity, so the
+   generic rules stay at "one class plus one type" and the exceptions can
+   actually override them. An empty list yields "", because :where() with
+   an empty argument list is invalid. */
+@function deny($allowed) {
+  @if list.length($allowed) == 0 {
+    @return "";
+  }
+
+  $selector: "";
+
+  @each $tag in $allowed {
+    $selector: $selector + ":not(#{$tag})";
+  }
+
+  @return ":where(#{$selector})";
+}
+
+$flow-no-sectioning: without($flow, $sectioning);
+$flow-no-header-footer: without($flow, (header, footer, main));
+
+$content-models: (
+  article: $flow,
+  section: $flow,
+  nav: $flow,
+  aside: $flow,
+  header: $flow-no-header-footer,
+  footer: $flow-no-header-footer,
+  main: $flow,
+  address: $flow-no-sectioning,
+  h1: $phrasing,
+  h2: $phrasing,
+  h3: $phrasing,
+  h4: $phrasing,
+  h5: $phrasing,
+  h6: $phrasing,
+  p: $phrasing,
+  pre: $phrasing,
+  blockquote: $flow,
+  ol: (li, script, template),
+  ul: (li, script, template),
+  li: $flow,
+  dl: (dt, dd, div, script, template),
+  dt: $flow-no-sectioning,
+  dd: $flow,
+  figure: plus($flow, figcaption),
+  figcaption: $flow,
+  div: $flow,
+  details: plus($flow, summary),
+  summary: plus($phrasing, $headings),
+  dialog: $flow,
+  fieldset: plus($flow, legend),
+  legend: plus($phrasing, $headings),
+  form: without($flow, form),
+  em: $phrasing,
+  strong: $phrasing,
+  small: $phrasing,
+  s: $phrasing,
+  cite: $phrasing,
+  q: $phrasing,
+  dfn: $phrasing,
+  abbr: $phrasing,
+  data: $phrasing,
+  time: $phrasing,
+  code: $phrasing,
+  var: $phrasing,
+  samp: $phrasing,
+  kbd: $phrasing,
+  sub: $phrasing,
+  sup: $phrasing,
+  i: $phrasing,
+  b: $phrasing,
+  u: $phrasing,
+  mark: $phrasing,
+  span: $phrasing,
+  bdi: $phrasing,
+  bdo: $phrasing,
+  output: $phrasing,
+  label: without($phrasing, label),
+  ruby: plus($phrasing, (rb, rt, rtc, rp)),
+  rb: $phrasing,
+  rt: $phrasing,
+  rtc: plus($phrasing, rt),
+  rp: $phrasing,
+  picture: (source, img),
+  object: plus($flow, param),
+  table: (caption, colgroup, tbody, thead, tfoot, tr, script, template),
+  caption: without($flow, table),
+  colgroup: (col, template),
+  thead: (tr, script, template),
+  tbody: (tr, script, template),
+  tfoot: (tr, script, template),
+  tr: (th, td, script, template),
+  th: $flow-no-sectioning,
+  td: $flow,
+  select: (optgroup, option, hr, script, template),
+  optgroup: (option, script, template),
+  datalist: plus($phrasing, option),
+  hr: (),
+  br: (),
+  wbr: (),
+  img: (),
+  iframe: (),
+  embed: (),
+  param: (),
+  source: (),
+  track: (),
+  area: (),
+  col: (),
+  input: (),
+  textarea: (),
+  keygen: (),
+  option: (),
+  script: ()
+);
 
 .kraftyOutlineChecker
   *:not(#js-kraftyHeadInformation, #js-kraftyHeadInformation *) {
-  outline: $alartColor solid 1px;
+  outline: $alertColor solid 1px;
 }
 
 #js-kraftyHeadInformation.kraftyHeadInformation {
@@ -59,6 +229,11 @@ $safeColor: #fff;
         width: 60px;
       }
     }
+
+    .kraftyMissing {
+      color: #999;
+      font-style: italic;
+    }
   }
 }
 
@@ -69,8 +244,7 @@ $safeColor: #fff;
 .kraftyAltChecker {
   .kraftyAltContent {
     position: absolute;
-    color: $alartColor;
-    background-color: $safeColor;
+    color: $alertColor;
     font-size: 12px;
     padding: 10px;
     background-color: rgba(255, 255, 255, 0.95);
@@ -81,6 +255,15 @@ $safeColor: #fff;
     border-radius: 2px;
     z-index: 2147483646;
     outline: none !important;
+
+    &.kraftyAltMissing {
+      color: $alertColor;
+      font-weight: bold;
+    }
+
+    &.kraftyAltEmpty {
+      color: #666;
+    }
   }
 }
 
@@ -88,1430 +271,47 @@ $safeColor: #fff;
   filter: grayscale(100%);
 }
 
-body.kraftyNestChecker
-  > *:not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(main):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
+/* ------------------------------------------------------------------
+   Nest checker: flag every child its parent may not contain.
+   ------------------------------------------------------------------ */
+
+body.kraftyNestChecker > *#{deny($flow)} {
   color: $color !important;
-  background-color: $alartColor !important;
+  background-color: $alertColor !important;
 }
 
 body.kraftyNestChecker {
-  article
-    > *:not(article)
-    :not(section)
-    nav
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(header)
-    :not(footer)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
+  @each $parent, $allowed in $content-models {
+    #{$parent} > *#{deny($allowed)} {
+      color: $color !important;
+      background-color: $alertColor !important;
+    }
   }
 
-  section
-    > *:not(article)
-    :not(section)
-    nav
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(header)
-    :not(footer)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  nav
-    > *:not(article)
-    :not(section)
-    nav
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(header)
-    :not(footer)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  aside
-    > *:not(article)
-    :not(section)
-    nav
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(header)
-    :not(footer)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h1
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h2
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h3
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h4
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h5
-    > *
-    :not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  h6
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  header
-    > *:not(article)
-    :not(section)
-    :not(nav)
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  footer
-    > *:not(article)
-    :not(section)
-    :not(nav)
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(address)
-    :not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  address
-    > *:not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div)
-    :not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr)
-    :not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object)
-    :not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table)
-    :not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  p
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  hr > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  pre
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  blockquote
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre
-      blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  ol > *:not(li):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  ul > *:not(li):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  li
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  dl > *:not(dt):not(dd):not(div):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  dt
-    > *:not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  dd
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5
-      h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  figure
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5
-      h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  figcaption
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre
-      blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  div
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(figure):not(div):not(main):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  main
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre
-      blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  a > * {
-  }
-
-  em
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  strong
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  small
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  s
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  cite
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  q
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  dfn
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  abbr
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  data
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  time
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  code
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  var
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  samp
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  kbd
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  sub
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  sup
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  i
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  b
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  u
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  mark
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  ruby
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(rb):not(rt):not(rtc):not(rp):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  rb
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  rt
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  rtc
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  rp
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  bdi > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  bdo > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  span
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  br > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  wbr > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  ins > * {
-  }
-
-  del > * {
-  }
-
-  picture > *:not(img):not(source) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  img > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  iframe > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  embed > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  object
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(param):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  param > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  video > * {
-  }
-
-  audio > * {
-  }
-
-  source > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  track > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  map > * {
-  }
-
-  area > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  math > * {
-  }
-
-  svg > * {
-  }
-
-  table
-    > *:not(caption)
-    :not(colgroup)
-    :not(tbody)
-    :not(thead)
-    :not(tfoot)
-    :not(tr)
-    :not(script)
-    :not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  caption
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  colgroup > *:not(col):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  col > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  tbody > *:not(tr):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  thead > *:not(tr):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  tfoot > *:not(tr):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  tr > *:not(th):not(td) :not(script) :not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  th
-    > *:not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  td
-    > **:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  form
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  label
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  input > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  button > * {
-  }
-
-  select > *:not(optgroup):not(option):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  datalist
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(option):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  optgroup > *:not(option):not(script):not(template) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  option > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  textarea > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  keygen > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  output
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  progress
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(meter):not(script):not(noscript):not(template):not(canvas) {
-  }
-
-  meter
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(script):not(noscript):not(template):not(canvas) {
-  }
-
-  fieldset
-    > *:not(article)
-    :not(section)
-    :not(nav)
-    :not(aside)
-    :not(h1)
-    :not(h2)
-    :not(h3)
-    :not(h4)
-    :not(h5)
-    :not(h6)
-    :not(header)
-    :not(footer)
-    :not(address):not(p)
-    :not(hr)
-    :not(pre)
-    :not(blockquote)
-    :not(ol)
-    :not(ul)
-    :not(dl)
-    :not(figure)
-    :not(div):not(a)
-    :not(em)
-    :not(strong)
-    :not(small)
-    :not(s)
-    :not(cite)
-    :not(q)
-    :not(dfn)
-    :not(abbr)
-    :not(data)
-    :not(time)
-    :not(code)
-    :not(var)
-    :not(samp)
-    :not(kbd)
-    :not(sub)
-    :not(sup)
-    :not(i)
-    :not(b)
-    :not(u)
-    :not(mark)
-    :not(ruby)
-    :not(bdi)
-    :not(bdo)
-    :not(span)
-    :not(br)
-    :not(wbr):not(ins)
-    :not(del)
-    :not(picture)
-    :not(img)
-    :not(iframe)
-    :not(embed)
-    :not(object):not(video)
-    :not(audio)
-    :not(map)
-    :not(math)
-    :not(svg)
-    :not(table):not(form)
-    :not(label)
-    :not(input)
-    :not(button)
-    :not(select)
-    :not(datalist)
-    :not(textarea)
-    :not(keygen)
-    :not(output)
-    :not(progress)
-    :not(meter)
-    :not(fieldset)
-    :not(legend):not(details)
-    :not(dialog)
-    :not(script)
-    :not(noscript)
-    :not(template)
-    :not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  legend
-    > *:not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  details
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code)
-    :not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea)
-    :not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  summary
-    > *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(label):not(input):not(button):not(select):not(datalist):not(textarea):not(keygen):not(output):not(progress):not(meter):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  dialog
-    > *:not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(dl):not(figure):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code)
-    :not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(video):not(audio):not(map):not(math):not(svg):not(table):not(form):not(label):not(input):not(button):not(select):not(datalist):not(textarea)
-    :not(keygen):not(output):not(progress):not(meter):not(fieldset):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
-
-  script > * {
-    color: $color !important;
-    background-color: $alartColor !important;
-  }
+}
 
-  noscript > * {
+/* Exceptions: valid markup that the generic rules above would still flag.
+   The class is repeated so these win on specificity rather than on source
+   order, which would silently break if the rules were ever reordered. */
+body.kraftyNestChecker.kraftyNestChecker {
+  /* A dl may wrap each dt/dd group in a div. */
+  dl > div > dt,
+  dl > div > dd {
+    color: inherit !important;
+    background-color: inherit !important;
   }
 
-  template
-    > *:not(title):not(base):not(link):not(meta):not(style):not(article):not(section):not(nav):not(aside):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(header):not(footer):not(address):not(p):not(hr):not(pre):not(blockquote):not(ol):not(ul):not(li):not(dl):not(dt):not(dd):not(figure):not(figcaption):not(div):not(a):not(em):not(strong):not(small):not(s):not(cite):not(q):not(dfn):not(abbr):not(data):not(time):not(code):not(var):not(samp):not(kbd):not(sub):not(sup):not(i):not(b):not(u):not(mark):not(ruby):not(rb):not(rt):not(rtc):not(rp):not(bdi):not(bdo):not(span):not(br):not(wbr):not(ins):not(del):not(picture):not(img):not(iframe):not(embed):not(object):not(param):not(video):not(audio):not(source):not(track):not(map):not(math):not(svg):not(table):not(caption):not(colgroup):not(col):not(tbody):not(thead):not(tfoot):not(tr):not(th):not(td):not(form):not(label):not(input):not(button):not(select):not(datalist):not(optgroup):not(option):not(textarea):not(keygen):not(output):not(progress):not(meter):not(fieldset):not(legend):not(details):not(dialog):not(script):not(noscript):not(template):not(canvas) {
-    color: $color !important;
-    background-color: $alartColor !important;
+  /* area is only meaningful inside a map, at any depth. */
+  map area {
+    color: inherit !important;
+    background-color: inherit !important;
   }
 
-  canvas > * {
+  /* Never flag the checker's own UI. */
+  #js-kraftyHeadInformation,
+  #js-kraftyHeadInformation *,
+  .kraftyAltContent {
+    color: inherit !important;
+    background-color: inherit !important;
   }
-}
-
-/* The exceptions are */
-
-/* map element area */
-map article area {
-}
-
-map section area {
-}
-
-map nav area {
-}
-
-map aside area {
-}
-
-map h1 area {
-}
-
-map h2 area {
-}
-
-map h3 area {
-}
-
-map h4 area {
-}
-
-map h5 area {
-}
-
-map h6 area {
-}
-
-map header area {
-}
-
-map footer area {
-}
-
-map address area {
-}
-
-map p area {
-}
-
-map pre area {
-}
-
-map blockquote area {
-}
-
-map li area {
-}
-
-map dt area {
-}
-
-map dd area {
-}
-
-map figure area {
-}
-
-map figcaption area {
-}
-
-map div area {
-}
-
-map main area {
-}
-
-map a area {
-}
-
-map em area {
-}
-
-map strong area {
-}
-
-map small area {
-}
-
-map s area {
-}
-
-map cite area {
-}
-
-map q area {
-}
-
-map dfn area {
-}
-
-map abbr area {
-}
-
-map data area {
-}
-
-map time area {
-}
-
-map code area {
-}
-
-map var area {
-}
-
-map samp area {
-}
-
-map kbd area {
-}
-
-map sub area {
-}
-
-map sup area {
-}
-
-map i area {
-}
-
-map b area {
-}
-
-map u area {
-}
-
-map mark area {
-}
-
-map ruby area {
-}
-
-map rb rt area {
-}
-
-map rtc area {
-}
-
-map rp area {
-}
-
-map span area {
-}
-
-map ins area {
-}
-
-map del area {
-}
-
-map object area {
-}
-
-map video area {
-}
-
-map map area {
-}
-
-map caption area {
-}
-
-map th area {
-}
-
-map td form area {
-}
-
-map label area {
-}
-
-map button area {
-}
-
-map datalist area {
-}
-
-map output area {
-}
-
-map progress area {
-}
-
-map meter area {
-}
-
-map fieldset area {
-}
-
-map legend area {
-}
-
-map details area {
-}
-
-map summary area {
-}
-
-map dialog area {
-}
-
-map noscript area {
-}
-
-map template area {
-}
-
-map canvas area {
-}
-
-/* div */
-dl > div > dt {
-}
-
-dl > div > dd {
 }

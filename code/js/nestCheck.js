@@ -1,3 +1,7 @@
-if (document.body) {
-    document.body.classList.toggle("kraftyNestChecker");
-}
+(() => {
+  if (!document.body) {
+    return;
+  }
+
+  document.body.classList.toggle("kraftyNestChecker");
+})();

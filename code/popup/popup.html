@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,16 @@
 </head>
 <body>
 
-  <p id="js-headCheckButton" class="headCheckButton">Head Check</p>
-  <p id="js-nestCheckButton" class="nestCheckButton">Nest Check</p>
-  <p id="js-outlineCheckButton" class="outlineCheckButton">Outline Check</p>
-  <p id="js-altCheckButton" class="altCheckButton">alt Check</p>
-  <p id="js-brightnessCheckButton" class="brightnessCheckButton">Brightness Check</p>
+  <ul class="checkerList">
+    <li><button type="button" id="js-headCheckButton" class="checkerButton headCheckButton">Head Check</button></li>
+    <li><button type="button" id="js-nestCheckButton" class="checkerButton nestCheckButton">Nest Check</button></li>
+    <li><button type="button" id="js-outlineCheckButton" class="checkerButton outlineCheckButton">Outline Check</button></li>
+    <li><button type="button" id="js-altCheckButton" class="checkerButton altCheckButton">alt Check</button></li>
+    <li><button type="button" id="js-brightnessCheckButton" class="checkerButton brightnessCheckButton">Brightness Check</button></li>
+  </ul>
+
+  <p id="js-status" class="status" role="status" hidden></p>
+
   <script src="popup.js"></script>
 </body>
 </html>
