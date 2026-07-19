@@ -350,5 +350,27 @@
   "manualShortcutsWhy": {
     "message": "既定キーを用意していないのは意図的です。Chrome は他が既に使っているキーをエラーも出さずに破棄するため、一見妥当な既定値がまったく機能せず、機能が壊れているようにしか見えない状態になります。ご自身で設定すれば確実に動きます。",
     "description": "Shown on the manual page (option.html)."
+  },
+  "copyValue": {
+    "message": "$label$ をコピー",
+    "description": "Label on a copy-to-clipboard control.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "canonical"
+      }
+    }
+  },
+  "copyFindings": {
+    "message": "検出結果をコピー",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copied": {
+    "message": "コピーしました",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copyFailed": {
+    "message": "コピーできませんでした",
+    "description": "Label on a copy-to-clipboard control."
   }
 }

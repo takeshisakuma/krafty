@@ -21,6 +21,13 @@ declare var kraftyPanel: (options: {
   onClose: () => void;
 }) => { panel: HTMLElement; body: HTMLElement };
 
+/* A button that copies what its callback returns, with a fallback for
+   http:// pages where navigator.clipboard does not exist. */
+declare var kraftyCopyButton: (
+  label: string,
+  read: () => string
+) => HTMLButtonElement;
+
 /* Remembered panel positions, kept in the isolated world for the lifetime
    of the page. */
 declare var kraftyPanelPositions:

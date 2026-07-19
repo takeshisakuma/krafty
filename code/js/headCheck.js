@@ -120,13 +120,31 @@
 
   const checksSection = section("headSectionChecks");
 
+  const checksHead = document.createElement("div");
+  checksHead.className = "kraftyChecksHead";
+  checksSection.appendChild(checksHead);
+
   const checksSummary = document.createElement("div");
   checksSummary.className = "kraftyChecksSummary";
-  checksSection.appendChild(checksSummary);
+  checksHead.appendChild(checksSummary);
 
   const checksList = document.createElement("ul");
   checksList.className = "kraftyChecks";
   checksSection.appendChild(checksList);
+
+  /* A finding usually ends up in a ticket, and a ticket wants the address it
+     applies to along with every line, not one value at a time. */
+  const copyFindings = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
+    [
+      location.href,
+      ...[...checksList.querySelectorAll("li")].map(
+        (item) => `- ${item.textContent}`
+      ),
+    ].join("\n")
+  );
+  copyFindings.classList.add("kraftyCopyAll");
+  copyFindings.hidden = true;
+  checksHead.appendChild(copyFindings);
 
   let found = 0;
 
@@ -138,6 +156,7 @@
           ? kraftyMessage("headChecksCountOne")
           : kraftyMessage("headChecksCount", [String(found)]);
     checksSummary.classList.toggle("kraftyChecksClean", found === 0);
+    copyFindings.hidden = found === 0;
   };
 
   /**
@@ -366,12 +385,12 @@
       value:
         document.compatMode === "BackCompat" ? "quirks" : "standards",
     },
-    { label: "canonical", value: canonical },
-    { label: "base", value: document.querySelector("base")?.getAttribute("href") ?? null },
+    { label: "canonical", value: canonical, url: true },
+    { label: "base", value: document.querySelector("base")?.getAttribute("href") ?? null, url: true },
     { label: "og:title", value: ogTitle, count: true },
     { label: "og:type", value: metaByProperty("og:type") },
-    { label: "og:url", value: metaByProperty("og:url") },
-    { label: "og:image", value: ogImage, image: "ogp" },
+    { label: "og:url", value: metaByProperty("og:url"), url: true },
+    { label: "og:image", value: ogImage, image: "ogp", url: true },
     { label: "og:description", value: ogDescription, count: true },
     { label: "og:site_name", value: metaByProperty("og:site_name") },
     { label: "og:locale", value: metaByProperty("og:locale") },
@@ -380,41 +399,48 @@
     { label: "twitter:site", value: metaByName("twitter:site") },
     { label: "twitter:title", value: metaByName("twitter:title") },
     { label: "twitter:description", value: metaByName("twitter:description") },
-    { label: "twitter:image", value: metaByName("twitter:image") },
+    { label: "twitter:image", value: metaByName("twitter:image"), url: true },
     { label: "viewport", value: metaByName("viewport") },
     { label: "theme-color", value: metaByName("theme-color") },
-    { label: "manifest", value: linkByRel("manifest") },
-    { label: "favicon", value: favicon, image: "favicon" },
+    { label: "manifest", value: linkByRel("manifest"), url: true },
+    { label: "favicon", value: favicon, image: "favicon", url: true },
     {
       label: "apple touch icon",
       value: linkByRel("apple-touch-icon", "apple-touch-icon-precomposed"),
       image: "apple",
+      url: true,
     },
   ];
 
   const referenceSection = section("headSectionReference");
 
-  for (const { label, value, count, image } of rows) {
+  for (const { label, value, count, image, url } of rows) {
     const row = document.createElement("div");
     row.className = "kraftyRow";
+
+    const head = document.createElement("div");
+    head.className = "kraftyRowHead";
+    row.appendChild(head);
 
     /* The label is a literal tag name, so it stays as it is in every
        locale. It used to read "title is", which needed English grammar to
        make sense of. */
     const heading = document.createElement("strong");
     heading.textContent = label;
-    row.appendChild(heading);
+    head.appendChild(heading);
 
     /* Count code points, so an emoji or a surrogate pair counts as one. */
     if (count && value) {
-      row.appendChild(
+      head.appendChild(
         document.createTextNode(
           `　${kraftyMessage("headCharacterCount", [String(length(value))])}`
         )
       );
     }
 
-    row.appendChild(document.createElement("br"));
+    const line = document.createElement("div");
+    line.className = "kraftyRowValue";
+    row.appendChild(line);
 
     if (value === null || value === "") {
       const missing = document.createElement("span");
@@ -422,8 +448,14 @@
       missing.textContent = kraftyMessage(
         value === "" ? "valueEmpty" : "valueNotSet"
       );
-      row.appendChild(missing);
+      line.appendChild(missing);
     } else {
+      /* Nothing to copy when there is no value, so the button only appears
+         alongside one. */
+      head.appendChild(
+        kraftyCopyButton(kraftyMessage("copyValue", [label]), () => value)
+      );
+
       const source = image ? resolve(value) : null;
 
       if (source) {
@@ -431,13 +463,33 @@
         thumbnail.className = `headImage ${image}`;
         thumbnail.src = source;
         thumbnail.alt = "";
-        row.appendChild(thumbnail);
-        row.appendChild(document.createTextNode("　"));
+        line.appendChild(thumbnail);
+        line.appendChild(document.createTextNode("　"));
       }
 
-      /* textContent, not insertAdjacentHTML: these values come from the
-         page and must never be parsed as markup. */
-      row.appendChild(document.createTextNode(value));
+      const target = url ? resolve(value) : null;
+      const scheme = target ? new URL(target).protocol : null;
+
+      /* Only http(s) becomes a link. The value is written by the page, so a
+         javascript: or data: URL would otherwise turn a row that is inert
+         today into something that runs on click. The text stays as the
+         markup wrote it - whether a URL is relative or absolute is part of
+         what is being audited - while the href is resolved so it works. */
+      if (target && (scheme === "http:" || scheme === "https:")) {
+        const link = document.createElement("a");
+        link.className = "kraftyLink";
+        link.href = target;
+        link.target = "_blank";
+        /* noreferrer as well as noopener: the audited address should not be
+           handed to whatever the page points at. */
+        link.rel = "noopener noreferrer";
+        link.textContent = value;
+        line.appendChild(link);
+      } else {
+        /* textContent, not insertAdjacentHTML: these values come from the
+           page and must never be parsed as markup. */
+        line.appendChild(document.createTextNode(value));
+      }
     }
 
     referenceSection.appendChild(row);

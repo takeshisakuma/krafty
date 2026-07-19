@@ -213,9 +213,16 @@ $alertColor: #f00;
 
     /* The wording of this line is deliberately narrow, so it must not read
        as a clean bill of health. Green is reserved for nothing. */
+    .kraftyChecksHead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
     .kraftyChecksSummary {
       font-weight: bold;
-      margin-bottom: 6px;
 
       &.kraftyChecksClean {
         font-weight: normal;
@@ -356,7 +363,76 @@ $alertColor: #f00;
       padding-bottom: 6px;
       border-bottom: 1px solid #eee;
     }
+
+    .kraftyRowHead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .kraftyRowValue {
+      margin-top: 1px;
+    }
+
+    .kraftyLink {
+      color: #1a0dab !important;
+      text-decoration: underline !important;
+
+      &:hover {
+        color: #7b1fa2 !important;
+      }
+    }
+
+    .kraftyCopyAll {
+      opacity: 1;
+    }
   }
+}
+
+/* Copy buttons.
+
+   Twenty-six of these would crowd a panel that is only 420px wide, so a row's
+   button stays out of the way until the row is hovered. Hiding with opacity
+   rather than display keeps it focusable, and :focus-visible brings it back
+   for anyone arriving by keyboard - a control reachable only by pointer
+   would be a poor thing to ship in an accessibility tool. */
+
+.kraftyPanel .kraftyCopy {
+  flex: none;
+  margin: 0;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #767676;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+
+  &:hover {
+    background-color: #eee;
+    color: #000;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid #4d90fe;
+    outline-offset: -2px;
+  }
+
+  &.kraftyCopyDone {
+    opacity: 1;
+    color: #1a7f37;
+  }
+}
+
+.kraftyPanel .kraftyRow:hover .kraftyCopy,
+.kraftyPanel .kraftyCopyAll {
+  opacity: 1;
 }
 
 /* --- alt checker --- */

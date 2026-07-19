@@ -104,6 +104,89 @@
   };
 
   /**
+   * @param {string} text
+   * @returns {Promise<boolean>}
+   */
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (error) {
+      /* A permissions policy can refuse it even on https. Fall through. */
+    }
+
+    /* navigator.clipboard does not exist on http:// pages at all, and
+       staging and intranet sites are often http. execCommand is deprecated
+       but is the only thing that works there; taking a clipboardWrite
+       permission to avoid it would be the worse trade for an extension that
+       currently asks for none. */
+    const staging = document.createElement("textarea");
+    staging.value = text;
+    staging.setAttribute("readonly", "");
+    staging.style.cssText = "position:fixed;top:-1000px;left:0;opacity:0";
+    document.body.appendChild(staging);
+    staging.select();
+
+    let copied = false;
+
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
+
+    staging.remove();
+    return copied;
+  };
+
+  /**
+   * A button that copies whatever the callback returns. The text is read at
+   * click time, so a caller can hand over a value that does not exist yet.
+   *
+   * @param {string} label
+   * @param {() => string} read
+   * @returns {HTMLButtonElement}
+   */
+  globalThis.kraftyCopyButton = (label, read) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "kraftyCopy";
+    button.title = label;
+    button.setAttribute("aria-label", label);
+
+    const icon = document.createElement("span");
+    icon.textContent = "⧉";
+    button.appendChild(icon);
+
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let restore;
+
+    button.addEventListener("click", async (event) => {
+      /* These sit inside a panel that drags and rows that may hold a link.
+         Copying is neither. */
+      event.preventDefault();
+      event.stopPropagation();
+
+      const done = await copyText(read());
+
+      clearTimeout(restore);
+      icon.textContent = done ? "✓" : "!";
+      button.title = kraftyMessage(done ? "copied" : "copyFailed");
+      button.classList.toggle("kraftyCopyDone", done);
+
+      restore = setTimeout(() => {
+        icon.textContent = "⧉";
+        button.title = label;
+        button.classList.remove("kraftyCopyDone");
+      }, 1400);
+    });
+
+    return button;
+  };
+
+  /**
    * Build an empty panel. Callers fill the returned body.
    *
    * @param {{ id: string, className: string, title: string, onClose: () => void }} options

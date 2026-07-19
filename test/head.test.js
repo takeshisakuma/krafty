@@ -186,6 +186,153 @@ test("head checker", async (t) => {
     );
   });
 
+  await t.test("links URL rows, and only over http(s)", async () => {
+    const links = await withPage(
+      { html: "<p>page</p>", checkers: [] },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <link rel="canonical" href="https://example.com/here">
+             <meta property="og:url" content="javascript:alert(1)">
+             <meta property="og:image" content="data:image/gif;base64,R0lGOD">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const rows = [...(panel?.querySelectorAll(".kraftyRow") ?? [])];
+
+          /** @param {string} label */
+          const row = (label) =>
+            rows.find(
+              (candidate) =>
+                candidate.querySelector("strong")?.textContent === label
+            );
+
+          /** @param {string} label */
+          const linkIn = (label) => {
+            const anchor = row(label)?.querySelector("a.kraftyLink");
+            return anchor
+              ? {
+                  href: /** @type {HTMLAnchorElement} */ (anchor).href,
+                  target: anchor.getAttribute("target"),
+                  rel: anchor.getAttribute("rel"),
+                  text: anchor.textContent,
+                }
+              : null;
+          };
+
+          return {
+            canonical: linkIn("canonical"),
+            ogUrl: linkIn("og:url"),
+            ogImage: linkIn("og:image"),
+          };
+        });
+      }
+    );
+
+    assert.ok(links.canonical, "canonical should be a link");
+    assert.strictEqual(links.canonical.target, "_blank");
+    assert.strictEqual(links.canonical.rel, "noopener noreferrer");
+
+    /* The value is written by the page. Turning a javascript: or data: URL
+       into something clickable would make an inert row execute on click. */
+    assert.strictEqual(
+      links.ogUrl,
+      null,
+      "a javascript: URL must never become a link"
+    );
+    assert.strictEqual(
+      links.ogImage,
+      null,
+      "a data: URL must never become a link"
+    );
+  });
+
+  await t.test("offers to copy a value, and the findings", async () => {
+    const state = await withPage(
+      { html: "<p>page</p>", checkers: [] },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>A title</title><meta name="robots" content="noindex">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const rows = [...(panel?.querySelectorAll(".kraftyRow") ?? [])];
+
+          const titleRow = rows.find(
+            (row) => row.querySelector("strong")?.textContent === "title"
+          );
+          const missingRow = rows.find(
+            (row) => row.querySelector(".kraftyMissing") !== null
+          );
+
+          return {
+            onValue: titleRow?.querySelector(".kraftyCopy") !== null,
+            onMissing: missingRow?.querySelector(".kraftyCopy") !== null,
+            findingsShown:
+              panel?.querySelector(".kraftyCopyAll") instanceof HTMLElement &&
+              !(/** @type {HTMLElement} */ (
+                panel.querySelector(".kraftyCopyAll")
+              ).hidden),
+          };
+        });
+      }
+    );
+
+    assert.strictEqual(state.onValue, true, "a value should be copyable");
+    assert.strictEqual(
+      state.onMissing,
+      false,
+      "there is nothing to copy from a row with no value"
+    );
+    assert.strictEqual(
+      state.findingsShown,
+      true,
+      "the findings button should appear once there are findings"
+    );
+  });
+
+  await t.test("hides the findings copy when there is nothing to copy", async () => {
+    const hidden = await withPage(
+      { html: "<p>page</p>", checkers: [] },
+      async (page) => {
+        await page.evaluate(() => {
+          document.documentElement.setAttribute("lang", "en");
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>A page about something</title>
+             <meta name="description" content="A description.">
+             <meta name="viewport" content="width=device-width">
+             <link rel="canonical" href="/">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const button = document.querySelector(".kraftyCopyAll");
+          return button instanceof HTMLElement ? button.hidden : null;
+        });
+      }
+    );
+
+    assert.strictEqual(hidden, true);
+  });
+
   await t.test("prefers og values on the card when present", async () => {
     const result = await check(
       `${SOUND_HEAD}

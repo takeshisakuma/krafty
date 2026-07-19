@@ -350,5 +350,27 @@
   "manualShortcutsWhy": {
     "message": "Krafty ships no default keys on purpose. Chrome drops a suggested key that anything else already claims, and does so without an error anywhere, so a default that looks reasonable can simply never work and leave the feature looking broken. Choosing your own takes a moment and always works.",
     "description": "Shown on the manual page (option.html)."
+  },
+  "copyValue": {
+    "message": "Copy $label$",
+    "description": "Label on a copy-to-clipboard control.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "canonical"
+      }
+    }
+  },
+  "copyFindings": {
+    "message": "Copy the findings",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copied": {
+    "message": "Copied",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copyFailed": {
+    "message": "Could not copy",
+    "description": "Label on a copy-to-clipboard control."
   }
 }
