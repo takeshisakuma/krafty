@@ -118,6 +118,65 @@ test("panel dragging", async (t) => {
     );
   });
 
+  /* The title bar is the only handle and carries the close button, so a
+     panel whose bar is off screen is stranded - not merely awkward. */
+  await t.test("keeps the title bar reachable on a short viewport", async () => {
+    for (const height of [320, 240, 180]) {
+      const bar = await withPage(
+        { html: PAGE, checkers: ["nestCheck"], width: 1000, height },
+        async (page) =>
+          page.evaluate(() => {
+            const panel = document.getElementById("js-kraftyNestInformation");
+            const handle = panel?.querySelector(".kraftyPanelBar");
+            const box = handle?.getBoundingClientRect();
+
+            return box
+              ? { top: box.top, bottom: box.bottom, viewport: window.innerHeight }
+              : null;
+          })
+      );
+
+      assert.ok(bar, `no panel at ${height}px`);
+      assert.ok(bar.top >= 0, `bar above the top at ${height}px: ${bar.top}`);
+      assert.ok(
+        bar.bottom <= bar.viewport,
+        `bar below the fold at ${height}px: ${bar.bottom}`
+      );
+    }
+  });
+
+  /* Docking devtools is the everyday version of this: the page viewport
+     shrinks under a panel that was dragged near the bottom, and it drops out
+     of sight with no handle left to grab. */
+  await t.test("pulls a moved panel back when the viewport shrinks", async () => {
+    const after = await withPage(
+      { html: PAGE, checkers: ["nestCheck"], width: 1200, height: 900 },
+      async (page) => {
+        await dragBar(page, 0, 260);
+        await page.setViewport({ width: 1200, height: 300 });
+        /* The handler coalesces onto an animation frame. */
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+          const handle = panel?.querySelector(".kraftyPanelBar");
+          const box = handle?.getBoundingClientRect();
+
+          return box
+            ? { top: box.top, bottom: box.bottom, viewport: window.innerHeight }
+            : null;
+        });
+      }
+    );
+
+    assert.ok(after, "the panel disappeared entirely");
+    assert.ok(after.top >= 0, `bar left above the viewport: ${after.top}`);
+    assert.ok(
+      after.bottom <= after.viewport,
+      `bar left below the viewport: ${after.bottom}`
+    );
+  });
+
   await t.test("closing does not drag, and closes", async () => {
     const result = await withPage(
       { html: PAGE, checkers: ["nestCheck"], width: 1000, height: 700 },

@@ -34,6 +34,10 @@ declare var kraftyPanelPositions:
   | Record<string, { left: number; top: number }>
   | undefined;
 
+/* Set once panel.js has attached its resize listener, so re-injecting the
+   file does not stack another one. */
+declare var kraftyResizeBound: boolean | undefined;
+
 /* checkers.js, shared by the popup and the service worker. */
 interface Checker {
   /** Element id of the popup button that toggles it. */

@@ -37,7 +37,11 @@ $alertColor: #f00;
   display: flex;
   flex-direction: column;
   border-radius: 2px;
-  max-height: 80%;
+  /* 80% normally, but never so tall that the 50px bottom offset pushes the
+     title bar off the top: below about 250px of viewport, 50px + 80% is
+     more than there is. The bar is the only handle and holds the close
+     button, so putting it out of reach strands the panel. */
+  max-height: min(80%, calc(100% - 60px));
   /* Width follows the content, within bounds: without a floor a page whose
      metadata is mostly absent collapses the panel to a sliver. */
   min-width: 280px;
