@@ -9,13 +9,26 @@ $alertColor: #f00;
    copies of the table would have drifted. The models now live in
    js/nestCheck.js, which marks offending elements with a class. */
 
+/* Two rules the panels hold to, both easy to undo by accident:
+
+   Backgrounds are opaque. They were translucent so the page could be
+   glimpsed underneath, which stopped being worth anything once the panels
+   could be dragged out of the way. What it cost was legibility of the
+   lowest contrast text in the panel - the grey notes saying what was *not*
+   checked, which are the lines least affordable to skim past.
+
+   Grey text is #767676 or darker. That is the lightest grey clearing 4.5:1
+   on white, the WCAG AA floor for body text. The greys here were #999, #888
+   and #777, at 2.9:1, 3.5:1 and 4.5:1 - a tool that reports missing alt
+   text has no business failing the same bar in its own interface. */
+
 @mixin panel {
   color: #333;
   font-family: system-ui, sans-serif;
   font-size: 12px;
   position: fixed;
   bottom: 50px;
-  background-color: rgba(255, 255, 255, 0.97);
+  background-color: #fff;
   padding: 0;
   outline: none !important;
   box-shadow: 2px 2px 4px #999;
@@ -142,7 +155,7 @@ $alertColor: #f00;
 
     .kraftyPanelNote {
       margin-top: 10px;
-      color: #888;
+      color: #767676;
     }
   }
 }
@@ -177,7 +190,7 @@ $alertColor: #f00;
     }
 
     .kraftyMissing {
-      color: #999;
+      color: #767676;
       font-style: italic;
     }
 
@@ -194,7 +207,7 @@ $alertColor: #f00;
       font-weight: bold;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #888;
+      color: #767676;
       border: 0;
     }
 
@@ -248,7 +261,7 @@ $alertColor: #f00;
     .kraftyNote {
       margin: 0 0 10px;
       padding: 0;
-      color: #777;
+      color: #767676;
     }
 
     .kraftyPreviewLabel {
@@ -313,7 +326,7 @@ $alertColor: #f00;
         &.kraftyCardImageEmpty {
           padding: 22px 0;
           text-align: center;
-          color: #999;
+          color: #767676;
           font-style: italic;
         }
       }
@@ -323,7 +336,7 @@ $alertColor: #f00;
       }
 
       .kraftyCardDomain {
-        color: #777;
+        color: #767676;
         font-size: 11px;
         text-transform: lowercase;
       }
@@ -358,7 +371,7 @@ $alertColor: #f00;
     color: $alertColor;
     font-size: 12px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: #fff;
     box-shadow: 1px 1px 2px #999;
     margin-top: 10px;
     margin-left: 10px;
