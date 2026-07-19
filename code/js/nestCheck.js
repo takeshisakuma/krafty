@@ -292,6 +292,10 @@
     },
   });
 
+  const head = document.createElement("div");
+  head.className = "kraftyChecksHead";
+  body.appendChild(head);
+
   const summary = document.createElement("div");
   summary.className = "kraftyPanelSummary";
   summary.textContent =
@@ -300,7 +304,24 @@
       : total === 1
         ? kraftyMessage("nestPanelCountOne")
         : kraftyMessage("nestPanelCount", [String(total)]);
-  body.appendChild(summary);
+  head.appendChild(summary);
+
+  /* Same reasoning as the head checker's: the breakdown is what goes into a
+     ticket, and copying it a line at a time is not what anyone wants. The
+     page address leads, because a list of counts means nothing without it. */
+  if (total > 0) {
+    const copyAll = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
+      [
+        location.href,
+        summary.textContent,
+        ...[...totals]
+          .sort((a, b) => b[1] - a[1])
+          .map(([key, count]) => `- ${key} × ${count}`),
+      ].join("\n")
+    );
+    copyAll.classList.add("kraftyCopyAll");
+    head.appendChild(copyAll);
+  }
 
   if (total > 0) {
     const list = document.createElement("ul");

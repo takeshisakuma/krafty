@@ -87,6 +87,16 @@ $alertColor: #f00;
     word-break: break-all;
   }
 
+  /* A count on the left, the button that copies the whole breakdown on the
+     right. Both panels report findings, so both use it. */
+  .kraftyChecksHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
   &.kraftyPanelDragging {
     box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.35);
   }
@@ -213,14 +223,6 @@ $alertColor: #f00;
 
     /* The wording of this line is deliberately narrow, so it must not read
        as a clean bill of health. Green is reserved for nothing. */
-    .kraftyChecksHead {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
     .kraftyChecksSummary {
       font-weight: bold;
 
@@ -384,9 +386,6 @@ $alertColor: #f00;
       }
     }
 
-    .kraftyCopyAll {
-      opacity: 1;
-    }
   }
 }
 

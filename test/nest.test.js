@@ -74,16 +74,45 @@ async function collect() {
       const anError = document.querySelector(".kraftyNestError");
 
       const summary = panel?.querySelector(".kraftyPanelSummary");
+      const pairs = panel?.querySelectorAll(".kraftyPanelList li") ?? [];
 
       return {
         flagged,
         panelText: panel ? (panel.textContent ?? "") : null,
         summaryText: summary ? (summary.textContent ?? "") : null,
+        pairCount: pairs.length,
         errorCount: document.querySelectorAll(".kraftyNestError").length,
         reason: anError ? anError.getAttribute("title") : null,
         titleWhileOn: titled ? titled.getAttribute("title") : null,
       };
     }, CASES.length);
+
+    /* Press the button and catch what it actually writes. Rebuilding the
+       expected text from the DOM instead would pass even if the button
+       assembled something else entirely. */
+    const copied = await page.evaluate(async () => {
+      const button = document.querySelector(".kraftyCopyAll");
+
+      if (!(button instanceof HTMLElement)) {
+        return null;
+      }
+
+      /** @type {string | null} */
+      let written = null;
+
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (/** @type {string} */ text) => {
+            written = text;
+          },
+        },
+      });
+
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return written;
+    });
 
     /* Toggle off and confirm the page is left as it was found. */
     await page.evaluate(SCRIPTS.nestCheck);
@@ -99,7 +128,7 @@ async function collect() {
       };
     });
 
-    return { ...scan, after };
+    return { ...scan, copied, after };
   });
 }
 
@@ -147,6 +176,22 @@ test("nest checker", async (t) => {
   await t.test("does not destroy a title the page already had", () => {
     assert.match(String(result.titleWhileOn), /ul/);
     assert.strictEqual(result.after.restoredTitle, "page tooltip");
+  });
+
+  await t.test("offers the breakdown as one block to copy", () => {
+    assert.ok(result.copied, "expected the button to write something");
+
+    /* The address leads: a list of counts means nothing without knowing
+       which page produced it. */
+    assert.match(String(result.copied), /^https?:\/\/|^about:/);
+    assert.match(String(result.copied), /- ul > div × 2/);
+
+    const lines = String(result.copied).split("\n");
+    assert.strictEqual(
+      lines.length,
+      2 + result.pairCount,
+      "expected the address, the total, and one line per pair"
+    );
   });
 
   await t.test("leaves nothing behind when toggled off", () => {
