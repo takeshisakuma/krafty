@@ -1,8 +1,8 @@
 # Roadmap
 
-Improvements considered while fixing the nest checker (2026-07), kept here
-so the reasoning survives the next long gap. Nothing below is committed to;
-the ordering is a recommendation, not a plan.
+Started while fixing the nest checker (2026-07) and kept up since, so the
+reasoning survives the next long gap. The ordering is a recommendation, not
+a plan — except for "Wanted", which is work that has been asked for.
 
 ## Measurements this is based on
 
@@ -127,6 +127,65 @@ grids, exactly the Rakuten case) they overlap and become unreadable.
 Whether this hurts in practice is unconfirmed - check against a real
 workload before designing a fix.
 
+## Wanted
+
+Four new checks, asked for 2026-07-20. All four are things a machine can
+decide on its own, and all four sit inside a page with no network involved.
+Roughly in the order they seem worth doing.
+
+### 8. Heading outline
+
+The Outline Checker draws a box around every element and never shows the
+outline it is named after. Meanwhile the heading structure — the thing a
+director checks first on a delivery — is not reported at all.
+
+The mechanical half: more than one h1, a level skipped (h2 followed by h4),
+a heading with no text. Those are decidable and belong with the findings.
+
+The human half: whether the headings read as a sensible outline of the page,
+which no check can answer. Show them as an indented list for the reader to
+scan, the way Head Check draws the previews. The same split applies, and the
+panel shape (count, breakdown, copy) is already built.
+
+Worth deciding early whether this extends the Outline Checker or becomes a
+sixth checker. Extending it fits the name; a separate one keeps each toggle
+doing one thing.
+
+### 9. Images served larger than they are shown
+
+`naturalWidth` against `clientWidth` finds a 3000px image displayed at
+300px. No network needed, nothing ambiguous about it, and it is a common
+enough defect that directors get blamed for the page weight.
+
+`width` and `height` attributes missing is the same walk, and is what causes
+the layout to jump while images load.
+
+One trap: `srcset` and high-DPR displays legitimately serve larger than the
+CSS size, so a flat "twice the size" rule would fire on every correctly
+built retina image. The threshold has to account for
+`window.devicePixelRatio`.
+
+### 10. Inputs with no label
+
+An `input`, `select` or `textarea` with no `label for`, no wrapping label,
+no `aria-label` and no `aria-labelledby`. Exactly the same kind of finding
+as a missing alt, equally decidable, and currently missing while alt is
+covered — which is half a job.
+
+Skip `hidden`, `submit`, `button` and `reset`, which do not take one.
+
+### 11. Link text
+
+Empty `href`, `href="#"`, and links whose text says only "こちら", "click
+here", "詳細" and the like: read out of context in a screen reader's link
+list, they say nothing.
+
+The mechanical part is the empty and placeholder hrefs, plus the same text
+pointing at different URLs, which is a genuine contradiction. Whether a
+given phrase is too vague is a judgement, and the list of vague phrases is
+per-language, so lean towards listing the link texts for the reader rather
+than asserting which are wrong.
+
 ## Deferred, with reasons
 
 ### TypeScript — decided, and re-checked
@@ -146,6 +205,27 @@ Re-checked on those terms, the answer is still no, for a different reason.
 ts-check already provides the checking; what full TypeScript adds beyond it
 does not pay for putting a build step in front of files that currently ship
 exactly as committed, which MV3 injected scripts have to do anyway.
+
+### Contrast ratios — not attempted
+
+The obvious neighbour of the Brightness Checker, and the one to be careful
+with. Working out the colour actually behind a piece of text is genuinely
+hard: background images, gradients, transparency, and elements overlapping
+other elements all defeat a simple read of `background-color`. Plenty of
+tools get this wrong and report confidently anyway.
+
+Krafty is built on saying what it cannot decide. A contrast check that is
+right most of the time, presented as though it were right always, would
+undo that. If it is ever attempted, "cannot tell" has to be a first-class
+answer rather than a silent pass.
+
+### A single score — deliberately not
+
+The usual next feature: one number, "SEO 78/100". It reads well and it is
+the wrong shape for this tool. A score reports on everything at once,
+including the parts nothing checked, which is precisely the claim the Head
+Check panel is worded to avoid making. Krafty says what it looked at; a
+score would say it looked at the page.
 
 ### `<style>` in the body stays flagged
 
