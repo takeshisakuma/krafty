@@ -135,15 +135,47 @@ test("head checker", async (t) => {
       [".", "the directory itself"],
     ];
 
-    for (const [href, what] of cases) {
-      const { findings } = await check(
-        `<title>t</title><link rel="canonical" href="${href}">`,
-        { serve: "/" }
-      );
+    /* One page, one browser, the canonical rewritten between runs. Four
+       calls to check() would be four Chrome launches to vary one
+       attribute. */
+    const reported = await withPage(
+      { html: "<p>page</p>", checkers: [], serve: "/" },
+      async (page) => {
+        const { SCRIPTS } = require("./support.js");
 
-      assert.strictEqual(
-        matching(findings, /canonical points at another/).length,
-        0,
+        /** @type {string[]} */
+        const found = [];
+
+        for (const [href] of cases) {
+          await page.evaluate((value) => {
+            document.head.innerHTML = `<title>t</title><link rel="canonical" href="${value}">`;
+          }, href);
+
+          await page.evaluate(SCRIPTS.headCheck);
+
+          const findings = await page.evaluate(() =>
+            [
+              ...(document
+                .getElementById("js-kraftyHeadInformation")
+                ?.querySelectorAll(".kraftyCheck") ?? []),
+            ].map((item) => item.textContent ?? "")
+          );
+
+          found.push(findings.join("\n"));
+
+          /* Toggle off, or the next run finds the checker already on and
+             tears its own panel down instead of building one. */
+          await page.evaluate(SCRIPTS.headCheck);
+        }
+
+        return found;
+      }
+    );
+
+    for (const [index, [, what]] of cases.entries()) {
+      assert.doesNotMatch(
+        reported[index],
+        /canonical points at another/,
         `${what} is not another page`
       );
     }

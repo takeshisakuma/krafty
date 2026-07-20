@@ -30,14 +30,8 @@ const source = (width, height) =>
  */
 async function check(html, deviceScaleFactor = 1) {
   return withPage(
-    { html, checkers: [], width: 1280, height: 900 },
+    { html, checkers: [], width: 1280, height: 900, deviceScaleFactor },
     async (page) => {
-      await page.setViewport({
-        width: 1280,
-        height: 900,
-        deviceScaleFactor,
-      });
-
       /* naturalWidth is 0 until the image has arrived, so the checker would
          count everything as unmeasured if it ran first. */
       await page.waitForFunction(() =>
@@ -59,6 +53,10 @@ async function check(html, deviceScaleFactor = 1) {
           notes: [...(panel?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
             (note) => note.textContent ?? ""
           ),
+          /* The allowance note is a .kraftyNote, not a .kraftyPanelNote -
+             a distinction the first version of the allowance test missed,
+             which is why it passed without ever reading this. */
+          basis: panel?.querySelector(".kraftyNote")?.textContent ?? "",
           summary:
             panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
         };
@@ -102,12 +100,14 @@ test("image checker", async (t) => {
        directly would clear the 2x asset on a retina screen and flag it on a
        1x one - the same page, two verdicts, with nothing on screen saying
        which you are looking at. */
-    const markup = `<img src="${source(600, 400)}" width="300" height="200" style="width:300px;height:200px">`;
+    /* The 1x run is the test above; this is the same markup on a 2x
+       display. Repeating the 1x case here would buy a browser launch to
+       re-prove it. */
+    const onRetina = await check(
+      `<img src="${source(600, 400)}" width="300" height="200" style="width:300px;height:200px">`,
+      2
+    );
 
-    const onePlain = await check(markup, 1);
-    const onRetina = await check(markup, 2);
-
-    assert.deepStrictEqual(onePlain.findings, []);
     assert.deepStrictEqual(onRetina.findings, []);
   });
 
@@ -183,16 +183,19 @@ test("image checker", async (t) => {
 
   await t.test("states the allowance it judged against", async () => {
     /* The threshold is conventional, not measured. Saying so is the same
-       promise the head checker's summary makes. */
+       promise the head checker's summary makes.
+
+       Asserted against the note itself, and against its shape rather than a
+       bare digit: the first version matched /2/ across the notes and the
+       rows together, and "3000×2000 shown at 300×200" contains a 2 whether
+       or not the note is rendered at all. It would have passed with the
+       basis deleted - and in fact was not reading the note at all, which is
+       a different class than the one it collected. */
     const result = await check(
       `<img src="${source(3000, 2000)}" style="width:300px;height:200px">`
     );
 
-    const panelText = [...result.notes, ...result.rows].join("\n");
-    assert.ok(
-      /2/.test(panelText),
-      "the reader cannot argue with a ratio whose basis is hidden"
-    );
+    assert.match(result.basis, /Measured against 2× the displayed size/);
   });
 
   await t.test("leaves nothing behind when toggled off", async () => {

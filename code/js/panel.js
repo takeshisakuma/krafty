@@ -221,6 +221,61 @@
   };
 
   /**
+   * A titled section inside a panel body.
+   *
+   * The stylesheet for this - `.kraftySection + .kraftySection` and
+   * `.kraftySectionTitle` - was hoisted into the shared mixin the moment a
+   * second panel wanted it. The DOM that produces it was not, and by the
+   * third checker there were three identical copies of this function. Same
+   * argument, same place.
+   *
+   * @param {HTMLElement} into
+   * @param {string} key
+   * @returns {HTMLElement}
+   */
+  globalThis.kraftySection = (into, key) => {
+    const wrapper = document.createElement("section");
+    wrapper.className = "kraftySection";
+
+    const heading = document.createElement("h2");
+    heading.className = "kraftySectionTitle";
+    heading.textContent = kraftyMessage(key);
+    wrapper.appendChild(heading);
+
+    into.appendChild(wrapper);
+    return wrapper;
+  };
+
+  /**
+   * A label on the left and a copy-the-whole-thing button on the right, for
+   * a list that is not the findings list.
+   *
+   * `kraftyFindings` builds the same row for its summary, but that one is
+   * rewritten as findings arrive, so the two cannot be the same call. What
+   * they can share is the arrangement, which is what `.kraftyChecksHead`
+   * styles - two checkers had hand-rolled it identically.
+   *
+   * @param {HTMLElement} into
+   * @param {string} labelKey
+   * @param {string} copyLabel
+   * @param {() => string} read
+   */
+  globalThis.kraftyListHead = (into, labelKey, copyLabel, read) => {
+    const head = document.createElement("div");
+    head.className = "kraftyChecksHead";
+    into.appendChild(head);
+
+    const label = document.createElement("div");
+    label.className = "kraftyPreviewLabel";
+    label.textContent = kraftyMessage(labelKey);
+    head.appendChild(label);
+
+    const copy = kraftyCopyButton(copyLabel, read);
+    copy.classList.add("kraftyCopyAll");
+    head.appendChild(copy);
+  };
+
+  /**
    * The findings block: a count, a button that copies the lot, and the list
    * itself. Two checkers report this way and a third would have made a third
    * copy, so it lives here rather than in whichever checker wrote it first.
@@ -233,7 +288,7 @@
    * for a network round trip reports through the same path.
    *
    * @param {HTMLElement} into
-   * @returns {{ report: (level: "alert" | "note", key: string, substitutions?: string[]) => void }}
+   * @returns {{ report: (level: "alert" | "note", key: string, substitutions?: string[]) => void, reportText: (level: "alert" | "note", text: string) => void }}
    */
   globalThis.kraftyFindings = (into) => {
     const head = document.createElement("div");
@@ -275,17 +330,27 @@
 
     describe();
 
+    /**
+     * @param {"alert" | "note"} level
+     * @param {string} text
+     */
+    const reportText = (level, text) => {
+      found += 1;
+
+      const item = document.createElement("li");
+      item.className = `kraftyCheck kraftyCheck-${level}`;
+      item.textContent = text;
+      list.appendChild(item);
+
+      describe();
+    };
+
     return {
-      report: (level, key, substitutions) => {
-        found += 1;
-
-        const item = document.createElement("li");
-        item.className = `kraftyCheck kraftyCheck-${level}`;
-        item.textContent = kraftyMessage(key, substitutions);
-        list.appendChild(item);
-
-        describe();
-      },
+      reportText,
+      /* The common case: a key to look up. reportText is for a caller that
+         has already resolved one, which counted messages have to do. */
+      report: (level, key, substitutions) =>
+        reportText(level, kraftyMessage(key, substitutions)),
     };
   };
 

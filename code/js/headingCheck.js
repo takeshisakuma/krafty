@@ -146,26 +146,9 @@
     },
   });
 
-  /**
-   * @param {string} key
-   * @returns {HTMLElement}
-   */
-  const section = (key) => {
-    const wrapper = document.createElement("section");
-    wrapper.className = "kraftySection";
-
-    const heading = document.createElement("h2");
-    heading.className = "kraftySectionTitle";
-    heading.textContent = kraftyMessage(key);
-    wrapper.appendChild(heading);
-
-    body.appendChild(wrapper);
-    return wrapper;
-  };
-
   /* --- what a machine can decide --- */
 
-  const { report } = kraftyFindings(section("sectionChecks"));
+  const { report } = kraftyFindings(kraftySection(body, "sectionChecks"));
 
   const topLevel = outline.filter((entry) => entry.level === 1);
 
@@ -202,37 +185,30 @@
   /* --- what only a person can decide --- */
 
   if (outline.length > 0) {
-    const reviewSection = section("sectionReview");
+    const reviewSection = kraftySection(body, "sectionReview");
 
     const note = document.createElement("p");
     note.className = "kraftyNote";
     note.textContent = kraftyMessage("headingReviewNote");
     reviewSection.appendChild(note);
 
-    const head = document.createElement("div");
-    head.className = "kraftyChecksHead";
-    reviewSection.appendChild(head);
-
-    const label = document.createElement("div");
-    label.className = "kraftyPreviewLabel";
-    label.textContent = kraftyMessage("headingOutlineLabel");
-    head.appendChild(label);
-
     /* The indented text is the shape of the thing, so the copy keeps the
        indentation rather than flattening it into a list of tags. */
-    const copy = kraftyCopyButton(kraftyMessage("copyOutline"), () =>
-      [
-        location.href,
-        ...outline.map(
-          (entry) =>
-            `${"  ".repeat(Math.max(entry.level - 1, 0))}${entry.tag} ${
-              entry.label || kraftyMessage("valueEmpty")
-            }`
-        ),
-      ].join("\n")
+    kraftyListHead(
+      reviewSection,
+      "headingOutlineLabel",
+      kraftyMessage("copyOutline"),
+      () =>
+        [
+          location.href,
+          ...outline.map(
+            (entry) =>
+              `${"  ".repeat(Math.max(entry.level - 1, 0))}${entry.tag} ${
+                entry.label || kraftyMessage("valueEmpty")
+              }`
+          ),
+        ].join("\n")
     );
-    copy.classList.add("kraftyCopyAll");
-    head.appendChild(copy);
 
     const list = document.createElement("ol");
     list.className = "kraftyOutline";
@@ -276,10 +252,7 @@
   if (hidden > 0) {
     const note = document.createElement("div");
     note.className = "kraftyPanelNote";
-    note.textContent =
-      hidden === 1
-        ? kraftyMessage("headingHiddenOne")
-        : kraftyMessage("headingHidden", [String(hidden)]);
+    note.textContent = kraftyCount("headingHidden", hidden);
     body.appendChild(note);
   }
 

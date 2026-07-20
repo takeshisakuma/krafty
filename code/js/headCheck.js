@@ -140,22 +140,8 @@
     },
   });
 
-  /**
-   * @param {string} key
-   * @returns {HTMLElement}
-   */
-  const section = (key) => {
-    const wrapper = document.createElement("section");
-    wrapper.className = "kraftySection";
-
-    const heading = document.createElement("h2");
-    heading.className = "kraftySectionTitle";
-    heading.textContent = kraftyMessage(key);
-    wrapper.appendChild(heading);
-
-    body.appendChild(wrapper);
-    return wrapper;
-  };
+  /** @param {string} key */
+  const section = (key) => kraftySection(body, key);
 
   const { report } = kraftyFindings(section("sectionChecks"));
 

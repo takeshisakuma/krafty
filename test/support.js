@@ -105,12 +105,12 @@ function serveOnce(body) {
  * location or resolving a relative URL needs.
  *
  * @template T
- * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean, serve?: string }} options
+ * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean, deviceScaleFactor?: number, serve?: string }} options
  * @param {(page: import("puppeteer").Page) => Promise<T>} run
  * @returns {Promise<T>}
  */
 async function withPage(
-  { html, checkers = [], width, height, hasTouch, serve },
+  { html, checkers = [], width, height, hasTouch, deviceScaleFactor, serve },
   run
 ) {
   const browser = await puppeteer.launch({ channel: "chrome" });
@@ -122,7 +122,12 @@ async function withPage(
     const page = await browser.newPage();
 
     if (width && height) {
-      await page.setViewport({ width, height, hasTouch: Boolean(hasTouch) });
+      await page.setViewport({
+        width,
+        height,
+        hasTouch: Boolean(hasTouch),
+        deviceScaleFactor: deviceScaleFactor ?? 1,
+      });
     }
 
     const document = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${html}</body></html>`;
