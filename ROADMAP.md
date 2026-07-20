@@ -209,9 +209,10 @@ workload before designing a fix.
 ## Wanted
 
 Four new checks were asked for on 2026-07-20. The heading outline is item 6
-above and the image sizes are item 7; these are the other two. Both are
-things a machine can decide on its own, and both sit inside a page with no
-network involved.
+above and the image sizes are item 7; items 10 and 11 are the other two.
+Both are things a machine can decide on its own, and both sit inside a page
+with no network involved. Item 12 was proposed later the same day and needs
+its boundary settling before it is worth building.
 
 ### 10. Inputs with no label
 
@@ -233,6 +234,68 @@ pointing at different URLs, which is a genuine contradiction. Whether a
 given phrase is too vague is a judgement, and the list of vague phrases is
 per-language, so lean towards listing the link texts for the reader rather
 than asserting which are wrong.
+
+### 12. Development leftovers
+
+Asked for 2026-07-20: find the things that were only ever meant to be there
+during the build — `console.log` was the example given. The instinct is
+right and it is the kind of defect a director is blamed for. The example is
+the weakest member of the family, though, and working out why is most of
+the design.
+
+**Why `console.log` itself is close to unreachable.** Two walls, and the
+second decides it.
+
+Most `console.log` lives in bundled external JavaScript, and a content
+script cannot read the source of a cross-origin script. Inline `<script>`
+can be scanned; that is a small minority of the calls on a modern site.
+
+Catching the calls as they happen means wrapping `console` before the
+page's own scripts run, which means a content script at `document_start`,
+which means host permissions for every site. `activeTab` grants access
+after a user gesture, by which time the logging has already happened. The
+alternative is reloading the tab with instrumentation in place, which
+throws away the scroll position and form state of the page being audited.
+
+So the price of this one check is the permission model. Krafty asks for
+`activeTab` and `scripting`, and the store listing says it collects
+nothing; trading that for a partial view of one class of defect is not a
+trade worth making. If it is ever revisited, that is the cost to weigh, not
+the difficulty of the code.
+
+**And the failure would be silent.** A panel that scanned inline scripts
+and reported nothing would be read as "no debug output left", when what it
+means is "the external bundles were not read". That is the exact claim the
+head checker's summary is worded to avoid making. Any version of this that
+ships has to say what it did not look at, in the panel, every time.
+
+**What is decidable, and worth more than the original example:**
+
+- **`localhost`, `127.0.0.1`, `::1`, `.local` and RFC1918 addresses** in
+  any `src`, `href`, `srcset` or `action`. Unambiguous, and a production
+  page pointing at `http://localhost:3000/hero.jpg` is exactly the handover
+  embarrassment this idea is aimed at. On its own this would justify the
+  checker.
+- **Mixed content** — `http://` resources on an `https://` page. Fully
+  decidable, and the browser blocks them, so the page is already broken.
+- **Placeholder image services** — `placehold.co`, `via.placeholder.com`,
+  `dummyimage.com`. A closed list, no judgement involved.
+- **Developer markers in HTML comments** — TODO, FIXME, XXX, 仮, 後で,
+  後日差し替え. That the comment exists is decidable; whether it matters is
+  not, so list them rather than grading them.
+- **Inline `console.log`, `debugger`, `alert`** — worth including once the
+  panel is honest about only reading inline scripts.
+
+**What has to stay a listing rather than a finding:**
+
+- **Staging-looking hostnames** — `stg.`, `dev.`, `staging.`, `test.`.
+  A guess: `dev.example.com` can be a product. Show them, do not assert.
+- **Dummy text** — Lorem ipsum, あああ, テストです. Per-language and
+  open-ended, the same shape as the vague link text in item 11.
+
+Undecided: whether this is an eighth checker or joins item 11's, since
+several of these are link and resource addresses and that walk is the same
+one. Worth deciding when item 11 is built rather than now.
 
 ## Deferred, with reasons
 
