@@ -25,8 +25,6 @@
     return;
   }
 
-  document.body.classList.remove("kraftyBrightnessChecker");
-
   if (!document.body.classList.toggle("kraftyHeadChecker")) {
     return;
   }
@@ -166,7 +164,7 @@
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
       className: "kraftyHeadInformation",
-      title: kraftyMessage("headPanelTitle"),
+      title: kraftyMessage("checkerHead"),
       onRescan: run,
       onClose: () => {
         panel.remove();

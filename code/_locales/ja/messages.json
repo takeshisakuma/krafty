@@ -45,7 +45,7 @@
       }
     }
   },
-  "nestPanelTitle": {
+  "checkerNest": {
     "message": "ネストチェック",
     "description": "Heading of the findings panel."
   },
@@ -81,11 +81,35 @@
     "message": "閉じる",
     "description": "Label of the button that dismisses a panel."
   },
+  "checkerOutline": {
+    "message": "アウトラインチェック",
+    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
+  },
+  "checkerAlt": {
+    "message": "alt チェック",
+    "description": "Menu label for the checker that draws every image's alt text."
+  },
+  "checkerBrightness": {
+    "message": "明度チェック",
+    "description": "Menu label for the checker that greys the page."
+  },
+  "popupGroupReports": {
+    "message": "結果を報告する",
+    "description": "Heading over the checkers that open a panel and say what they found."
+  },
+  "popupGroupOverlays": {
+    "message": "ページに重ねて見る",
+    "description": "Heading over the checkers that draw over the page instead of reporting."
+  },
+  "popupReview": {
+    "message": "レビュー結果をコピー",
+    "description": "Runs every checker that reports and puts all of their findings on the clipboard."
+  },
   "panelRescan": {
     "message": "再チェック",
     "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
   },
-  "headPanelTitle": {
+  "checkerHead": {
     "message": "ヘッドチェック",
     "description": "Heading of the head metadata panel."
   },
@@ -147,7 +171,7 @@
     "message": "og:image なし",
     "description": "Shown in place of the card image when og:image is absent."
   },
-  "markupPanelTitle": {
+  "checkerMarkup": {
     "message": "マークアップチェック",
     "description": "Heading of the markup panel. Named for the family, not for the one check it starts with."
   },
@@ -187,7 +211,7 @@
     "message": "見出しセルの無いテーブルが 1 個あります。どのセルも見出しなしで読み上げられます",
     "description": "Used when exactly one table is missing its headers."
   },
-  "imagePanelTitle": {
+  "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."
   },
@@ -265,7 +289,7 @@
     "message": "読み込みが終わっていないため測定できなかった画像が 1 個あります。表示領域までスクロールしてから再度実行してください。",
     "description": "Used when exactly one image was not measurable."
   },
-  "headingPanelTitle": {
+  "checkerHeading": {
     "message": "見出しチェック",
     "description": "Heading of the heading structure panel."
   },

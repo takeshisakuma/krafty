@@ -120,7 +120,7 @@
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
       className: "kraftyImageInformation",
-      title: kraftyMessage("imagePanelTitle"),
+      title: kraftyMessage("checkerImage"),
       onRescan: run,
       onClose: () => {
         panel.remove();
