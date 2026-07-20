@@ -143,6 +143,84 @@
     "message": "og:image なし",
     "description": "Shown in place of the card image when og:image is absent."
   },
+  "imagePanelTitle": {
+    "message": "画像チェック",
+    "description": "Heading of the image weight panel."
+  },
+  "imageSectionList": {
+    "message": "該当する画像",
+    "description": "Heading of the section listing the oversized images."
+  },
+  "imageListLabel": {
+    "message": "表示サイズより大きく配信されている画像",
+    "description": "Label above the list of oversized images."
+  },
+  "imageOversized": {
+    "message": "表示サイズよりかなり大きく配信されている画像が $count$ 個あります",
+    "description": "Wasted bytes: the browser downloads pixels it then throws away.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "imageOversizedOne": {
+    "message": "表示サイズよりかなり大きく配信されている画像が 1 個あります",
+    "description": "Used when exactly one image is oversized."
+  },
+  "imageNoSize": {
+    "message": "width と height の無い画像が $count$ 個あります。読み込み中にレイアウトがずれます",
+    "description": "Without the attributes the browser cannot reserve the space.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "imageNoSizeOne": {
+    "message": "width と height の無い画像が 1 個あります。読み込み中にレイアウトがずれます",
+    "description": "Used when exactly one image is missing its dimensions."
+  },
+  "imageSizeComparison": {
+    "message": "$natural$ を $shown$ で表示",
+    "description": "The file's own size against the size it is displayed at.",
+    "placeholders": {
+      "natural": {
+        "content": "$1",
+        "example": "3000×2000"
+      },
+      "shown": {
+        "content": "$2",
+        "example": "300×200"
+      }
+    }
+  },
+  "imageAllowanceNote": {
+    "message": "表示サイズの $allowance$ 倍を基準に判定しています。高精細ディスプレイ向けに用意された画像は指摘されません。各行の倍率は、その基準をどれだけ超えているかです。",
+    "description": "States the basis, because the threshold is conventional rather than measured.",
+    "placeholders": {
+      "allowance": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "imageUnmeasured": {
+    "message": "読み込みが終わっていないため測定できなかった画像が $count$ 個あります。表示領域までスクロールしてから再度実行してください。",
+    "description": "Lazy loaded images below the fold have no natural size yet.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "imageUnmeasuredOne": {
+    "message": "読み込みが終わっていないため測定できなかった画像が 1 個あります。表示領域までスクロールしてから再度実行してください。",
+    "description": "Used when exactly one image was not measurable."
+  },
   "headingPanelTitle": {
     "message": "見出しチェック",
     "description": "Heading of the heading structure panel."
@@ -355,6 +433,10 @@
     "message": "見出しチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandImageCheck": {
+    "message": "画像チェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "アウトラインチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -393,6 +475,14 @@
   },
   "manualHeadingBody": {
     "message": "見出し構造について自動で確認できる範囲を報告し、見出しを字下げした一覧として表示します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualImageTitle": {
+    "message": "画像チェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualImageBody": {
+    "message": "表示領域よりかなり大きく配信されている画像と、width / height 属性の無い画像を見つけます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

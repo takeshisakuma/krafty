@@ -25,6 +25,7 @@ const SCRIPTS = {
   nestCheck: read("code", "js", "nestCheck.js"),
   headCheck: read("code", "js", "headCheck.js"),
   headingCheck: read("code", "js", "headingCheck.js"),
+  imageCheck: read("code", "js", "imageCheck.js"),
 };
 
 /* The real message file, so a mistyped key or a broken placeholder fails

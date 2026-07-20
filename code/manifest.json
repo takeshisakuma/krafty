@@ -30,6 +30,9 @@
     "heading-check": {
       "description": "__MSG_commandHeadingCheck__"
     },
+    "image-check": {
+      "description": "__MSG_commandImageCheck__"
+    },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"
     },

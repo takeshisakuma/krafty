@@ -265,6 +265,70 @@ $alertColor: #f00;
   }
 }
 
+/* --- image checker --- */
+
+#js-kraftyImageInformation.kraftyImageInformation {
+  display: none;
+}
+
+.kraftyImageChecker {
+  #js-kraftyImageInformation.kraftyImageInformation {
+    @include panel;
+
+    /* The fourth corner: head takes the bottom left, nest the bottom right,
+       heading the top right.
+
+       That is the last one, and it does not mean four panels never meet. A
+       tall head checker growing to 80% of the height from the bottom left
+       reaches into this one. There is no arrangement of four panels that
+       avoids it, which is why they are draggable - the corners are a
+       sensible place to start from, not a promise. */
+    left: 50px;
+    top: 50px;
+    bottom: auto;
+
+    .kraftyImageList {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: baseline;
+        column-gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      code {
+        font-family: ui-monospace, monospace;
+        background: none;
+        color: #333;
+      }
+
+      .kraftyImageSizes {
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+      }
+
+      /* The ratio is the reason the row is here, so it carries the weight
+         the wording deliberately does not. */
+      .kraftyPanelCount {
+        color: #7a5400;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .kraftyImageSrc {
+        grid-column: 1;
+        color: #767676;
+      }
+    }
+  }
+}
+
 /* --- heading checker --- */
 
 #js-kraftyHeadingInformation.kraftyHeadingInformation {
