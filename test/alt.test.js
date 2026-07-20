@@ -159,6 +159,72 @@ test("alt checker", async (t) => {
     );
   });
 
+  await t.test("keeps a folded label inside its own image", async () => {
+    /* A row of book covers, which is where this went wrong: a label wider
+       than its cover reached across the next one and ended up under that
+       cover's label - unreadable, and unhoverable, so the way to open it
+       was behind the thing covering it. */
+    const row = Array.from(
+      { length: 6 },
+      (_, index) =>
+        `<img src="${PIXEL}" alt="${index} ${LONG}" width="120" height="180"
+              style="width:120px;height:180px">`
+    ).join("");
+
+    const state = await withPage(
+      {
+        html: `<div style="display:flex;gap:8px">${row}</div>`,
+        checkers: ["altCheck"],
+        width: 1280,
+        height: 900,
+      },
+      (page) =>
+        page.evaluate(() => {
+          const labels = [...document.querySelectorAll(".kraftyAltContent")];
+          const boxes = labels.map((label) =>
+            label.getBoundingClientRect()
+          );
+
+          let overlaps = 0;
+
+          for (let i = 0; i < boxes.length; i += 1) {
+            for (let j = i + 1; j < boxes.length; j += 1) {
+              const a = boxes[i];
+              const b = boxes[j];
+
+              if (
+                a.left < b.right &&
+                b.left < a.right &&
+                a.top < b.bottom &&
+                b.top < a.bottom
+              ) {
+                overlaps += 1;
+              }
+            }
+          }
+
+          return { widths: boxes.map((box) => box.width), overlaps };
+        })
+    );
+
+    assert.strictEqual(state.widths.length, 6);
+
+    for (const width of state.widths) {
+      assert.ok(
+        width <= 120,
+        `a folded label must not be wider than its 120px image, got ${Math.round(
+          width
+        )}px`
+      );
+    }
+
+    assert.strictEqual(
+      state.overlaps,
+      0,
+      "labels that stay inside their images cannot cover each other"
+    );
+  });
+
   await t.test("still separates a missing alt from a deliberately empty one", async () => {
     /* The two look identical in a browser and mean opposite things, which
        is the reason this checker exists. */

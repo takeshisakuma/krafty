@@ -653,18 +653,31 @@ $panelInset: 50px;
     z-index: 2147483646;
     outline: none !important;
 
-    /* Narrow enough to leave the picture visible beside it, wide enough
-       that two lines are worth reading. */
-    max-width: 220px;
+    /* Folded, a label stays inside its own image's width, set per label by
+       the script. A wider one reaches across the picture beside it and ends
+       up under that picture's label, where it cannot be read and - the part
+       that actually breaks this - cannot be hovered either, so the way to
+       open it sits behind the thing covering it.
+
+       220px is the width when open, and the width the script measures the
+       height at. */
+    max-width: var(--kraftyAltWidth, 220px);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
 
+    /* So max-width is the width the label actually occupies. Under
+       content-box the 10px padding sits outside it, and a label told to
+       match a 120px cover drew 140px - still over the neighbour, which is
+       the whole thing being fixed. It also makes max-height comparable with
+       the scrollHeight the script measures, since that counts padding. */
+    box-sizing: border-box;
+
     /* Stated, so two lines is a number rather than whatever the page's own
        line-height happened to be. */
     line-height: 1.4;
-    max-height: 2.8em;
+    max-height: calc(2.8em + 20px);
 
     /* Opening has to look like something the label does, not something that
        was wrong until the pointer arrived. Snapping open reads as a
@@ -680,6 +693,8 @@ $panelInset: 50px;
        the animation is there to avoid. */
     &:hover {
       -webkit-line-clamp: 40;
+      /* Free of its image now that it is above everything. */
+      max-width: 220px;
       /* Set per label by the script, from its own content. The fallback is
          for the case where that never ran. */
       max-height: var(--kraftyAltFull, 24em);

@@ -31,15 +31,42 @@
     return { text: kraftyMessage("altPresent", [alt]), state: null };
   };
 
-  /** @type {HTMLElement[]} */
+  const subjects = [
+    ...document.querySelectorAll('img, input[type="image"]'),
+    /* Skip the head checker's own preview images. */
+  ].filter((image) => !image.classList.contains("headImage"));
+
+  /* Where each image actually is.
+
+     The labels used to be inserted next to their image and positioned
+     absolutely with no offsets, which puts them at their static position -
+     where the label would have sat had it stayed in the flow. It does not
+     stay in the flow, so the next label's static position never advances,
+     and a row of images gets every one of its labels stacked at the first.
+     Measured on five covers in a flex row: images at 8, 136, 264, 392, 520
+     and all five labels at 18. Only the last was visible; the rest were
+     under it, unreadable and unhoverable, nowhere near the picture they
+     described.
+
+     So the position is measured rather than inherited. This is a snapshot,
+     like everything else here - a page that reflows underneath leaves the
+     labels where they were, which is why the panels say what time they
+     scanned. */
+  const bodyIsPositioned =
+    getComputedStyle(document.body).position !== "static";
+  const bodyBox = bodyIsPositioned
+    ? document.body.getBoundingClientRect()
+    : null;
+
+  const originX = window.scrollX - (bodyBox ? bodyBox.left + window.scrollX : 0);
+  const originY = window.scrollY - (bodyBox ? bodyBox.top + window.scrollY : 0);
+
+  const places = subjects.map((image) => image.getBoundingClientRect());
+
+  /** @type {{ label: HTMLElement, box: DOMRect }[]} */
   const labels = [];
 
-  for (const image of document.querySelectorAll('img, input[type="image"]')) {
-    /* Skip the head checker's own preview images. */
-    if (image.classList.contains("headImage")) {
-      continue;
-    }
-
+  subjects.forEach((image, index) => {
     const { text, state } = describe(image);
 
     const label = document.createElement("span");
@@ -51,31 +78,54 @@
        be read at all where the stylesheet did not arrive. */
     label.title = text;
 
-    /* insertAdjacentElement, not insertAdjacentHTML: a <p> would be dropped
-       when the image sits inside a <p>, and alt text must not be parsed as
-       markup. A <span> is phrasing content, so it is valid wherever an
-       <img> is. */
-    image.insertAdjacentElement("beforebegin", label);
-    labels.push(label);
-  }
+    const box = places[index];
+    label.style.left = `${box.left + originX}px`;
+    label.style.top = `${box.top + originY}px`;
 
-  /* How tall each label wants to be, handed to the stylesheet so the hover
-     can animate to it.
+    /* Appended to the body rather than beside the image, so the coordinates
+       resolve against the document instead of whichever ancestor the page
+       happens to have positioned. */
+    document.body.appendChild(label);
+    labels.push({ label, box });
+  });
 
-     A fixed target does not work. max-height has to be a length to be
-     transitioned, and any length large enough for the longest alt is far
-     past what most of them need - the box reaches its content height in the
-     first fraction of the transition and the rest of the duration plays out
-     invisibly. On a product name it finished in about 30ms of 200ms, which
-     is the snap this is meant to replace.
+  /* Two numbers per label, handed to the stylesheet.
 
-     Read and write in separate passes. Asking one label for its height and
-     then writing to it, over and over, makes the browser lay the page out
-     once per label; a page of ninety images would pay for that ninety
-     times. Every read first, then every write, costs one. */
-  const wanted = labels.map((label) => label.scrollHeight);
+     The width it may take at rest. A label wider than its own image reaches
+     across the one beside it, and in a row of book covers it ends up behind
+     that image's label - unreadable, and worse, unhoverable, so the way to
+     open it is behind the thing covering it. Folded, a label stays inside
+     its own picture's footprint; opened, it is above everything and may
+     spread as wide as it likes.
 
-  labels.forEach((label, index) => {
-    label.style.setProperty("--kraftyAltFull", `${wanted[index]}px`);
+     And the height it wants when open, because max-height has to be a
+     length to be transitioned and a fixed one does not work: any value
+     large enough for the longest alt is far past what most of them need, so
+     the box reaches its content height in the first fraction of the
+     duration and the rest plays out invisibly. Measured, that was about
+     30ms of 200ms - the snap this replaces, with a duration attached.
+
+     Measured before the width is narrowed, which is deliberate. The
+     stylesheet's own 220px is the width a label has when open, so reading
+     here gives the height it will actually need then. Measuring after
+     narrowing would describe the folded shape, which is taller, and the
+     hover would stop short and cut the text.
+
+     One read pass and one write pass. Asking a label for its height and
+     then writing to it, over and over, lays the page out once per label,
+     and ninety images would pay for that ninety times. */
+  /* The widest a label goes when open, matching the stylesheet, and a floor
+     so a favicon-sized image still leaves something readable folded. */
+  const OPEN_WIDTH = 220;
+  const LEAST_WIDTH = 80;
+
+  const measured = labels.map(({ label, box }) => ({
+    height: label.scrollHeight,
+    width: Math.max(Math.min(Math.round(box.width), OPEN_WIDTH), LEAST_WIDTH),
+  }));
+
+  labels.forEach(({ label }, index) => {
+    label.style.setProperty("--kraftyAltFull", `${measured[index].height}px`);
+    label.style.setProperty("--kraftyAltWidth", `${measured[index].width}px`);
   });
 })();

@@ -247,6 +247,26 @@ away. Same split as everywhere else in the tool.
 
 After: 2 labels in a collision, from 33. The pictures are visible.
 
+Then a report from a carousel of book covers turned up the deeper fault,
+which the overlap counting had been describing without explaining. The
+labels were positioned `absolute` with no offsets, which places them at
+their static position — where each would have sat had it stayed in the
+flow. It does not stay in the flow, so the next label's static position
+never advances. Measured on five covers in a row: images at 8, 136, 264,
+392 and 520, and all five labels at 18. Only the last was visible. The rest
+were beneath it, unreadable and — the part that actually broke — unhoverable,
+so the way to open one was behind the thing covering it. They were not
+overlapping their neighbours so much as never leaving the first image.
+
+Positions are measured from each image now and written as coordinates, and
+the label is appended to the body so those coordinates resolve against the
+document rather than whichever ancestor the page happened to position.
+Folded, a label is also capped to its own image's width, so it stays inside
+the picture it belongs to; opened, it is above everything and may spread.
+
+Measured on amazon.co.jp afterwards: worst horizontal drift from its image,
+0px.
+
 Opening is animated, which is not decoration. Snapping open read as a
 rendering fault — as though the text had been broken and the pointer
 happened to reveal it — and this label is drawn over somebody else's page,
@@ -545,3 +565,9 @@ the `MODELS` table in `js/nestCheck.js`, not a preferences screen.
   and titles the checker writes itself.
 - The checkers write classes onto the page's own `<body>`, so a page that
   rewrites `class` on `<body>` can clear them.
+- The alt checker places its labels by measuring where the images are when
+  it runs. A page that reflows afterwards — lazy loaded images arriving
+  below the fold is the everyday case — leaves them where they were.
+  Toggling off and on re-measures. The alternative was leaving them at their
+  static position, which put every label in a row on top of the first image,
+  so this is the better of the two snapshots rather than a fix for both.
