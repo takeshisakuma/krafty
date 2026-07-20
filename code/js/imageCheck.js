@@ -63,8 +63,10 @@
   let unmeasured = 0;
 
   for (const image of document.body.querySelectorAll("img")) {
-    /* Never report the checker's own UI, or the head checker's previews. */
-    if (image.closest(".kraftyPanel") || image.classList.contains("headImage")) {
+    /* Never report the checker's own UI. The head checker's preview images
+       carry a headImage class, which the alt checker has to test for - but
+       they live inside its panel, so this walk has already excluded them. */
+    if (image.closest(".kraftyPanel")) {
       continue;
     }
 
@@ -122,67 +124,34 @@
     },
   });
 
-  /**
-   * @param {string} key
-   * @returns {HTMLElement}
-   */
-  const section = (key) => {
-    const wrapper = document.createElement("section");
-    wrapper.className = "kraftySection";
-
-    const heading = document.createElement("h2");
-    heading.className = "kraftySectionTitle";
-    heading.textContent = kraftyMessage(key);
-    wrapper.appendChild(heading);
-
-    body.appendChild(wrapper);
-    return wrapper;
-  };
-
-  const checksSection = section("sectionChecks");
-  const { report } = kraftyFindings(checksSection);
+  const { reportText } = kraftyFindings(kraftySection(body, "sectionChecks"));
 
   if (oversized.length > 0) {
-    report(
-      "note",
-      oversized.length === 1 ? "imageOversizedOne" : "imageOversized",
-      [String(oversized.length)]
-    );
+    reportText("note", kraftyCount("imageOversized", oversized.length));
   }
 
   if (missingDimensions > 0) {
-    report(
-      "note",
-      missingDimensions === 1 ? "imageNoSizeOne" : "imageNoSize",
-      [String(missingDimensions)]
-    );
+    reportText("note", kraftyCount("imageNoSize", missingDimensions));
   }
 
   /* --- the offending images --- */
 
   if (oversized.length > 0) {
-    const listSection = section("imageSectionList");
+    const listSection = kraftySection(body, "imageSectionList");
 
-    const head = document.createElement("div");
-    head.className = "kraftyChecksHead";
-    listSection.appendChild(head);
-
-    const label = document.createElement("div");
-    label.className = "kraftyPreviewLabel";
-    label.textContent = kraftyMessage("imageListLabel");
-    head.appendChild(label);
-
-    const copy = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
-      [
-        location.href,
-        ...oversized.map(
-          (entry) =>
-            `- ${entry.natural} → ${entry.shown} (×${entry.ratio.toFixed(1)}) ${entry.src}`
-        ),
-      ].join("\n")
+    kraftyListHead(
+      listSection,
+      "imageListLabel",
+      kraftyMessage("copyFindings"),
+      () =>
+        [
+          location.href,
+          ...oversized.map(
+            (entry) =>
+              `- ${entry.natural} → ${entry.shown} (×${entry.ratio.toFixed(1)}) ${entry.src}`
+          ),
+        ].join("\n")
     );
-    copy.classList.add("kraftyCopyAll");
-    head.appendChild(copy);
 
     const list = document.createElement("ul");
     list.className = "kraftyImageList";
@@ -201,7 +170,7 @@
       sizes.appendChild(measurement);
 
       const times = document.createElement("span");
-      times.className = "kraftyPanelCount";
+      times.className = "kraftyImageRatio";
       times.textContent = `×${entry.ratio.toFixed(1)}`;
       sizes.appendChild(times);
 
@@ -235,10 +204,7 @@
   if (unmeasured > 0) {
     const note = document.createElement("div");
     note.className = "kraftyPanelNote";
-    note.textContent =
-      unmeasured === 1
-        ? kraftyMessage("imageUnmeasuredOne")
-        : kraftyMessage("imageUnmeasured", [String(unmeasured)]);
+    note.textContent = kraftyCount("imageUnmeasured", unmeasured);
     body.appendChild(note);
   }
 

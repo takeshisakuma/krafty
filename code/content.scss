@@ -1,6 +1,10 @@
 $color: #fff;
 $alertColor: #f00;
 
+/* How far a panel sits in from the corner it starts at. The max-height
+   below is derived from it, so the two cannot drift apart. */
+$panelInset: 50px;
+
 /* This stylesheet only presents what the injected scripts decide.
 
    The nest checker used to do its own judging here, generating one rule per
@@ -22,12 +26,41 @@ $alertColor: #f00;
    and #777, at 2.9:1, 3.5:1 and 4.5:1 - a tool that reports missing alt
    text has no business failing the same bar in its own interface. */
 
-@mixin panel {
+/* $corner is where the panel starts before anyone drags it. All four
+   offsets are always emitted, because the alternative - a default here and
+   an override in each checker's block - meant every top-anchored panel had
+   to remember to undo `bottom`, and forgetting it anchored the panel to
+   both edges with nothing to say so. */
+@mixin panel($corner) {
   color: #333;
   font-family: system-ui, sans-serif;
   font-size: 12px;
   position: fixed;
-  bottom: 50px;
+
+  @if $corner == top-left {
+    top: $panelInset;
+    right: auto;
+    bottom: auto;
+    left: $panelInset;
+  } @else if $corner == top-right {
+    top: $panelInset;
+    right: $panelInset;
+    bottom: auto;
+    left: auto;
+  } @else if $corner == bottom-left {
+    top: auto;
+    right: auto;
+    bottom: $panelInset;
+    left: $panelInset;
+  } @else if $corner == bottom-right {
+    top: auto;
+    right: $panelInset;
+    bottom: $panelInset;
+    left: auto;
+  } @else {
+    @error "panel(): unknown corner #{$corner}";
+  }
+
   background-color: #fff;
   padding: 0;
   outline: none !important;
@@ -37,11 +70,12 @@ $alertColor: #f00;
   display: flex;
   flex-direction: column;
   border-radius: 2px;
-  /* 80% normally, but never so tall that the 50px bottom offset pushes the
-     title bar off the top: below about 250px of viewport, 50px + 80% is
-     more than there is. The bar is the only handle and holds the close
-     button, so putting it out of reach strands the panel. */
-  max-height: min(80%, calc(100% - 60px));
+  /* 80% normally, but never so tall that the corner offset pushes the title
+     bar past the opposite edge: below about 250px of viewport, the inset
+     plus 80% is more than there is. The bar is the only handle and holds
+     the close button, so putting it out of reach strands the panel. Holds
+     from a top anchor as well as a bottom one. */
+  max-height: min(80%, calc(100% - #{$panelInset + 10px}));
   /* Width follows the content, within bounds: without a floor a page whose
      metadata is mostly absent collapses the panel to a sliver. */
   min-width: 280px;
@@ -140,10 +174,25 @@ $alertColor: #f00;
     }
   }
 
-  .kraftyChecks {
+  /* Every panel's lists are unbulleted, and every panel that shows markup
+     shows it in the same monospace. Each had been restated in the checker's
+     own block - the reset three times, the code rule twice - inside a
+     stylesheet whose whole argument is that shared presentation lives in
+     one place. A more specific rule still wins where a list wants
+     something else. */
+  .kraftyChecks,
+  .kraftyPanelList,
+  .kraftyOutline,
+  .kraftyImageList {
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  code {
+    font-family: ui-monospace, monospace;
+    background: none;
+    color: #333;
   }
 
   /* The body breaks anywhere so long URLs cannot widen the panel. Prose must
@@ -230,18 +279,14 @@ $alertColor: #f00;
 
 .kraftyNestChecker {
   #js-kraftyNestInformation.kraftyNestInformation {
-    @include panel;
-
-    right: 50px;
+    @include panel(bottom-right);
 
     .kraftyPanelSummary {
       font-weight: bold;
     }
 
     .kraftyPanelList {
-      margin: 8px 0 0;
-      padding: 0;
-      list-style: none;
+      margin-top: 8px;
 
       li {
         display: flex;
@@ -249,12 +294,6 @@ $alertColor: #f00;
         gap: 12px;
         padding: 2px 0;
         border-bottom: 1px solid #eee;
-      }
-
-      code {
-        font-family: ui-monospace, monospace;
-        background: none;
-        color: #333;
       }
 
       .kraftyPanelCount {
@@ -273,25 +312,14 @@ $alertColor: #f00;
 
 .kraftyImageChecker {
   #js-kraftyImageInformation.kraftyImageInformation {
-    @include panel;
-
-    /* The fourth corner: head takes the bottom left, nest the bottom right,
-       heading the top right.
-
-       That is the last one, and it does not mean four panels never meet. A
-       tall head checker growing to 80% of the height from the bottom left
-       reaches into this one. There is no arrangement of four panels that
-       avoids it, which is why they are draggable - the corners are a
-       sensible place to start from, not a promise. */
-    left: 50px;
-    top: 50px;
-    bottom: auto;
+    /* The fourth corner, and the last one. That does not mean four panels
+       never meet: a tall head checker growing to 80% of the height from the
+       bottom left reaches into this one. No arrangement of four avoids it,
+       which is why they are draggable - a corner is where a panel starts,
+       not a promise about where it stays. */
+    @include panel(top-left);
 
     .kraftyImageList {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
       li {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -301,12 +329,6 @@ $alertColor: #f00;
         border-bottom: 1px solid #eee;
       }
 
-      code {
-        font-family: ui-monospace, monospace;
-        background: none;
-        color: #333;
-      }
-
       .kraftyImageSizes {
         display: flex;
         align-items: baseline;
@@ -314,8 +336,11 @@ $alertColor: #f00;
       }
 
       /* The ratio is the reason the row is here, so it carries the weight
-         the wording deliberately does not. */
-      .kraftyPanelCount {
+         the wording deliberately does not. Named for itself rather than
+         borrowing .kraftyPanelCount: that class means the nest checker's
+         quiet grey tally, and two meanings behind one shared-looking name
+         stay apart only as long as nobody moves either rule. */
+      .kraftyImageRatio {
         color: #7a5400;
         font-weight: bold;
         white-space: nowrap;
@@ -337,27 +362,14 @@ $alertColor: #f00;
 
 .kraftyHeadingChecker {
   #js-kraftyHeadingInformation.kraftyHeadingInformation {
-    @include panel;
-
-    /* Top right: the last free corner. Both other panels are anchored to the
-       bottom and either can grow to 80% of the height, so sharing a side
-       with one of them means overlapping it on any ordinary viewport - the
-       head checker especially, which is the panel most likely to be open
-       alongside this one during a delivery review.
-
-       The mixin's max-height holds the bottom edge inside the viewport from
-       this anchor too: below 250px of height the calc branch wins, and above
-       it 50px + 80% still fits. */
-    right: 50px;
-    top: 50px;
-    bottom: auto;
+    /* Away from the head checker, which is the panel most likely to be open
+       alongside this one during a delivery review and can grow to 80% of
+       the height from the bottom left. */
+    @include panel(top-right);
 
     /* The indent is set per item, from the heading's own level, because
        aria-level is not capped at six. */
     .kraftyOutline {
-      margin: 0;
-      padding: 0;
-      list-style: none;
       word-break: normal;
       overflow-wrap: anywhere;
     }
@@ -398,9 +410,7 @@ $alertColor: #f00;
 
 .kraftyHeadChecker {
   #js-kraftyHeadInformation.kraftyHeadInformation {
-    @include panel;
-
-    left: 50px;
+    @include panel(bottom-left);
 
     img.headImage {
       box-shadow: 0 0 1px 0px #333;

@@ -301,9 +301,7 @@
   summary.textContent =
     total === 0
       ? kraftyMessage("nestPanelClean")
-      : total === 1
-        ? kraftyMessage("nestPanelCountOne")
-        : kraftyMessage("nestPanelCount", [String(total)]);
+      : kraftyCount("nestPanelCount", total);
   head.appendChild(summary);
 
   /* Same reasoning as the head checker's: the breakdown is what goes into a

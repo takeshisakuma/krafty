@@ -13,7 +13,20 @@ declare var kraftyMessage: (
   substitutions?: string | string[]
 ) => string;
 
+/* A count and its message, picking the "…One" variant of the key when the
+   count is exactly one. */
+declare var kraftyCount: (key: string, count: number) => string;
+
 /* js/panel.js builds the floating panels. */
+declare var kraftySection: (into: HTMLElement, key: string) => HTMLElement;
+
+declare var kraftyListHead: (
+  into: HTMLElement,
+  labelKey: string,
+  copyLabel: string,
+  read: () => string
+) => void;
+
 declare var kraftyPanel: (options: {
   id: string;
   className: string;
@@ -30,6 +43,8 @@ declare var kraftyFindings: (into: HTMLElement) => {
     key: string,
     substitutions?: string[]
   ) => void;
+  /** For a caller holding text it has already resolved, such as a count. */
+  reportText: (level: "alert" | "note", text: string) => void;
 };
 
 /* A button that copies what its callback returns, with a fallback for
