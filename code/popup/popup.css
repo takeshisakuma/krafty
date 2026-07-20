@@ -9,7 +9,11 @@ body {
 
 .checkerList {
   margin: 0;
-  padding: 0;
+  /* Indented under its heading, so the two read as a group rather than as
+     one more line of the same list. The colour bar lands on the heading's
+     own left edge and the labels sit in from it, which puts the hierarchy
+     in the layout instead of asking the wording to carry it. */
+  padding: 0 0 0 16px;
   list-style: none;
 }
 
@@ -28,7 +32,7 @@ body {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 6px 16px 6px 12px;
+  padding: 6px 16px 6px 8px;
   border: 0;
   /* Each checker already had a colour, and it only appeared once the
      pointer was on the button or the checker was running - no help at all

@@ -592,6 +592,12 @@ that draw over the page. That answers "which of these do I want" with
 structure rather than with names, and it matches the review button
 underneath, which runs the first group.
 
+The headings did not read as headings at first, because the entries under
+them began at the same left edge, so a heading was just one more line in the
+same column. The entries are indented now, with the colour bar landing on
+the heading's own left edge and the labels sitting in from it. The hierarchy
+is in the layout rather than asked of the wording.
+
 A checker's menu label is now the same message as its panel's title, so the
 two cannot come to call one checker different things. A test holds it.
 
