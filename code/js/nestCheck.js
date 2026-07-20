@@ -231,124 +231,133 @@
     return;
   }
 
-  /** @type {Map<string, number>} */
-  const totals = new Map();
+  /* Everything below runs again when the panel's rescan button is pressed,
+     which is why the toggle is not part of it. */
+  const run = () => {
+    clear();
 
-  /* The judging sees the DOM as it is now, so elements a single page app
-     inserts later are not marked. Toggle the checker off and on to re-scan. */
-  for (const element of document.body.querySelectorAll("*")) {
-    /* Never report the checker's own UI. */
-    if (
-      element.closest(".kraftyPanel") ||
-      element.classList.contains("kraftyAltContent")
-    ) {
-      continue;
+    /** @type {Map<string, number>} */
+    const totals = new Map();
+
+    /* The judging sees the DOM as it is now, so elements a single page app
+       inserts later are not marked. Toggle the checker off and on to re-scan. */
+    for (const element of document.body.querySelectorAll("*")) {
+      /* Never report the checker's own UI. */
+      if (
+        element.closest(".kraftyPanel") ||
+        element.classList.contains("kraftyAltContent")
+      ) {
+        continue;
+      }
+
+      const finding = judge(element);
+
+      if (!finding) {
+        continue;
+      }
+
+      const { parent, child, allowed } = finding;
+
+      element.classList.add(ERROR_CLASS);
+
+      const lines = [
+        allowed.length === 0
+          ? kraftyMessage("nestReasonEmptyModel", [parent])
+          : kraftyMessage("nestReasonNotAllowed", [child, parent]),
+      ];
+
+      if (allowed.length > 0 && allowed.length <= MAX_LISTED_CHILDREN) {
+        lines.push(
+          kraftyMessage("nestAllowedChildren", [parent, allowed.join(", ")])
+        );
+      }
+
+      const existing = element.getAttribute("title");
+
+      if (existing !== null) {
+        element.setAttribute(SAVED_TITLE, existing);
+      }
+      element.setAttribute("title", lines.join("\n"));
+
+      const key = `${parent} > ${child}`;
+      totals.set(key, (totals.get(key) ?? 0) + 1);
     }
 
-    const finding = judge(element);
+    /* --- findings panel --- */
 
-    if (!finding) {
-      continue;
-    }
+    const total = [...totals.values()].reduce((sum, n) => sum + n, 0);
 
-    const { parent, child, allowed } = finding;
+    const { panel, body } = kraftyPanel({
+      id: PANEL_ID,
+      className: "kraftyNestInformation",
+      title: kraftyMessage("nestPanelTitle"),
+      onRescan: run,
+      onClose: () => {
+        clear();
+        document.body.classList.remove(BODY_CLASS);
+      },
+    });
 
-    element.classList.add(ERROR_CLASS);
+    const head = document.createElement("div");
+    head.className = "kraftyChecksHead";
+    body.appendChild(head);
 
-    const lines = [
-      allowed.length === 0
-        ? kraftyMessage("nestReasonEmptyModel", [parent])
-        : kraftyMessage("nestReasonNotAllowed", [child, parent]),
-    ];
+    const summary = document.createElement("div");
+    summary.className = "kraftyPanelSummary";
+    summary.textContent =
+      total === 0
+        ? kraftyMessage("nestPanelClean")
+        : kraftyCount("nestPanelCount", total);
+    head.appendChild(summary);
 
-    if (allowed.length > 0 && allowed.length <= MAX_LISTED_CHILDREN) {
-      lines.push(
-        kraftyMessage("nestAllowedChildren", [parent, allowed.join(", ")])
+    /* Same reasoning as the head checker's: the breakdown is what goes into a
+       ticket, and copying it a line at a time is not what anyone wants. The
+       page address leads, because a list of counts means nothing without it. */
+    if (total > 0) {
+      const copyAll = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
+        [
+          location.href,
+          summary.textContent,
+          ...[...totals]
+            .sort((a, b) => b[1] - a[1])
+            .map(([key, count]) => `- ${key} × ${count}`),
+        ].join("\n")
       );
+      copyAll.classList.add("kraftyCopyAll");
+      head.appendChild(copyAll);
     }
 
-    const existing = element.getAttribute("title");
+    if (total > 0) {
+      const list = document.createElement("ul");
+      list.className = "kraftyPanelList";
 
-    if (existing !== null) {
-      element.setAttribute(SAVED_TITLE, existing);
-    }
-    element.setAttribute("title", lines.join("\n"));
+      for (const [key, count] of [...totals].sort((a, b) => b[1] - a[1])) {
+        const item = document.createElement("li");
 
-    const key = `${parent} > ${child}`;
-    totals.set(key, (totals.get(key) ?? 0) + 1);
-  }
+        const label = document.createElement("code");
+        label.textContent = key;
+        item.appendChild(label);
 
-  /* --- findings panel --- */
+        const times = document.createElement("span");
+        times.className = "kraftyPanelCount";
+        times.textContent = `× ${count}`;
+        item.appendChild(times);
 
-  const total = [...totals.values()].reduce((sum, n) => sum + n, 0);
+        list.appendChild(item);
+      }
 
-  const { panel, body } = kraftyPanel({
-    id: PANEL_ID,
-    className: "kraftyNestInformation",
-    title: kraftyMessage("nestPanelTitle"),
-    onClose: () => {
-      clear();
-      document.body.classList.remove(BODY_CLASS);
-    },
-  });
-
-  const head = document.createElement("div");
-  head.className = "kraftyChecksHead";
-  body.appendChild(head);
-
-  const summary = document.createElement("div");
-  summary.className = "kraftyPanelSummary";
-  summary.textContent =
-    total === 0
-      ? kraftyMessage("nestPanelClean")
-      : kraftyCount("nestPanelCount", total);
-  head.appendChild(summary);
-
-  /* Same reasoning as the head checker's: the breakdown is what goes into a
-     ticket, and copying it a line at a time is not what anyone wants. The
-     page address leads, because a list of counts means nothing without it. */
-  if (total > 0) {
-    const copyAll = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
-      [
-        location.href,
-        summary.textContent,
-        ...[...totals]
-          .sort((a, b) => b[1] - a[1])
-          .map(([key, count]) => `- ${key} × ${count}`),
-      ].join("\n")
-    );
-    copyAll.classList.add("kraftyCopyAll");
-    head.appendChild(copyAll);
-  }
-
-  if (total > 0) {
-    const list = document.createElement("ul");
-    list.className = "kraftyPanelList";
-
-    for (const [key, count] of [...totals].sort((a, b) => b[1] - a[1])) {
-      const item = document.createElement("li");
-
-      const label = document.createElement("code");
-      label.textContent = key;
-      item.appendChild(label);
-
-      const times = document.createElement("span");
-      times.className = "kraftyPanelCount";
-      times.textContent = `× ${count}`;
-      item.appendChild(times);
-
-      list.appendChild(item);
+      body.appendChild(list);
     }
 
-    body.appendChild(list);
-  }
+    const scanned = document.createElement("div");
+    scanned.className = "kraftyPanelNote";
+    scanned.textContent = kraftyMessage("panelScannedAt", [
+      new Date().toLocaleTimeString(),
+    ]);
+    body.appendChild(scanned);
 
-  const scanned = document.createElement("div");
-  scanned.className = "kraftyPanelNote";
-  scanned.textContent = kraftyMessage("panelScannedAt", [
-    new Date().toLocaleTimeString(),
-  ]);
-  body.appendChild(scanned);
+    document.body.appendChild(panel);
+  };
 
-  document.body.appendChild(panel);
+  run();
 })();

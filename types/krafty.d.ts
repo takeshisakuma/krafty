@@ -32,6 +32,8 @@ declare var kraftyPanel: (options: {
   className: string;
   title: string;
   onClose: () => void;
+  /** Adds a button that runs the check again over the page as it is now. */
+  onRescan?: () => void;
 }) => { panel: HTMLElement; body: HTMLElement };
 
 /* The findings block inside a panel: summary, copy-all button, and the list

@@ -81,6 +81,10 @@
     "message": "Close",
     "description": "Label of the button that dismisses a panel."
   },
+  "panelRescan": {
+    "message": "Check again",
+    "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
+  },
   "headPanelTitle": {
     "message": "Head Check",
     "description": "Heading of the head metadata panel."
@@ -168,6 +172,20 @@
   "markupDuplicateIdOne": {
     "message": "1 id is used more than once",
     "description": "Used when exactly one id is duplicated."
+  },
+  "markupTableNoHeader": {
+    "message": "$count$ tables have no header cells, so every cell is announced bare",
+    "description": "A th is what a screen reader announces a cell along with. Layout tables marked role=presentation are excluded.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupTableNoHeaderOne": {
+    "message": "1 table has no header cells, so every cell is announced bare",
+    "description": "Used when exactly one table is missing its headers."
   },
   "imagePanelTitle": {
     "message": "Image Check",

@@ -357,10 +357,21 @@
   /**
    * Build an empty panel. Callers fill the returned body.
    *
-   * @param {{ id: string, className: string, title: string, onClose: () => void }} options
+   * `onRescan` adds a button that runs the check again.
+   *
+   * A checker judges the document as it stands when it runs, so anything a
+   * single page app inserts afterwards is missed - the note under Known
+   * limitations proposes a MutationObserver and then lists what it needs:
+   * teardown, and a guard against reacting to the classes and titles the
+   * checker writes itself. A button is most of that value and none of that
+   * cost. Nothing to tear down, nothing to react to its own writes, no
+   * checker that can loop. The panels already print the time they scanned,
+   * for exactly this reason; the button belongs beside that line.
+   *
+   * @param {{ id: string, className: string, title: string, onClose: () => void, onRescan?: () => void }} options
    * @returns {{ panel: HTMLElement, body: HTMLElement }}
    */
-  globalThis.kraftyPanel = ({ id, className, title, onClose }) => {
+  globalThis.kraftyPanel = ({ id, className, title, onClose, onRescan }) => {
     const panel = document.createElement("div");
     panel.id = id;
     panel.className = `kraftyPanel ${className}`;
@@ -373,13 +384,27 @@
     heading.textContent = title;
     bar.appendChild(heading);
 
+    const controls = document.createElement("div");
+    controls.className = "kraftyPanelControls";
+    bar.appendChild(controls);
+
+    if (onRescan) {
+      const rescan = document.createElement("button");
+      rescan.type = "button";
+      rescan.className = "kraftyPanelRescan";
+      rescan.textContent = "↻";
+      rescan.title = kraftyMessage("panelRescan");
+      rescan.addEventListener("click", onRescan);
+      controls.appendChild(rescan);
+    }
+
     const close = document.createElement("button");
     close.type = "button";
     close.className = "kraftyPanelClose";
     close.textContent = "×";
     close.title = kraftyMessage("panelClose");
     close.addEventListener("click", onClose);
-    bar.appendChild(close);
+    controls.appendChild(close);
 
     panel.appendChild(bar);
 

@@ -55,11 +55,19 @@ the panel says how many. The whole outline copies as one indented block.
 
 Reports markup that is wrong in ways the page does not show.
 
-It starts with ids used more than once. Nothing looks different, but a
-`label` stops reaching its field, an in-page link lands on the first one and
-never the second, and any script asking for that element gets whichever came
-first. A page template repeated down a listing produces this without anyone
-writing it.
+Ids used more than once: nothing looks different, but a `label` stops
+reaching its field, an in-page link lands on the first one and never the
+second, and any script asking for that element gets whichever came first. A
+page template repeated down a listing produces this without anyone writing
+it.
+
+And tables with no header cells, where a screen reader announces every cell
+bare, with nothing to say which column it belongs to. Tables marked as
+layout are left alone.
+
+Every panel has a check-again button. A check reads the page as it stands
+when it runs, so press it after opening an accordion or scrolling a list
+in.
 
 ### Image Checker
 
@@ -140,10 +148,17 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 見た目には現れない形で誤っているマークアップを報告します。
 
-まずは複数回使われている id です。表示は何も変わりませんが、label が対応
-する入力欄に届かなくなり、ページ内リンクは常に最初の要素にしか飛ばず、
-その id で要素を取得しているスクリプトは先に出てきた方を掴みます。同じ
-テンプレートを一覧で繰り返すと、誰も書いていないのに発生します。
+複数回使われている id。表示は何も変わりませんが、label が対応する入力欄に
+届かなくなり、ページ内リンクは常に最初の要素にしか飛ばず、その id で要素を
+取得しているスクリプトは先に出てきた方を掴みます。同じテンプレートを一覧で
+繰り返すと、誰も書いていないのに発生します。
+
+そして見出しセルの無いテーブル。読み上げでは、どの列の値なのかが分からない
+まま、すべてのセルが読まれます。レイアウト用と明示されたテーブルは対象外
+です。
+
+各パネルには再チェックのボタンがあります。チェックはボタンを押した時点の
+ページを見るので、開閉したあとやスクロールしたあとに押し直せます。
 
 ### 画像チェッカー
 

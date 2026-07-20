@@ -81,6 +81,10 @@
     "message": "閉じる",
     "description": "Label of the button that dismisses a panel."
   },
+  "panelRescan": {
+    "message": "再チェック",
+    "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
+  },
   "headPanelTitle": {
     "message": "ヘッドチェック",
     "description": "Heading of the head metadata panel."
@@ -168,6 +172,20 @@
   "markupDuplicateIdOne": {
     "message": "複数回使われている id が 1 個あります",
     "description": "Used when exactly one id is duplicated."
+  },
+  "markupTableNoHeader": {
+    "message": "見出しセルの無いテーブルが $count$ 個あります。どのセルも見出しなしで読み上げられます",
+    "description": "A th is what a screen reader announces a cell along with. Layout tables marked role=presentation are excluded.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupTableNoHeaderOne": {
+    "message": "見出しセルの無いテーブルが 1 個あります。どのセルも見出しなしで読み上げられます",
+    "description": "Used when exactly one table is missing its headers."
   },
   "imagePanelTitle": {
     "message": "画像チェック",
