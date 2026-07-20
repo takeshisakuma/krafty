@@ -330,6 +330,57 @@ right most of the time, presented as though it were right always, would
 undo that. If it is ever attempted, "cannot tell" has to be a first-class
 answer rather than a silent pass.
 
+### Validating HTML and CSS in general — not this tool's job
+
+Asked 2026-07-20: should Krafty report invalid HTML attributes, and invalid
+CSS properties and values? The two halves have different answers, and the
+CSS half is settled by the browser rather than by preference.
+
+**CSS: the evidence is gone before any script runs.** Measured, writing
+`colr: red; display: flexx; color: blue` into both a stylesheet and a
+`style` attribute:
+
+| read through | what is there |
+|---|---|
+| `rule.style.cssText` | `color: blue;` — one of the three |
+| `element.style.cssText` | `color: blue;` |
+| `<style>`.textContent | all three, as written |
+| `getAttribute("style")` | all three, as written |
+| `CSS.supports("colr", "red")` | `false` |
+
+The CSSOM keeps only what parsed. Raw text survives in exactly two places,
+inline `style` attributes and the text of a `<style>` element. External
+stylesheets — where a site's CSS actually lives — are unreachable: cross
+origin `cssRules` throws, and same origin gives the post-parse view.
+
+So a CSS check would read a small and arbitrary slice and report "nothing
+invalid" without having read the stylesheet at all. That is the same silent
+failure as item 12's `console.log`, arrived at by the same route, and it is
+the thing this project is least willing to ship.
+
+`CSS.supports` is worth remembering, though: the browser will judge a
+declaration, so no property database is needed. Inline `style` attributes
+are therefore checkable honestly, and a hand-typed `style` in a CMS is a
+plausible place for a typo that shows no symptom. That much is a real
+option; the general case is not.
+
+**HTML: reachable, and partly already done.** Attributes are preserved as
+written, bogus ones included, and the nest checker already validates the
+content model against an 80-element table. An attribute table would be the
+same kind of work.
+
+It is still declined, and not for a technical reason. The W3C validator is
+authoritative, free, and one paste away. Krafty earns its place on what a
+validator does not say — how the page reads as a search result, whether the
+heading outline makes sense, whether the images are heavier than the layout
+needs. A second-rate validator bolted on would lose on both counts.
+
+**The honest argument against that**, kept because it deserves an answer
+rather than a dismissal: the W3C validator cannot reach a page behind a
+login, and cannot see a DOM that JavaScript built. Krafty can do both. That
+is a genuine gap, and "a validator already exists" does not close it. If
+this is ever revisited, that is the case to answer — not the difficulty.
+
 ### A single score — deliberately not
 
 The usual next feature: one number, "SEO 78/100". It reads well and it is
