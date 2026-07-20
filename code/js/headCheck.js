@@ -75,6 +75,45 @@
     }
   };
 
+  /**
+   * Whether two addresses name the same page.
+   *
+   * The finding this backs is "the page declares itself not the original",
+   * which is serious. It has to mean a different *page*, not a different
+   * spelling of this one: a canonical of /index.html read from / is the
+   * same document on every static host, and picking one spelling over the
+   * other is precisely what the tag is for. Reported as a contradiction, it
+   * was a false positive on a correctly built site.
+   *
+   * A different host or scheme is still reported. Those are also ordinary
+   * canonicalisation, but they are worth a person's glance in a way that a
+   * directory index is not, and the finding is a note rather than an alert.
+   *
+   * @param {string} a
+   * @param {string} b
+   */
+  const samePage = (a, b) => {
+    /** @param {string} href */
+    const key = (href) => {
+      try {
+        const url = new URL(href);
+        url.hash = "";
+        url.pathname = url.pathname.replace(/\/index\.(html?|php)$/i, "/");
+
+        /* Compared as a key, not rewritten for display, so appending the
+           slash to every path is safe: both sides get it. */
+        if (!url.pathname.endsWith("/")) {
+          url.pathname += "/";
+        }
+        return url.href;
+      } catch (error) {
+        return href;
+      }
+    };
+
+    return key(a) === key(b);
+  };
+
   /** @param {string | null} value */
   const length = (value) => (value ? [...value].length : 0);
 
@@ -163,9 +202,8 @@
     report("note", "checkCanonicalMissing");
   } else {
     const target = resolve(canonical);
-    const here = location.href.split("#")[0];
 
-    if (target && target.split("#")[0] !== here) {
+    if (target && !samePage(target, location.href)) {
       report("note", "checkCanonicalElsewhere", [target]);
     }
   }

@@ -8,6 +8,7 @@
    in the developer's own Chrome cannot skew a result. */
 
 const fs = require("node:fs");
+const http = require("node:http");
 const path = require("node:path");
 const puppeteer = require("puppeteer");
 
@@ -71,16 +72,51 @@ function installI18n(table) {
 }
 
 /**
+ * Serve one document from a throwaway port.
+ *
+ * setContent leaves the page at about:blank, where a relative URL cannot be
+ * resolved at all - new URL("/x", "about:blank") throws, because about: is
+ * not hierarchical. Anything that reads location or resolves an href is
+ * therefore untestable that way, and worse, passes: a check that quietly
+ * measures nothing looks exactly like a check that found nothing wrong.
+ * That is how the self-referential canonical test came to assert nothing
+ * for as long as it existed.
+ *
+ * @param {string} body
+ * @returns {Promise<import("node:http").Server>}
+ */
+function serveOnce(body) {
+  return new Promise((resolve) => {
+    const server = http.createServer((request, response) => {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      response.end(body);
+    });
+
+    server.listen(0, "127.0.0.1", () => resolve(server));
+  });
+}
+
+/**
  * Open a page with the stylesheet and the named checkers already injected,
  * hand it to the caller, and close the browser afterwards.
  *
+ * Pass `serve` - a path such as "/" - to load the document over http from a
+ * local port instead of setting it directly, which is what anything reading
+ * location or resolving a relative URL needs.
+ *
  * @template T
- * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean }} options
+ * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean, serve?: string }} options
  * @param {(page: import("puppeteer").Page) => Promise<T>} run
  * @returns {Promise<T>}
  */
-async function withPage({ html, checkers = [], width, height, hasTouch }, run) {
+async function withPage(
+  { html, checkers = [], width, height, hasTouch, serve },
+  run
+) {
   const browser = await puppeteer.launch({ channel: "chrome" });
+
+  /** @type {import("node:http").Server | null} */
+  let server = null;
 
   try {
     const page = await browser.newPage();
@@ -89,9 +125,19 @@ async function withPage({ html, checkers = [], width, height, hasTouch }, run) {
       await page.setViewport({ width, height, hasTouch: Boolean(hasTouch) });
     }
 
-    await page.setContent(
-      `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${html}</body></html>`
-    );
+    const document = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${html}</body></html>`;
+
+    if (serve) {
+      server = await serveOnce(document);
+
+      const address = server.address();
+      const port = typeof address === "object" && address ? address.port : 0;
+
+      await page.goto(`http://127.0.0.1:${port}${serve}`);
+    } else {
+      await page.setContent(document);
+    }
+
     await page.addStyleTag({ content: css });
     await page.evaluate(installI18n, messages);
 
@@ -104,6 +150,7 @@ async function withPage({ html, checkers = [], width, height, hasTouch }, run) {
     return await run(page);
   } finally {
     await browser.close();
+    server?.close();
   }
 }
 
