@@ -43,6 +43,11 @@
     label.className = state ? `${LABEL_CLASS} ${state}` : LABEL_CLASS;
     label.textContent = text;
 
+    /* The label shows two lines and opens the rest on hover. The same text
+       goes in a title so it is reachable without a pointer, and so it can
+       be read at all where the stylesheet did not arrive. */
+    label.title = text;
+
     /* insertAdjacentElement, not insertAdjacentHTML: a <p> would be dropped
        when the image sits inside a <p>, and alt text must not be parsed as
        markup. A <span> is phrasing content, so it is valid wherever an

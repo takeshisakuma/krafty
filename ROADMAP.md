@@ -223,12 +223,35 @@ somebody actually built would have surfaced any of it. The same is true of
 the questions above, which is why they are still open rather than guessed
 at.
 
-### 9. Overlapping alt labels
+### 9. Overlapping alt labels — confirmed, and fixed
 
-The labels are absolutely positioned, so on image-dense pages (EC product
-grids, exactly the Rakuten case) they overlap and become unreadable.
-Whether this hurts in practice is unconfirmed - check against a real
-workload before designing a fix.
+Confirmed on amazon.co.jp 2026-07-20. 92 images, 33 labels sitting on top
+of another one.
+
+Measuring the overlap undersold the problem, and the note above named the
+wrong thing. Label against label was the smaller half. The damage was label
+against *picture*: alt text on a shop is the product name, fifty to a
+hundred characters, and an opaque box of it in a grid cell grows tall
+enough to hide the image completely. Rows of products were solid columns of
+red text with nothing visible behind them.
+
+That defeats the checker rather than merely crowding it. Whether an alt
+describes its image is the one question here a person has to answer, and
+they cannot answer it about an image they cannot see.
+
+Capped at two lines, opening to the full text on hover, with the whole
+string in a `title` so it is reachable without one. The colours carry the
+mechanical half — present, empty, missing — so that stays readable across
+a whole page at a glance, and the half that needs reading is one pointer
+away. Same split as everywhere else in the tool.
+
+After: 2 labels in a collision, from 33. The pictures are visible.
+
+The heavier redesign is still available if two lines turns out to be too
+few — a small badge per image with the text in a panel, the shape the other
+checkers converged on. It was not needed to make the checker work again,
+and it would have traded away the thing this one is good at, which is
+reading alt text *beside* the picture it belongs to.
 
 ## Wanted
 

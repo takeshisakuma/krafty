@@ -624,6 +624,21 @@ $panelInset: 50px;
   display: none;
 }
 
+/* Measured on amazon.co.jp: 92 images, 33 labels sitting on top of another
+   one. The counting undersold it. The real damage is not label against
+   label but label against picture - alt text on a shop is the product name,
+   fifty to a hundred characters, and an opaque box of it in a grid cell
+   grows tall enough to hide the image completely.
+
+   Which defeats the checker. Whether an alt describes its image is the one
+   question here that a person has to answer, and they cannot answer it
+   about an image they cannot see.
+
+   So the label is capped at two lines and opens to its full text on hover.
+   The mechanical part - present, empty, missing - stays legible at a glance
+   across the whole page, which is what the colours are for, and the part
+   that needs reading is one pointer away. */
+
 .kraftyAltChecker {
   .kraftyAltContent {
     position: absolute;
@@ -634,10 +649,25 @@ $panelInset: 50px;
     box-shadow: 1px 1px 2px #999;
     margin-top: 10px;
     margin-left: 10px;
-    display: inline-block;
     border-radius: 2px;
     z-index: 2147483646;
     outline: none !important;
+
+    /* Narrow enough to leave the picture visible beside it, wide enough
+       that two lines are worth reading. */
+    max-width: 220px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+
+    /* Above its neighbours while open, so the full text is not itself
+       covered by the next label along. */
+    &:hover {
+      -webkit-line-clamp: unset;
+      overflow: visible;
+      z-index: 2147483647;
+    }
 
     &.kraftyAltMissing {
       color: $alertColor;
