@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Seven checks you can turn on over any page, from the toolbar or from a
+Eight checks you can turn on over any page, from the toolbar or from a
 keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
 runs in your own browser, on the tab you are looking at, and Krafty collects
 no data at all. Available in English and Japanese, following your browser's
@@ -51,6 +51,16 @@ software can answer, so they are listed in order and indented by level, as a
 table of contents to read. Headings hidden from everyone are left out, and
 the panel says how many. The whole outline copies as one indented block.
 
+### Markup Checker
+
+Reports markup that is wrong in ways the page does not show.
+
+It starts with ids used more than once. Nothing looks different, but a
+`label` stops reaching its field, an in-page link lands on the first one and
+never the second, and any script asking for that element gets whichever came
+first. A page template repeated down a listing produces this without anyone
+writing it.
+
 ### Image Checker
 
 Finds images served much larger than the space they are drawn in — a
@@ -86,7 +96,7 @@ the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
 Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。
-7つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
+8つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
 ショートカットから、任意のページに重ねて表示できます。処理はすべてお使いの
 ブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。
 表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
@@ -125,6 +135,15 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。
 目次として読んでご判断ください。誰にも見えない見出しは集計から外し、
 その件数を明記します。構造全体はそのままの字下げでコピーできます。
+
+### マークアップチェッカー
+
+見た目には現れない形で誤っているマークアップを報告します。
+
+まずは複数回使われている id です。表示は何も変わりませんが、label が対応
+する入力欄に届かなくなり、ページ内リンクは常に最初の要素にしか飛ばず、
+その id で要素を取得しているスクリプトは先に出てきた方を掴みます。同じ
+テンプレートを一覧で繰り返すと、誰も書いていないのに発生します。
 
 ### 画像チェッカー
 

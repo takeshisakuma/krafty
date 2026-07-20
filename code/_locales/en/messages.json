@@ -143,6 +143,32 @@
     "message": "no og:image",
     "description": "Shown in place of the card image when og:image is absent."
   },
+  "markupPanelTitle": {
+    "message": "Markup Check",
+    "description": "Heading of the markup panel. Named for the family, not for the one check it starts with."
+  },
+  "markupSectionIds": {
+    "message": "The ids",
+    "description": "Heading of the section listing duplicated ids."
+  },
+  "markupIdListLabel": {
+    "message": "Used more than once",
+    "description": "Label above the list of duplicated ids."
+  },
+  "markupDuplicateId": {
+    "message": "$count$ ids are used more than once",
+    "description": "A duplicated id breaks label-for, in-page anchors, aria-labelledby and any script asking for the element.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupDuplicateIdOne": {
+    "message": "1 id is used more than once",
+    "description": "Used when exactly one id is duplicated."
+  },
   "imagePanelTitle": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."
@@ -433,6 +459,10 @@
     "message": "Toggle Heading Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandMarkupCheck": {
+    "message": "Toggle Markup Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandImageCheck": {
     "message": "Toggle Image Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -475,6 +505,14 @@
   },
   "manualHeadingBody": {
     "message": "Report what can be checked automatically about the heading structure, and list the headings as an indented outline for you to read.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualMarkupTitle": {
+    "message": "Markup Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualMarkupBody": {
+    "message": "Report markup that is wrong in ways the page does not show. It starts with ids used more than once, which quietly break label-for, in-page anchors and any script asking for the element.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {

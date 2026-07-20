@@ -58,6 +58,11 @@ body {
   color: #7a3fc9;
 }
 
+.markupCheckButton:hover:not(:disabled),
+.markupCheckButton.active {
+  color: #b0177a;
+}
+
 .imageCheckButton:hover:not(:disabled),
 .imageCheckButton.active {
   color: #0f766e;

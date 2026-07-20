@@ -214,6 +214,10 @@ Both are things a machine can decide on its own, and both sit inside a page
 with no network involved. Item 12 was proposed later the same day and needs
 its boundary settling before it is worth building.
 
+Items 13 to 16 came out of a review on the same day and are not all checks:
+14 and 15 are about how the checkers are used rather than what they find.
+13 is the one to do first.
+
 ### 10. Inputs with no label
 
 An `input`, `select` or `textarea` with no `label for`, no wrapping label,
@@ -296,6 +300,78 @@ ships has to say what it did not look at, in the panel, every time.
 Undecided: whether this is an eighth checker or joins item 11's, since
 several of these are link and resource addresses and that walk is the same
 one. Worth deciding when item 11 is built rather than now.
+
+### 13. Duplicated `id`
+
+`document.querySelectorAll("[id]")`, counted. No threshold, no judgement,
+no per-language list — the cheapest check in the project and the one with
+the least room to be wrong about.
+
+The consequences are real and spread out: `label[for]` stops reaching its
+field, an in-page anchor lands on the first one and never the second,
+`aria-labelledby` resolves to the wrong text, and any script fetching the
+element by id silently gets whichever came first. A CMS repeating a
+component down a page produces this without anybody writing it.
+
+And it is invisible. That is the argument for it being here rather than in
+a validator: the page looks finished. The defects this project is best at
+are the ones that look fine — a missing `alt` beside a deliberately empty
+one, a canonical pointing somewhere else, an image four times the weight it
+needs — and a duplicated `id` is the same shape.
+
+Decided before building: an eighth checker, named Markup Check for the
+family rather than for the one check it starts with. Items 10 and 16 report
+into the same panel when they are built.
+
+The alternative was folding it into the nest checker, which already
+validates HTML and already has a findings panel. Rejected because that
+checker is named for nesting specifically, and a duplicated `id` is not
+nesting — the name would have started lying to make room. Naming it
+narrowly now and renaming later is worse still: a rename is a store listing
+change, another review, and a name the people already using it have to
+unlearn.
+
+### 14. A re-scan button in each panel
+
+Under Known limitations: a checker judges the document as it stands when it
+runs, so anything a single page app inserts afterwards is missed. The note
+there proposes a `MutationObserver` and immediately lists what it needs —
+teardown, and a guard against reacting to the classes and titles the
+checker writes itself.
+
+A button is most of that value for almost none of that cost. No observer to
+tear down, nothing to react to its own writes, no risk of a checker that
+loops. The nest and image panels already print the time they scanned, for
+exactly this reason; that line is half the interface already, and the
+button belongs beside it.
+
+The observer stays the better answer for someone watching a page change
+under them. This is the answer for someone who scrolled, opened an
+accordion, and wants the count again.
+
+### 15. One pass, one report
+
+A delivery review means toggling seven checkers in turn and copying seven
+panels. The obvious shape is: run everything, copy once.
+
+The constraint is item "A single score", further down. What is refused
+there is a number that reports on the whole page including the parts
+nothing looked at. A combined report does not have to make that claim — if
+it names each checker and what that checker found, it says exactly as much
+as the seven panels do, in one place.
+
+The line to hold is that there must be no total. "12 issues" reads as a
+verdict on the page, and it is the same lie as a score with extra steps.
+Seven headings with their own counts underneath is not.
+
+### 16. Table header cells
+
+A `table` with no `th` at all, and a `th` with no `scope` where the table
+has both a header row and a header column. Decidable, and a real barrier:
+a screen reader announces a cell with its headers, or announces it bare.
+
+Same size and shape as item 10, and the same open question about which
+panel it reports into.
 
 ## Deferred, with reasons
 

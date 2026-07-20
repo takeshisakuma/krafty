@@ -38,6 +38,16 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-markupCheckButton",
+    command: "markup-check",
+    file: "js/markupCheck.js",
+    bodyClass: "kraftyMarkupChecker",
+    /* An id collides within one document, so a subframe's are its own
+       problem and reporting them here would be a different page's findings
+       in this page's panel. */
+    allFrames: false,
+  },
+  {
     id: "js-imageCheckButton",
     command: "image-check",
     file: "js/imageCheck.js",
