@@ -247,6 +247,21 @@ away. Same split as everywhere else in the tool.
 
 After: 2 labels in a collision, from 33. The pictures are visible.
 
+Opening is animated, which is not decoration. Snapping open read as a
+rendering fault — as though the text had been broken and the pointer
+happened to reveal it — and this label is drawn over somebody else's page,
+where a glitch is the first thing they will assume. Growing says the label
+meant to be folded.
+
+`-webkit-line-clamp` cannot be transitioned, so the height is what moves.
+That needs a target, and a fixed one does not work: any value large enough
+for the longest alt is far past what most need, so the box reaches its
+content height in the first fraction of the transition and the rest plays
+out invisibly. Measured, it finished in about 30ms of 200ms — the same snap
+with a duration attached. The script measures each label and hands its own
+height to the stylesheet as a custom property. Read every label first, then
+write every label, or a page of ninety pays for ninety layouts.
+
 The heavier redesign is still available if two lines turns out to be too
 few — a small badge per image with the text in a panel, the shape the other
 checkers converged on. It was not needed to make the checker work again,

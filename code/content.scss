@@ -661,11 +661,32 @@ $panelInset: 50px;
     -webkit-line-clamp: 2;
     overflow: hidden;
 
-    /* Above its neighbours while open, so the full text is not itself
-       covered by the next label along. */
+    /* Stated, so two lines is a number rather than whatever the page's own
+       line-height happened to be. */
+    line-height: 1.4;
+    max-height: 2.8em;
+
+    /* Opening has to look like something the label does, not something that
+       was wrong until the pointer arrived. Snapping open reads as a
+       rendering fault - the text appears to have been broken and then
+       accidentally revealed - and this label is drawn over somebody's page,
+       where a glitch is the first thing they will assume.
+
+       line-clamp cannot be transitioned, so the height is what moves: the
+       clamp lifts at once and max-height uncovers the text behind it. The
+       transition lives in the hover rule, so leaving snaps shut. That is
+       deliberate too: on the way back the clamp reapplies immediately, and
+       an ellipsis reappearing part way through a shrink is the same glitch
+       the animation is there to avoid. */
     &:hover {
-      -webkit-line-clamp: unset;
-      overflow: visible;
+      -webkit-line-clamp: 40;
+      /* Set per label by the script, from its own content. The fallback is
+         for the case where that never ran. */
+      max-height: var(--kraftyAltFull, 24em);
+      transition: max-height 0.2s ease-out;
+
+      /* Above its neighbours while open, so the full text is not itself
+         covered by the next label along. */
       z-index: 2147483647;
     }
 

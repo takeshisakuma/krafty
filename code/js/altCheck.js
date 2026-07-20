@@ -31,6 +31,9 @@
     return { text: kraftyMessage("altPresent", [alt]), state: null };
   };
 
+  /** @type {HTMLElement[]} */
+  const labels = [];
+
   for (const image of document.querySelectorAll('img, input[type="image"]')) {
     /* Skip the head checker's own preview images. */
     if (image.classList.contains("headImage")) {
@@ -53,5 +56,26 @@
        markup. A <span> is phrasing content, so it is valid wherever an
        <img> is. */
     image.insertAdjacentElement("beforebegin", label);
+    labels.push(label);
   }
+
+  /* How tall each label wants to be, handed to the stylesheet so the hover
+     can animate to it.
+
+     A fixed target does not work. max-height has to be a length to be
+     transitioned, and any length large enough for the longest alt is far
+     past what most of them need - the box reaches its content height in the
+     first fraction of the transition and the rest of the duration plays out
+     invisibly. On a product name it finished in about 30ms of 200ms, which
+     is the snap this is meant to replace.
+
+     Read and write in separate passes. Asking one label for its height and
+     then writing to it, over and over, makes the browser lay the page out
+     once per label; a page of ninety images would pay for that ninety
+     times. Every read first, then every write, costs one. */
+  const wanted = labels.map((label) => label.scrollHeight);
+
+  labels.forEach((label, index) => {
+    label.style.setProperty("--kraftyAltFull", `${wanted[index]}px`);
+  });
 })();

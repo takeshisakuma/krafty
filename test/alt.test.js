@@ -83,40 +83,79 @@ test("alt checker", async (t) => {
     assert.match(label.text, /Yezai/);
   });
 
-  await t.test("opens to the full text on hover", async () => {
-    const heights = await withPage(
+  await t.test("opens to the full text on hover, and grows into it", async () => {
+    /* The label is drawn over somebody else's page, where anything that
+       jumps reads as a rendering fault - as though the text had been broken
+       and the pointer happened to reveal it. Growing says the label meant
+       to be folded. */
+    const run = await withPage(
       {
         html: `<img src="${PIXEL}" alt="${LONG}" width="200" height="200">`,
         checkers: ["altCheck"],
-        width: 1280,
-        height: 900,
+        width: 640,
+        height: 480,
       },
       async (page) => {
-        const closed = await page.evaluate(
-          () =>
-            document
-              .querySelector(".kraftyAltContent")
-              ?.getBoundingClientRect().height ?? 0
-        );
+        /** @returns {Promise<number>} */
+        const height = () =>
+          page.evaluate(
+            () =>
+              document
+                .querySelector(".kraftyAltContent")
+                ?.getBoundingClientRect().height ?? 0
+          );
+
+        const closed = await height();
+
+        /* The target is measured from the label's own content. A fixed one
+           would be far past what most labels need, and the box would reach
+           its height in the first tenth of the transition - the snap this
+           replaces, with a duration attached. */
+        const target = await page.evaluate(() => {
+          const label = document.querySelector(".kraftyAltContent");
+          return label instanceof HTMLElement
+            ? label.style.getPropertyValue("--kraftyAltFull")
+            : "";
+        });
 
         await page.hover(".kraftyAltContent");
 
-        const open = await page.evaluate(
-          () =>
-            document
-              .querySelector(".kraftyAltContent")
-              ?.getBoundingClientRect().height ?? 0
-        );
+        /** @type {number[]} */
+        const frames = [];
 
-        return { closed, open };
+        for (let i = 0; i < 8; i += 1) {
+          frames.push(await height());
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        return { closed, target, frames, open: await height() };
       }
     );
 
+    assert.match(
+      run.target,
+      /^\d+px$/,
+      "the hover target has to be the label's own height, not a guess"
+    );
+
     assert.ok(
-      heights.open > heights.closed,
+      run.open > run.closed,
       `hovering should show the rest: ${Math.round(
-        heights.closed
-      )}px then ${Math.round(heights.open)}px`
+        run.closed
+      )}px then ${Math.round(run.open)}px`
+    );
+
+    assert.ok(
+      run.frames.some(
+        (height) => height > run.closed + 1 && height < run.open - 1
+      ),
+      `expected a frame part way open between ${Math.round(
+        run.closed
+      )}px and ${Math.round(run.open)}px, saw ${run.frames
+        .map((height) => Math.round(height))
+        .join(", ")}`
     );
   });
 
