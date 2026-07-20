@@ -43,6 +43,21 @@ const CASES = [
   ["div > link[rel=preload] is valid", false, `<div><link rel="preload" as="image" href="/x.png" data-t></div>`],
   ["div > meta is invalid", true, `<div><meta name="x" data-t></div>`],
   ["div > style is invalid", true, `<div><style data-t></style></div>`],
+
+  /* Foreign content. The walk covers every element in the body, including
+     the inside of inline SVG and MathML, where several names collide with
+     HTML ones - title, a, script, style. None of those parents belong to
+     the HTML content model table, so nothing inside them is judged; these
+     pin that, because a false positive here would fire on every site with
+     an icon set. The last case confirms the suppression is not blanket:
+     where the SVG root itself sits is still HTML's business. */
+  ["svg > title is valid", false, `<svg><title data-t>x</title></svg>`],
+  ["svg > a is valid", false, `<svg><a data-t></a></svg>`],
+  ["svg > style is valid", false, `<svg><style data-t></style></svg>`],
+  ["svg > script is valid", false, `<svg><script data-t></script></svg>`],
+  ["svg > g > path is valid", false, `<svg><g><path data-t/></g></svg>`],
+  ["math > mi is valid", false, `<math><mi data-t>x</mi></math>`],
+  ["ul > svg is still invalid", true, `<ul><svg data-t></svg></ul>`],
 ];
 
 /* An element that already has a title: the checker writes its explanation
