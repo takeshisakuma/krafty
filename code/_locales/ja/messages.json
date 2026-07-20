@@ -399,6 +399,44 @@
       }
     }
   },
+  "checkHreflangNoSelf": {
+    "message": "このページ自身を指す hreflang がありません。自己参照のない指定はすべて無視されます",
+    "description": "Only reported when the page declares hreflang at all - a single language site needs none."
+  },
+  "checkHreflangInvalid": {
+    "message": "hreflang=\"$code$\" は言語タグとして解釈できないため、この指定は無視されます",
+    "description": "Structural check: the value cannot be parsed as BCP 47.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en_US"
+      }
+    }
+  },
+  "checkHreflangMistaken": {
+    "message": "hreflang=\"$code$\" は国コードであり言語コードではありません。この言語のコードは \"$correct$\" です",
+    "description": "The common confusion - jp for ja, cn for zh. Only codes that are not languages in their own right are listed.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "jp"
+      },
+      "correct": {
+        "content": "$2",
+        "example": "ja"
+      }
+    }
+  },
+  "checkHreflangConflict": {
+    "message": "hreflang=\"$code$\" が異なるURLで2回指定されています",
+    "description": "Nothing can decide which of the two was meant.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en"
+      }
+    }
+  },
   "checkDuplicate": {
     "message": "$tag$ が $count$ 個あります",
     "description": "Duplicated tags leave the outcome up to whoever reads them.",

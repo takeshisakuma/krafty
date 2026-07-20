@@ -218,13 +218,139 @@
       report("note", "checkLangMissing");
     }
 
+    const canonicalTarget = canonical ? resolve(canonical) : null;
+
     if (canonical === null) {
       report("note", "checkCanonicalMissing");
-    } else {
-      const target = resolve(canonical);
+    } else if (canonicalTarget && !samePage(canonicalTarget, location.href)) {
+      report("note", "checkCanonicalElsewhere", [canonicalTarget]);
+    }
 
-      if (target && !samePage(target, location.href)) {
-        report("note", "checkCanonicalElsewhere", [target]);
+    /* --- hreflang ---
+
+       Checked only when the page declares any. One language needs none, so
+       reporting their absence would fire on most of the web and teach the
+       reader that this panel is noise. Once they are there, whether the set
+       is internally sound is a question a machine can answer.
+
+       Note that <html lang> is checked separately and for a different
+       reason: search engines decide language from the content and from
+       these, not from that attribute, but a screen reader picks its voice
+       from it. Neither check stands in for the other. */
+
+    /** @type {{ code: string, target: string | null }[]} */
+    const alternates = [];
+
+    for (const link of document.querySelectorAll(
+      'link[rel~="alternate" i][hreflang]'
+    )) {
+      const href = (link.getAttribute("href") ?? "").trim();
+
+      alternates.push({
+        code: (link.getAttribute("hreflang") ?? "").trim(),
+        /* An empty href resolves to this page, which would read as a self
+           reference the markup never made. */
+        target: href === "" ? null : resolve(href),
+      });
+    }
+
+    /* Country codes standing in for a language, where the country code is
+       not itself a language code - so saying it is wrong needs no judgement
+       about what the author meant.
+
+       "uk" and "se" are deliberately absent, though they are the same
+       mistake: both are real languages (Ukrainian, Northern Sami), and a
+       page in either would be told its correct code is wrong. A checker that
+       is wrong about Ukrainian to be right about Denmark has made the worse
+       trade. */
+    const mistaken = {
+      jp: "ja",
+      cn: "zh",
+      kr: "ko",
+      gr: "el",
+      dk: "da",
+      cz: "cs",
+    };
+
+    /**
+     * x-default is a reserved value rather than a language tag, which is why
+     * Intl rejects it. Everything else is structural: Intl throws on a tag
+     * BCP 47 cannot parse, and accepts one it can.
+     *
+     * @param {string} code
+     */
+    const parsesAsLanguage = (code) => {
+      if (code.toLowerCase() === "x-default") {
+        return true;
+      }
+
+      try {
+        Intl.getCanonicalLocales(code);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    };
+
+    if (alternates.length > 0) {
+      /* A set that does not name itself is discarded whole, so this is the
+         one worth an alert.
+
+         Matching the canonical counts as naming itself. An hreflang set is
+         meant to list canonical addresses, and a site whose canonical is
+         https://www.example.com/ read over a bare example.com would
+         otherwise be told its correct markup was broken. */
+      const namesItself = alternates.some(
+        ({ target }) =>
+          target !== null &&
+          (samePage(target, location.href) ||
+            (canonicalTarget !== null && samePage(target, canonicalTarget)))
+      );
+
+      if (!namesItself) {
+        report("alert", "checkHreflangNoSelf");
+      }
+
+      /** @type {Map<string, string | null>} */
+      const seen = new Map();
+      /* One finding per code, however many times the code appears. A site
+         with forty alternates would otherwise report the same mistake forty
+         times and bury everything else. */
+      /** @type {Set<string>} */
+      const said = new Set();
+      /** @type {Set<string>} */
+      const clashed = new Set();
+
+      for (const { code, target } of alternates) {
+        /* Case carries no meaning in a language tag, so en-CA and en-ca are
+           one code - both for what has already been reported and for what
+           counts as the same entry twice. */
+        const key = code.toLowerCase();
+
+        if (!said.has(key)) {
+          if (Object.hasOwn(mistaken, key)) {
+            said.add(key);
+            report("alert", "checkHreflangMistaken", [
+              code,
+              mistaken[/** @type {keyof typeof mistaken} */ (key)],
+            ]);
+          } else if (!parsesAsLanguage(code)) {
+            said.add(key);
+            report("alert", "checkHreflangInvalid", [code]);
+          }
+        }
+
+        if (seen.has(key)) {
+          /* The same code twice for the same address is redundant markup,
+             not a defect. Twice for two addresses is a question nothing can
+             answer. */
+          if (seen.get(key) !== target && !clashed.has(key)) {
+            clashed.add(key);
+            report("note", "checkHreflangConflict", [code]);
+          }
+        } else {
+          seen.set(key, target);
+        }
       }
     }
 
@@ -394,6 +520,16 @@
       { label: "description", value: description, count: true },
       { label: "robots", value: robots },
       { label: "html lang", value: documentLang },
+      /* The codes, not the addresses: a dozen alternates would otherwise
+         fill the panel with URLs nobody reads one at a time, and which of
+         them exist is the question this row is here to answer. */
+      {
+        label: "hreflang",
+        value:
+          alternates.length > 0
+            ? alternates.map(({ code }) => code).join(", ")
+            : null,
+      },
       { label: "charset", value: document.characterSet },
       {
         label: "compatMode",
@@ -501,7 +637,6 @@
           thumbnail.src = source;
           thumbnail.alt = "";
           line.appendChild(thumbnail);
-          line.appendChild(document.createTextNode("　"));
         }
 
         const target = url ? resolve(value) : null;

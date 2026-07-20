@@ -399,6 +399,44 @@
       }
     }
   },
+  "checkHreflangNoSelf": {
+    "message": "No hreflang names this page: a set that does not include itself is ignored entirely",
+    "description": "Only reported when the page declares hreflang at all - a single language site needs none."
+  },
+  "checkHreflangInvalid": {
+    "message": "hreflang=\"$code$\" is not a language tag, so that alternate is ignored",
+    "description": "Structural check: the value cannot be parsed as BCP 47.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en_US"
+      }
+    }
+  },
+  "checkHreflangMistaken": {
+    "message": "hreflang=\"$code$\" is a country code, not a language: this language is \"$correct$\"",
+    "description": "The common confusion - jp for ja, cn for zh. Only codes that are not languages in their own right are listed.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "jp"
+      },
+      "correct": {
+        "content": "$2",
+        "example": "ja"
+      }
+    }
+  },
+  "checkHreflangConflict": {
+    "message": "hreflang=\"$code$\" is given twice with different addresses",
+    "description": "Nothing can decide which of the two was meant.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en"
+      }
+    }
+  },
   "checkDuplicate": {
     "message": "$tag$ appears $count$ times",
     "description": "Duplicated tags leave the outcome up to whoever reads them.",

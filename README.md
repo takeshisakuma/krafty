@@ -22,6 +22,12 @@ title, description or lang, a missing doctype, a canonical pointing at a
 different page, duplicated tags, text long enough to be cut off, and an
 og:image smaller than sharing platforms want.
 
+On a multilingual site it checks the hreflang set too: whether it names the
+page it is on, since one that does not is ignored entirely, and whether the
+codes are language codes at all — `jp` and `cn` are countries, and Japanese
+and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported;
+one language needs none.
+
 It will not tell you whether the title is the right title. Nothing can — a
 title can be correctly formed and still say "Home | Home" or carry a staging
 site's name. So the page is drawn the way visitors meet it, as a search
@@ -125,6 +131,11 @@ head の中で機械が判断できる問題を報告します。検索避けの
 viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が
 別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには
 小さすぎる og:image。
+
+多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその
+指定はすべて無視されます）、そして値が言語コードとして成立しているか。
+`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が
+無いこと自体は報告しません。単一言語のサイトには不要だからです。
 
 ただし、そのタイトルが適切かどうかまでは分かりません。どんなツールにも
 分かりません。「ホーム | ホーム」もステージング環境の名前が残ったままの

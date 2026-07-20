@@ -445,7 +445,10 @@ $panelInset: 50px;
 
     img.headImage {
       box-shadow: 0 0 1px 0px #333;
-      display: inline;
+      /* A flex item, and one whose width below is the point of it: without
+         this the address beside it would squeeze the thumbnail instead of
+         wrapping. */
+      flex: none;
 
       &.ogp {
         width: 200px;
@@ -565,8 +568,25 @@ $panelInset: 50px;
       }
     }
 
+    /* A row whose value is an image puts the thumbnail beside the address.
+       Laid out as inline text, the image sat on the baseline and the address
+       began at its foot, so a long URL wrapped onto lines below the image
+       and the row grew to twice the height of the picture it was showing.
+       Aligned at the top instead, the address fills the space the thumbnail
+       already occupies.
+
+       flex rather than vertical-align: top, which lines up the first line
+       and leaves the rest to fall under the image, because the image is what
+       sets the line box's height. Only a column of its own keeps every line
+       of a wrapped address next to the picture. */
     .kraftyRowValue {
       margin-top: 1px;
+      display: flex;
+      align-items: flex-start;
+      /* Replaces a full width space the script used to append after the
+         thumbnail. Spacing is the stylesheet's business: hard coded in the
+         DOM it was invisible from here and impossible to change. */
+      gap: 8px;
     }
 
     .kraftyLink {
