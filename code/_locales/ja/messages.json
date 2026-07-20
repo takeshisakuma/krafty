@@ -143,6 +143,32 @@
     "message": "og:image なし",
     "description": "Shown in place of the card image when og:image is absent."
   },
+  "markupPanelTitle": {
+    "message": "マークアップチェック",
+    "description": "Heading of the markup panel. Named for the family, not for the one check it starts with."
+  },
+  "markupSectionIds": {
+    "message": "該当する id",
+    "description": "Heading of the section listing duplicated ids."
+  },
+  "markupIdListLabel": {
+    "message": "複数回使われている id",
+    "description": "Label above the list of duplicated ids."
+  },
+  "markupDuplicateId": {
+    "message": "複数回使われている id が $count$ 個あります",
+    "description": "A duplicated id breaks label-for, in-page anchors, aria-labelledby and any script asking for the element.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupDuplicateIdOne": {
+    "message": "複数回使われている id が 1 個あります",
+    "description": "Used when exactly one id is duplicated."
+  },
   "imagePanelTitle": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."
@@ -433,6 +459,10 @@
     "message": "見出しチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandMarkupCheck": {
+    "message": "マークアップチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandImageCheck": {
     "message": "画像チェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -475,6 +505,14 @@
   },
   "manualHeadingBody": {
     "message": "見出し構造について自動で確認できる範囲を報告し、見出しを字下げした一覧として表示します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualMarkupTitle": {
+    "message": "マークアップチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualMarkupBody": {
+    "message": "見た目には現れない形で誤っているマークアップを報告します。まずは複数回使われている id です。label の for、ページ内アンカー、要素を id で取得しているスクリプトが、いずれも静かに壊れます。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {

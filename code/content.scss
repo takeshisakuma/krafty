@@ -30,32 +30,38 @@ $panelInset: 50px;
    offsets are always emitted, because the alternative - a default here and
    an override in each checker's block - meant every top-anchored panel had
    to remember to undo `bottom`, and forgetting it anchored the panel to
-   both edges with nothing to say so. */
-@mixin panel($corner) {
+   both edges with nothing to say so.
+
+   $step exists because there are more panels than corners. A panel sharing
+   a corner cascades off the one before it, far enough that the title bar
+   underneath stays visible and grabbable. */
+@mixin panel($corner, $step: 0) {
+  $inset: $panelInset + $step * 40px;
+
   color: #333;
   font-family: system-ui, sans-serif;
   font-size: 12px;
   position: fixed;
 
   @if $corner == top-left {
-    top: $panelInset;
+    top: $inset;
     right: auto;
     bottom: auto;
-    left: $panelInset;
+    left: $inset;
   } @else if $corner == top-right {
-    top: $panelInset;
-    right: $panelInset;
+    top: $inset;
+    right: $inset;
     bottom: auto;
     left: auto;
   } @else if $corner == bottom-left {
     top: auto;
     right: auto;
-    bottom: $panelInset;
-    left: $panelInset;
+    bottom: $inset;
+    left: $inset;
   } @else if $corner == bottom-right {
     top: auto;
-    right: $panelInset;
-    bottom: $panelInset;
+    right: $inset;
+    bottom: $inset;
     left: auto;
   } @else {
     @error "panel(): unknown corner #{$corner}";
@@ -195,6 +201,21 @@ $panelInset: 50px;
     color: #333;
   }
 
+  /* A label on the left and its tally on the right. Two panels report this
+     way and the rules were written under the first of them. */
+  .kraftyPanelList li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .kraftyPanelCount {
+    color: #666;
+    white-space: nowrap;
+  }
+
   /* The body breaks anywhere so long URLs cannot widen the panel. Prose must
      not inherit that, or sentences break mid-word. */
   .kraftyCheck,
@@ -287,20 +308,22 @@ $panelInset: 50px;
 
     .kraftyPanelList {
       margin-top: 8px;
-
-      li {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 2px 0;
-        border-bottom: 1px solid #eee;
-      }
-
-      .kraftyPanelCount {
-        color: #666;
-        white-space: nowrap;
-      }
     }
+  }
+}
+
+/* --- markup checker --- */
+
+#js-kraftyMarkupInformation.kraftyMarkupInformation {
+  display: none;
+}
+
+.kraftyMarkupChecker {
+  #js-kraftyMarkupInformation.kraftyMarkupInformation {
+    /* Cascaded off the image checker rather than sharing a side with the
+       nest checker, which is the panel most likely to be open beside this
+       one - both answer "is this markup right". */
+    @include panel(top-left, 1);
   }
 }
 
