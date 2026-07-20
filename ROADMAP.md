@@ -532,6 +532,33 @@ somebody's spacer.
 not need it, so requiring it would have been a finding on the ordinary
 case — the sort of threshold item 8 is on the watch for.
 
+### 17. Brightness greyed the panels off the screen — done
+
+Reported 2026-07-20: turning the brightness checker on made some panels
+disappear and left others alone.
+
+Both halves were the same fault. `filter` on an element makes it the
+containing block for every fixed-position descendant, and every panel here
+is fixed, so greying `<body>` re-anchored them to the document. Measured
+with the page scrolled 1200px: the nest panel went from 418px down the
+viewport to 1634px — off the screen, not deleted. The head panel really was
+deleted, by name, in `brightnessCheck.js`.
+
+That line was written when there was one panel and the two checkers were
+made mutually exclusive to work around it. Four panels were built after it
+and none were added there, so which of the two symptoms a panel got
+depended on whether anyone had remembered it. **One checker knowing another
+by name was the bug**, and the workaround aged into it.
+
+The page is greyed by a fixed screen with `backdrop-filter` now, sitting
+below the panels and above everything the page draws. Nothing is
+re-anchored, no checker names another, and the panels keep their colours -
+which is the right answer anyway, since the question is whether the *page*
+relies on colour.
+
+The screen takes no pointer events. It is a viewing mode, not a modal, and
+a reviewer has to be able to open the thing they are looking at.
+
 ## Deferred, with reasons
 
 ### TypeScript — decided, and re-checked

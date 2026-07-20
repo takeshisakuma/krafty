@@ -25,8 +25,6 @@
     return;
   }
 
-  document.body.classList.remove("kraftyBrightnessChecker");
-
   if (!document.body.classList.toggle("kraftyHeadChecker")) {
     return;
   }

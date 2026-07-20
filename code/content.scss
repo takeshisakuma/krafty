@@ -741,6 +741,29 @@ $panelInset: 50px;
   }
 }
 
+/* --- brightness checker --- */
+
+#js-kraftyBrightnessScreen.kraftyBrightnessScreen {
+  display: none;
+}
+
 .kraftyBrightnessChecker {
-  filter: grayscale(100%);
+  #js-kraftyBrightnessScreen.kraftyBrightnessScreen {
+    display: block;
+    position: fixed;
+    inset: 0;
+
+    /* Greys what is painted behind it. A filter on <body> would have done
+       the same to the page and re-anchored every fixed panel to the
+       document at the same time - see js/brightnessCheck.js. */
+    backdrop-filter: grayscale(100%);
+
+    /* Below the panels and the alt labels, above everything the page draws,
+       so the tool keeps its colours and the page loses them. */
+    z-index: 2147483645;
+
+    /* The page underneath stays usable: this is a viewing mode, not a
+       modal. */
+    pointer-events: none;
+  }
 }
