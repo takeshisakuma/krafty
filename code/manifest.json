@@ -27,6 +27,9 @@
     "nest-check": {
       "description": "__MSG_commandNestCheck__"
     },
+    "heading-check": {
+      "description": "__MSG_commandHeadingCheck__"
+    },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"
     },

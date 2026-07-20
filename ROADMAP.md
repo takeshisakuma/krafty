@@ -97,13 +97,46 @@ test. The wiring suite runs background.js against stubs instead, which
 catches a command routed to the wrong checker; that the worker registers at
 all still needs checking by hand.
 
+### 6. Heading outline — done
+
+A sixth checker rather than an extension of the Outline Checker. That one is
+a pure visual overlay with no panel; this one is findings plus a list, and
+folding them into one toggle would have made a single button do two
+unrelated things. Splitting them also split `allFrames`: boxes are worth
+drawing in a subframe, an outline assembled across documents would describe
+a page that does not exist.
+
+The mechanical half is more than one level 1 heading, a level skipped, a
+heading with no text, and no headings at all. The human half is the outline
+itself, indented by level, to be read as a table of contents.
+
+Three decisions that are not obvious from the code:
+
+- ARIA headings count, at their `aria-level`. A page built out of components
+  can have no `h1`-`h6` at all, and reporting "no headings" on a page full
+  of them is the kind of wrong answer that costs a tool its credibility.
+- A heading holding only an image is not empty; its `alt` is its text. The
+  logo as the `h1` is a real and correct pattern, and flagging it would
+  train the reader to ignore the finding.
+- `display:none`, `visibility:hidden` and `aria-hidden` headings are left
+  out, because they reach nobody, and the panel says how many were left out
+  rather than dropping them silently. Visually hidden headings — clipped,
+  offset off-screen — are deliberately kept: they are meant for screen
+  readers and do reach someone.
+
+The findings block itself (summary, copy-all, list) moved into
+`js/panel.js`. A second checker reporting findings would otherwise have
+copied the head checker's wording, including the carefully narrow "nothing
+wrong in what can be checked automatically", and the copies would have
+drifted the first time one was reworded.
+
 ## Waiting on real use
 
 Neither of these can be settled by reasoning about them, and guessing would
 mean building something to fix a problem nobody has. They need the extension
 used on real work for a while first.
 
-### 6. Are the Head Check findings the ones worth having?
+### 7. Are the Head Check findings the ones worth having?
 
 The checks were chosen from what a machine *can* decide, not from what
 turned out to matter in practice. On Rakuten they were: no viewport, a 70
@@ -120,7 +153,7 @@ Things to watch for while using it:
   argument for adding one.
 - Whether the alert/note split matches what actually needs acting on.
 
-### 7. Overlapping alt labels
+### 8. Overlapping alt labels
 
 The labels are absolutely positioned, so on image-dense pages (EC product
 grids, exactly the Rakuten case) they overlap and become unreadable.
@@ -129,27 +162,10 @@ workload before designing a fix.
 
 ## Wanted
 
-Four new checks, asked for 2026-07-20. All four are things a machine can
-decide on its own, and all four sit inside a page with no network involved.
-Roughly in the order they seem worth doing.
-
-### 8. Heading outline
-
-The Outline Checker draws a box around every element and never shows the
-outline it is named after. Meanwhile the heading structure — the thing a
-director checks first on a delivery — is not reported at all.
-
-The mechanical half: more than one h1, a level skipped (h2 followed by h4),
-a heading with no text. Those are decidable and belong with the findings.
-
-The human half: whether the headings read as a sensible outline of the page,
-which no check can answer. Show them as an indented list for the reader to
-scan, the way Head Check draws the previews. The same split applies, and the
-panel shape (count, breakdown, copy) is already built.
-
-Worth deciding early whether this extends the Outline Checker or becomes a
-sixth checker. Extending it fits the name; a separate one keeps each toggle
-doing one thing.
+Four new checks were asked for on 2026-07-20. The heading outline is item 6
+above; these are the other three. All are things a machine can decide on its
+own, and all sit inside a page with no network involved. Roughly in the
+order they seem worth doing.
 
 ### 9. Images served larger than they are shown
 

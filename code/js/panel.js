@@ -221,6 +221,75 @@
   };
 
   /**
+   * The findings block: a count, a button that copies the lot, and the list
+   * itself. Two checkers report this way and a third would have made a third
+   * copy, so it lives here rather than in whichever checker wrote it first.
+   *
+   * The summary is worded to claim only what was mechanically checked, and
+   * every caller inherits that wording for the same reason the head checker
+   * needed it: a page can pass every check that exists and still be wrong.
+   *
+   * Findings are appended as they are discovered, so a check that has to wait
+   * for a network round trip reports through the same path.
+   *
+   * @param {HTMLElement} into
+   * @returns {{ report: (level: "alert" | "note", key: string, substitutions?: string[]) => void }}
+   */
+  globalThis.kraftyFindings = (into) => {
+    const head = document.createElement("div");
+    head.className = "kraftyChecksHead";
+    into.appendChild(head);
+
+    const summary = document.createElement("div");
+    summary.className = "kraftyChecksSummary";
+    head.appendChild(summary);
+
+    const list = document.createElement("ul");
+    list.className = "kraftyChecks";
+    into.appendChild(list);
+
+    /* A finding usually ends up in a ticket, and a ticket wants the address
+       it applies to along with every line, not one value at a time. */
+    const copy = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
+      [
+        location.href,
+        ...[...list.querySelectorAll("li")].map((item) => `- ${item.textContent}`),
+      ].join("\n"),
+    );
+    copy.classList.add("kraftyCopyAll");
+    copy.hidden = true;
+    head.appendChild(copy);
+
+    let found = 0;
+
+    const describe = () => {
+      summary.textContent =
+        found === 0
+          ? kraftyMessage("checksClean")
+          : found === 1
+            ? kraftyMessage("checksCountOne")
+            : kraftyMessage("checksCount", [String(found)]);
+      summary.classList.toggle("kraftyChecksClean", found === 0);
+      copy.hidden = found === 0;
+    };
+
+    describe();
+
+    return {
+      report: (level, key, substitutions) => {
+        found += 1;
+
+        const item = document.createElement("li");
+        item.className = `kraftyCheck kraftyCheck-${level}`;
+        item.textContent = kraftyMessage(key, substitutions);
+        list.appendChild(item);
+
+        describe();
+      },
+    };
+  };
+
+  /**
    * Build an empty panel. Callers fill the returned body.
    *
    * @param {{ id: string, className: string, title: string, onClose: () => void }} options

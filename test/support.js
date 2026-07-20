@@ -24,6 +24,7 @@ const SCRIPTS = {
   panel: read("code", "js", "panel.js"),
   nestCheck: read("code", "js", "nestCheck.js"),
   headCheck: read("code", "js", "headCheck.js"),
+  headingCheck: read("code", "js", "headingCheck.js"),
 };
 
 /* The real message file, so a mistyped key or a broken placeholder fails

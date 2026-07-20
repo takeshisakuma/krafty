@@ -118,65 +118,7 @@
     return wrapper;
   };
 
-  const checksSection = section("headSectionChecks");
-
-  const checksHead = document.createElement("div");
-  checksHead.className = "kraftyChecksHead";
-  checksSection.appendChild(checksHead);
-
-  const checksSummary = document.createElement("div");
-  checksSummary.className = "kraftyChecksSummary";
-  checksHead.appendChild(checksSummary);
-
-  const checksList = document.createElement("ul");
-  checksList.className = "kraftyChecks";
-  checksSection.appendChild(checksList);
-
-  /* A finding usually ends up in a ticket, and a ticket wants the address it
-     applies to along with every line, not one value at a time. */
-  const copyFindings = kraftyCopyButton(kraftyMessage("copyFindings"), () =>
-    [
-      location.href,
-      ...[...checksList.querySelectorAll("li")].map(
-        (item) => `- ${item.textContent}`
-      ),
-    ].join("\n")
-  );
-  copyFindings.classList.add("kraftyCopyAll");
-  copyFindings.hidden = true;
-  checksHead.appendChild(copyFindings);
-
-  let found = 0;
-
-  const describeCount = () => {
-    checksSummary.textContent =
-      found === 0
-        ? kraftyMessage("headChecksClean")
-        : found === 1
-          ? kraftyMessage("headChecksCountOne")
-          : kraftyMessage("headChecksCount", [String(found)]);
-    checksSummary.classList.toggle("kraftyChecksClean", found === 0);
-    copyFindings.hidden = found === 0;
-  };
-
-  /**
-   * Findings are appended as they are discovered, so a check that has to
-   * wait for a network round trip reports through the same path.
-   *
-   * @param {"alert" | "note"} level
-   * @param {string} key
-   * @param {string[]} [substitutions]
-   */
-  const report = (level, key, substitutions) => {
-    found += 1;
-
-    const item = document.createElement("li");
-    item.className = `kraftyCheck kraftyCheck-${level}`;
-    item.textContent = kraftyMessage(key, substitutions);
-    checksList.appendChild(item);
-
-    describeCount();
-  };
+  const { report } = kraftyFindings(section("sectionChecks"));
 
   /** @param {string} selector @param {string} label */
   const reportDuplicates = (selector, label) => {
@@ -246,11 +188,9 @@
   reportDuplicates('meta[property="og:title" i]', "og:title");
   reportDuplicates('meta[property="og:image" i]', "og:image");
 
-  describeCount();
-
   /* --- what only a person can decide --- */
 
-  const reviewSection = section("headSectionReview");
+  const reviewSection = section("sectionReview");
 
   const reviewNote = document.createElement("p");
   reviewNote.className = "kraftyNote";

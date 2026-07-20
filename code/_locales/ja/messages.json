@@ -67,7 +67,7 @@
     "message": "入れ子の誤り 1 件",
     "description": "Total when there is exactly one finding."
   },
-  "nestPanelScannedAt": {
+  "panelScannedAt": {
     "message": "$time$ 時点の結果です。以降に追加された要素は含まれません。",
     "description": "Reminder that the scan is a snapshot of the DOM.",
     "placeholders": {
@@ -85,23 +85,23 @@
     "message": "ヘッドチェック",
     "description": "Heading of the head metadata panel."
   },
-  "headSectionChecks": {
+  "sectionChecks": {
     "message": "自動で確認した範囲",
-    "description": "Heading of the section listing mechanical findings."
+    "description": "Heading of the section listing mechanical findings. Shared by every panel that reports findings."
   },
-  "headSectionReview": {
+  "sectionReview": {
     "message": "目視で確認してください",
-    "description": "Heading of the section holding the previews."
+    "description": "Heading of the section holding what only a person can judge."
   },
   "headSectionReference": {
     "message": "全項目",
     "description": "Heading of the section listing every tag."
   },
-  "headChecksClean": {
+  "checksClean": {
     "message": "自動で確認できる範囲では問題ありません。",
     "description": "Deliberately narrow: presence and shape were checked, not whether the content is correct."
   },
-  "headChecksCount": {
+  "checksCount": {
     "message": "確認すべき項目 $count$ 件",
     "description": "Number of mechanical findings.",
     "placeholders": {
@@ -111,7 +111,7 @@
       }
     }
   },
-  "headChecksCountOne": {
+  "checksCountOne": {
     "message": "確認すべき項目 1 件",
     "description": "Used when there is exactly one mechanical finding."
   },
@@ -142,6 +142,74 @@
   "headCardNoImage": {
     "message": "og:image なし",
     "description": "Shown in place of the card image when og:image is absent."
+  },
+  "headingPanelTitle": {
+    "message": "見出しチェック",
+    "description": "Heading of the heading structure panel."
+  },
+  "headingReviewNote": {
+    "message": "見出しがページの構成として筋が通っているかは自動では判断できません。目次として順に読んで確認してください。",
+    "description": "Explains why the outline is shown rather than judged."
+  },
+  "headingOutlineLabel": {
+    "message": "見出しの構造",
+    "description": "Label above the indented list of headings."
+  },
+  "headingNoneFound": {
+    "message": "見出しがありません",
+    "description": "Neither h1-h6 nor role=heading was found."
+  },
+  "headingNoH1": {
+    "message": "レベル 1 の見出しがありません。ページ全体を表す見出しが不在です",
+    "description": "The outline starts below the top level."
+  },
+  "headingMultipleH1": {
+    "message": "レベル 1 の見出しが $count$ 個あります。ページ全体を表す見出しは 1 つにしてください",
+    "description": "Allowed by the spec, but in practice one h1 names the page and the rest are a mistake.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "headingSkipped": {
+    "message": "$from$ の次が $to$ で、レベルが飛んでいます",
+    "description": "A jump down the outline leaves a gap with nothing in it.",
+    "placeholders": {
+      "from": {
+        "content": "$1",
+        "example": "h2"
+      },
+      "to": {
+        "content": "$2",
+        "example": "h4"
+      }
+    }
+  },
+  "headingEmpty": {
+    "message": "$tag$ に文字列がありません",
+    "description": "An empty heading announces nothing. Image-only headings count as having text, via the alt.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "h3"
+      }
+    }
+  },
+  "headingHiddenOne": {
+    "message": "誰にも見えない見出しが 1 個あり、集計から除外しました。",
+    "description": "Used when exactly one heading was left out."
+  },
+  "headingHidden": {
+    "message": "誰にも見えない見出しが $count$ 個あり、集計から除外しました。",
+    "description": "display:none, visibility:hidden and aria-hidden take a heading out of the accessibility tree. Visually hidden headings are not affected and are included.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
   },
   "checkNoindex": {
     "message": "robots に noindex が指定されています。このページは検索結果に載らないよう要求しています",
@@ -283,6 +351,10 @@
     "message": "ネストチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandHeadingCheck": {
+    "message": "見出しチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "アウトラインチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -313,6 +385,14 @@
   },
   "manualNestBody": {
     "message": "親要素が含むことのできない要素を強調し、理由をホバーで表示し、種類ごとに件数を集計します。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadingTitle": {
+    "message": "見出しチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadingBody": {
+    "message": "見出し構造について自動で確認できる範囲を報告し、見出しを字下げした一覧として表示します。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
@@ -363,6 +443,10 @@
   },
   "copyFindings": {
     "message": "検出結果をコピー",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copyOutline": {
+    "message": "見出しの構造をコピー",
     "description": "Label on a copy-to-clipboard control."
   },
   "copied": {

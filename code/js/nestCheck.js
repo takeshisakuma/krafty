@@ -347,7 +347,7 @@
 
   const scanned = document.createElement("div");
   scanned.className = "kraftyPanelNote";
-  scanned.textContent = kraftyMessage("nestPanelScannedAt", [
+  scanned.textContent = kraftyMessage("panelScannedAt", [
     new Date().toLocaleTimeString(),
   ]);
   body.appendChild(scanned);

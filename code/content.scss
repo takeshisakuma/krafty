@@ -97,14 +97,104 @@ $alertColor: #f00;
     word-break: break-all;
   }
 
-  /* A count on the left, the button that copies the whole breakdown on the
-     right. Both panels report findings, so both use it. */
+  /* A count on the left, the button that copies the whole block on the
+     right. Every panel reports something, so every panel uses it. */
   .kraftyChecksHead {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 6px;
+  }
+
+  /* The rest of this block is the findings presentation, shared by every
+     panel that reports findings. It lived under the head checker until a
+     second checker needed it; a copied set of rules would have drifted the
+     first time one of them was adjusted. */
+
+  .kraftySection + .kraftySection {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+  }
+
+  .kraftySectionTitle {
+    margin: 0 0 8px;
+    padding: 0;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #767676;
+    border: 0;
+  }
+
+  /* The wording of this line is deliberately narrow, so it must not read as
+     a clean bill of health. Green is reserved for nothing. */
+  .kraftyChecksSummary {
+    font-weight: bold;
+
+    &.kraftyChecksClean {
+      font-weight: normal;
+      color: #666;
+    }
+  }
+
+  .kraftyChecks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The body breaks anywhere so long URLs cannot widen the panel. Prose must
+     not inherit that, or sentences break mid-word. */
+  .kraftyCheck,
+  .kraftyNote,
+  .kraftyFallbackNote,
+  .kraftyChecksSummary {
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .kraftyCheck {
+    margin: 0 0 4px;
+    padding: 5px 8px;
+    border-radius: 2px;
+    border-left: 3px solid;
+
+    &.kraftyCheck-alert {
+      border-left-color: #c00;
+      background-color: #fdeaea;
+      color: #900;
+    }
+
+    &.kraftyCheck-note {
+      border-left-color: #c98a00;
+      background-color: #fdf5e4;
+      color: #7a5400;
+    }
+  }
+
+  .kraftyNote {
+    margin: 0 0 10px;
+    padding: 0;
+    color: #767676;
+  }
+
+  .kraftyPanelNote {
+    margin-top: 10px;
+    color: #767676;
+  }
+
+  .kraftyPreviewLabel {
+    margin: 12px 0 5px;
+    font-weight: bold;
+    color: #555;
+  }
+
+  .kraftyMissing {
+    color: #767676;
+    font-style: italic;
   }
 
   &.kraftyPanelDragging {
@@ -172,10 +262,66 @@ $alertColor: #f00;
         white-space: nowrap;
       }
     }
+  }
+}
 
-    .kraftyPanelNote {
-      margin-top: 10px;
-      color: #767676;
+/* --- heading checker --- */
+
+#js-kraftyHeadingInformation.kraftyHeadingInformation {
+  display: none;
+}
+
+.kraftyHeadingChecker {
+  #js-kraftyHeadingInformation.kraftyHeadingInformation {
+    @include panel;
+
+    /* Top right: the last free corner. Both other panels are anchored to the
+       bottom and either can grow to 80% of the height, so sharing a side
+       with one of them means overlapping it on any ordinary viewport - the
+       head checker especially, which is the panel most likely to be open
+       alongside this one during a delivery review.
+
+       The mixin's max-height holds the bottom edge inside the viewport from
+       this anchor too: below 250px of height the calc branch wins, and above
+       it 50px + 80% still fits. */
+    right: 50px;
+    top: 50px;
+    bottom: auto;
+
+    /* The indent is set per item, from the heading's own level, because
+       aria-level is not capped at six. */
+    .kraftyOutline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .kraftyOutlineItem {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 2px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .kraftyOutlineLevel {
+      flex: none;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background-color: #f0f0f0;
+      color: #555;
+      border-radius: 2px;
+      padding: 1px 4px;
+    }
+
+    /* Marks where the outline jumps a level. The finding above says which
+       pair, but reading it off the list is what makes it actionable. */
+    .kraftyOutlineSkip .kraftyOutlineLevel {
+      background-color: #fdf5e4;
+      color: #7a5400;
+      box-shadow: inset 0 0 0 1px #c98a00;
     }
   }
 }
@@ -207,86 +353,6 @@ $alertColor: #f00;
       &.apple {
         width: 60px;
       }
-    }
-
-    .kraftyMissing {
-      color: #767676;
-      font-style: italic;
-    }
-
-    .kraftySection + .kraftySection {
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 2px solid #ddd;
-    }
-
-    .kraftySectionTitle {
-      margin: 0 0 8px;
-      padding: 0;
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #767676;
-      border: 0;
-    }
-
-    /* The wording of this line is deliberately narrow, so it must not read
-       as a clean bill of health. Green is reserved for nothing. */
-    .kraftyChecksSummary {
-      font-weight: bold;
-
-      &.kraftyChecksClean {
-        font-weight: normal;
-        color: #666;
-      }
-    }
-
-    .kraftyChecks {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    /* The body breaks anywhere so long URLs cannot widen the panel. Prose
-       must not inherit that, or sentences break mid-word. */
-    .kraftyCheck,
-    .kraftyNote,
-    .kraftyFallbackNote,
-    .kraftyChecksSummary {
-      word-break: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .kraftyCheck {
-      margin: 0 0 4px;
-      padding: 5px 8px;
-      border-radius: 2px;
-      border-left: 3px solid;
-
-      &.kraftyCheck-alert {
-        border-left-color: #c00;
-        background-color: #fdeaea;
-        color: #900;
-      }
-
-      &.kraftyCheck-note {
-        border-left-color: #c98a00;
-        background-color: #fdf5e4;
-        color: #7a5400;
-      }
-    }
-
-    .kraftyNote {
-      margin: 0 0 10px;
-      padding: 0;
-      color: #767676;
-    }
-
-    .kraftyPreviewLabel {
-      margin: 12px 0 5px;
-      font-weight: bold;
-      color: #555;
     }
 
     .kraftyFallbackNote {
