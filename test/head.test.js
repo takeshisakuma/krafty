@@ -181,6 +181,37 @@ test("head checker", async (t) => {
     }
   });
 
+  await t.test("accepts a canonical that drops tracking parameters", async () => {
+    /* Found on an Amazon ad landing URL: nineteen advertising parameters in
+       the address, canonical set to the bare page. Naming the clean address
+       is the most common correct use of the tag there is, and it was being
+       reported as the page disowning itself. */
+    const { findings } = await check(
+      `<title>t</title><link rel="canonical" href="/">`,
+      { serve: "/?tag=hydraamazonav-22&ref=pd_sl_7ibq2d37on_e&hvadid=675114138690" }
+    );
+
+    assert.strictEqual(
+      matching(findings, /canonical points at another/).length,
+      0,
+      "dropping an ad's parameters is canonicalising, not disowning"
+    );
+  });
+
+  await t.test("still reports a canonical that changes a parameter", async () => {
+    /* The query cannot simply be ignored: ?id=2 is not ?id=1. The rule is
+       containment, and a changed value is not contained. */
+    const { findings } = await check(
+      `<title>t</title><link rel="canonical" href="/?id=2">`,
+      { serve: "/?id=1" }
+    );
+
+    assert.strictEqual(
+      matching(findings, /canonical points at another/).length,
+      1
+    );
+  });
+
   await t.test("still reports a canonical on a genuinely different page", async () => {
     /* The normalising must not have swallowed the check. */
     const { findings } = await check(
