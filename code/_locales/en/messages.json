@@ -67,7 +67,7 @@
     "message": "1 nesting error",
     "description": "Total when there is exactly one finding."
   },
-  "nestPanelScannedAt": {
+  "panelScannedAt": {
     "message": "Scanned $time$. Elements added later are not included.",
     "description": "Reminder that the scan is a snapshot of the DOM.",
     "placeholders": {
@@ -85,23 +85,23 @@
     "message": "Head Check",
     "description": "Heading of the head metadata panel."
   },
-  "headSectionChecks": {
+  "sectionChecks": {
     "message": "Checked automatically",
-    "description": "Heading of the section listing mechanical findings."
+    "description": "Heading of the section listing mechanical findings. Shared by every panel that reports findings."
   },
-  "headSectionReview": {
+  "sectionReview": {
     "message": "Read these yourself",
-    "description": "Heading of the section holding the previews."
+    "description": "Heading of the section holding what only a person can judge."
   },
   "headSectionReference": {
     "message": "All values",
     "description": "Heading of the section listing every tag."
   },
-  "headChecksClean": {
+  "checksClean": {
     "message": "Nothing wrong in what can be checked automatically.",
     "description": "Deliberately narrow: presence and shape were checked, not whether the content is correct."
   },
-  "headChecksCount": {
+  "checksCount": {
     "message": "$count$ things to look at",
     "description": "Number of mechanical findings.",
     "placeholders": {
@@ -111,7 +111,7 @@
       }
     }
   },
-  "headChecksCountOne": {
+  "checksCountOne": {
     "message": "1 thing to look at",
     "description": "Used when there is exactly one mechanical finding."
   },
@@ -142,6 +142,74 @@
   "headCardNoImage": {
     "message": "no og:image",
     "description": "Shown in place of the card image when og:image is absent."
+  },
+  "headingPanelTitle": {
+    "message": "Heading Check",
+    "description": "Heading of the heading structure panel."
+  },
+  "headingReviewNote": {
+    "message": "Whether these read as a sensible outline of the page cannot be decided automatically. Read them in order, as a table of contents.",
+    "description": "Explains why the outline is shown rather than judged."
+  },
+  "headingOutlineLabel": {
+    "message": "The outline",
+    "description": "Label above the indented list of headings."
+  },
+  "headingNoneFound": {
+    "message": "No headings on this page",
+    "description": "Neither h1-h6 nor role=heading was found."
+  },
+  "headingNoH1": {
+    "message": "No level 1 heading: nothing names the page as a whole",
+    "description": "The outline starts below the top level."
+  },
+  "headingMultipleH1": {
+    "message": "$count$ level 1 headings: only one should name the page",
+    "description": "Allowed by the spec, but in practice one h1 names the page and the rest are a mistake.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "headingSkipped": {
+    "message": "$from$ is followed by $to$, skipping a level",
+    "description": "A jump down the outline leaves a gap with nothing in it.",
+    "placeholders": {
+      "from": {
+        "content": "$1",
+        "example": "h2"
+      },
+      "to": {
+        "content": "$2",
+        "example": "h4"
+      }
+    }
+  },
+  "headingEmpty": {
+    "message": "$tag$ has no text",
+    "description": "An empty heading announces nothing. Image-only headings count as having text, via the alt.",
+    "placeholders": {
+      "tag": {
+        "content": "$1",
+        "example": "h3"
+      }
+    }
+  },
+  "headingHiddenOne": {
+    "message": "1 heading is hidden from everyone and was left out.",
+    "description": "Used when exactly one heading was left out."
+  },
+  "headingHidden": {
+    "message": "$count$ headings are hidden from everyone and were left out.",
+    "description": "display:none, visibility:hidden and aria-hidden take a heading out of the accessibility tree. Visually hidden headings are not affected and are included.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
   },
   "checkNoindex": {
     "message": "robots contains noindex: this page asks not to be listed in search results",
@@ -283,6 +351,10 @@
     "message": "Toggle Nest Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandHeadingCheck": {
+    "message": "Toggle Heading Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "Toggle Outline Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -313,6 +385,14 @@
   },
   "manualNestBody": {
     "message": "Highlight elements that their parent element is not allowed to contain, explain each one on hover, and count them by kind.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadingTitle": {
+    "message": "Heading Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualHeadingBody": {
+    "message": "Report what can be checked automatically about the heading structure, and list the headings as an indented outline for you to read.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
@@ -363,6 +443,10 @@
   },
   "copyFindings": {
     "message": "Copy the findings",
+    "description": "Label on a copy-to-clipboard control."
+  },
+  "copyOutline": {
+    "message": "Copy the outline",
     "description": "Label on a copy-to-clipboard control."
   },
   "copied": {

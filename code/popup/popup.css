@@ -53,6 +53,11 @@ body {
   color: #4dc1ea;
 }
 
+.headingCheckButton:hover:not(:disabled),
+.headingCheckButton.active {
+  color: #7a3fc9;
+}
+
 .outlineCheckButton:hover:not(:disabled),
 .outlineCheckButton.active {
   color: #70d549;

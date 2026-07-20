@@ -21,6 +21,17 @@ declare var kraftyPanel: (options: {
   onClose: () => void;
 }) => { panel: HTMLElement; body: HTMLElement };
 
+/* The findings block inside a panel: summary, copy-all button, and the list
+   every reported finding is appended to. Shared so a second checker that
+   reports findings does not grow a second copy of the wording. */
+declare var kraftyFindings: (into: HTMLElement) => {
+  report: (
+    level: "alert" | "note",
+    key: string,
+    substitutions?: string[]
+  ) => void;
+};
+
 /* A button that copies what its callback returns, with a fallback for
    http:// pages where navigator.clipboard does not exist. */
 declare var kraftyCopyButton: (

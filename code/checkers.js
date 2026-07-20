@@ -28,6 +28,16 @@ globalThis.kraftyCheckers = [
     allFrames: true,
   },
   {
+    id: "js-headingCheckButton",
+    command: "heading-check",
+    file: "js/headingCheck.js",
+    bodyClass: "kraftyHeadingChecker",
+    /* A subframe's headings belong to a different document, so folding them
+       into this page's outline would report a structure that does not
+       exist. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",

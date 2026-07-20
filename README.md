@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Five checks you can turn on over any page, from the toolbar or from a
+Six checks you can turn on over any page, from the toolbar or from a
 keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
 runs in your own browser, on the tab you are looking at, and Krafty collects
 no data at all. Available in English and Japanese, following your browser's
@@ -40,6 +40,17 @@ may contain instead.
 The panel totals them and breaks them down by pair, and copies the whole
 list in one go so it can go straight into a ticket.
 
+### Heading Checker
+
+Reports what can be decided about the heading structure: more than one level
+one heading, a level skipped on the way down, a heading with no text at all,
+and a page with no headings.
+
+Whether the headings read as a sensible outline of the page is not something
+software can answer, so they are listed in order and indented by level, as a
+table of contents to read. Headings hidden from everyone are left out, and
+the panel says how many. The whole outline copies as one indented block.
+
 ### Outline Checker
 
 Draws an outline around every element, so the structure and spacing of a
@@ -63,7 +74,7 @@ the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
 Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。
-5つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
+6つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
 ショートカットから、任意のページに重ねて表示できます。処理はすべてお使いの
 ブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。
 表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
@@ -91,6 +102,17 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 パネルには件数と、親子の組み合わせごとの内訳が出ます。まとめてコピーできる
 ので、そのまま不具合票に貼れます。
+
+### 見出しチェッカー
+
+見出し構造について機械が判断できることを報告します。レベル1の見出しが
+複数ある、レベルが飛んでいる、文字列のない見出しがある、そもそも見出しが
+ない、といったものです。
+
+その見出しがページの構成として筋が通っているかどうかは、ソフトウェアには
+答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。
+目次として読んでご判断ください。誰にも見えない見出しは集計から外し、
+その件数を明記します。構造全体はそのままの字下げでコピーできます。
 
 ### アウトラインチェッカー
 
