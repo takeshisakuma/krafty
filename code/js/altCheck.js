@@ -61,12 +61,79 @@
   const originX = window.scrollX - (bodyBox ? bodyBox.left + window.scrollX : 0);
   const originY = window.scrollY - (bodyBox ? bodyBox.top + window.scrollY : 0);
 
+  /* Appending to the body took the labels out of whatever clipped them,
+     which a carousel relies on: its off-screen items stay in the document
+     at real coordinates and are hidden only by an ancestor's overflow. A
+     label for one of those is drawn on top of whatever happens to be at
+     those coordinates, and the reported symptom was a section showing the
+     alt of every image except the ones on screen.
+
+     So an image that its own page has clipped away gets no label. Read in
+     the same pass as everything else, with the ancestors' boxes and styles
+     kept, because a page of ninety images shares most of its ancestors. */
+
+  /** @type {Map<Element, { clipsX: boolean, clipsY: boolean, box: DOMRect }>} */
+  const frames = new Map();
+
+  /** @param {Element} element */
+  const frameOf = (element) => {
+    let known = frames.get(element);
+
+    if (!known) {
+      const styles = getComputedStyle(element);
+      known = {
+        clipsX: styles.overflowX !== "visible",
+        clipsY: styles.overflowY !== "visible",
+        box: element.getBoundingClientRect(),
+      };
+      frames.set(element, known);
+    }
+    return known;
+  };
+
+  /**
+   * @param {Element} image
+   * @param {DOMRect} box
+   */
+  const outOfSight = (image, box) => {
+    if (box.width === 0 || box.height === 0) {
+      return true;
+    }
+
+    for (
+      let parent = image.parentElement;
+      parent && parent !== document.body;
+      parent = parent.parentElement
+    ) {
+      const frame = frameOf(parent);
+
+      if (
+        frame.clipsX &&
+        (box.right <= frame.box.left || box.left >= frame.box.right)
+      ) {
+        return true;
+      }
+      if (
+        frame.clipsY &&
+        (box.bottom <= frame.box.top || box.top >= frame.box.bottom)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const places = subjects.map((image) => image.getBoundingClientRect());
 
   /** @type {{ label: HTMLElement, box: DOMRect }[]} */
   const labels = [];
 
   subjects.forEach((image, index) => {
+    if (outOfSight(image, places[index])) {
+      return;
+    }
+
     const { text, state } = describe(image);
 
     const label = document.createElement("span");

@@ -645,8 +645,22 @@ $panelInset: 50px;
     color: $alertColor;
     font-size: 12px;
     padding: 10px;
-    background-color: #fff;
     box-shadow: 1px 1px 2px #999;
+
+    /* The panels are opaque on purpose, and this is the case that argues
+       the other way. A panel can be dragged off whatever it covers; a label
+       is pinned to the one thing you need to look at, and judging whether
+       an alt describes its image is impossible with the image behind a
+       white box.
+
+       Blurred rather than only faded. Plain translucency lays the text over
+       whatever the photograph happens to be doing, and a tool that reports
+       unreadable text has no business shipping any; the blur keeps the
+       picture recognisable while giving the words a flat field to sit on.
+       Hovering closes it back to solid white, because that is when the text
+       is being read rather than glanced past. */
+    background-color: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(3px);
     margin-top: 10px;
     margin-left: 10px;
     border-radius: 2px;
@@ -698,7 +712,10 @@ $panelInset: 50px;
       /* Set per label by the script, from its own content. The fallback is
          for the case where that never ran. */
       max-height: var(--kraftyAltFull, 24em);
-      transition: max-height 0.2s ease-out;
+      background-color: #fff;
+      transition:
+        max-height 0.2s ease-out,
+        background-color 0.2s ease-out;
 
       /* Above its neighbours while open, so the full text is not itself
          covered by the next label along. */

@@ -120,18 +120,52 @@ test("alt checker", async (t) => {
 
         await page.hover(".kraftyAltContent");
 
-        /** @type {number[]} */
-        const frames = [];
+        /* What is actually running, rather than a frame caught part way.
 
-        for (let i = 0; i < 8; i += 1) {
-          frames.push(await height());
-          await new Promise((resolve) => setTimeout(resolve, 25));
-        }
+           Sampling the height was tried and abandoned. A transition is
+           sampled once per rendered frame, so reading it in a tight loop
+           starves the renderer and returns the same number for hundreds of
+           reads and then the final one - indistinguishable from an
+           animation that never ran. Spacing the reads did not fix it
+           either: the growth here finishes inside about 60ms, and the
+           pointer can take longer than that to register. The code was right
+           and the measurement was wrong, twice.
+
+           getAnimations reports the transition itself, which is the thing
+           being claimed. It is present or it is not. */
+        const running = await page.evaluate(() => {
+          const label = document.querySelector(".kraftyAltContent");
+          if (!label) return [];
+
+          return label.getAnimations().map((animation) => ({
+            property:
+              animation instanceof CSSTransition
+                ? animation.transitionProperty
+                : "",
+            duration: Number(animation.effect?.getTiming().duration ?? 0),
+          }));
+        });
 
         await new Promise((resolve) => setTimeout(resolve, 400));
 
-        return { closed, target, frames, open: await height() };
+        return { closed, target, running, open: await height() };
       }
+    );
+
+    const growth = run.running.find(
+      (animation) => animation.property === "max-height"
+    );
+
+    assert.ok(
+      growth,
+      `expected a transition on max-height, since line-clamp cannot be transitioned; saw ${JSON.stringify(
+        run.running
+      )}`
+    );
+
+    assert.ok(
+      growth.duration > 0,
+      `expected the growth to take time, got ${growth.duration}ms`
     );
 
     assert.match(
@@ -147,16 +181,6 @@ test("alt checker", async (t) => {
       )}px then ${Math.round(run.open)}px`
     );
 
-    assert.ok(
-      run.frames.some(
-        (height) => height > run.closed + 1 && height < run.open - 1
-      ),
-      `expected a frame part way open between ${Math.round(
-        run.closed
-      )}px and ${Math.round(run.open)}px, saw ${run.frames
-        .map((height) => Math.round(height))
-        .join(", ")}`
-    );
   });
 
   await t.test("keeps a folded label inside its own image", async () => {
@@ -222,6 +246,45 @@ test("alt checker", async (t) => {
       state.overlaps,
       0,
       "labels that stay inside their images cannot cover each other"
+    );
+  });
+
+  await t.test("says nothing about an image its own page has clipped away", async () => {
+    /* A carousel keeps its off-screen items in the document at real
+       coordinates and hides them with an ancestor's overflow. Appending the
+       labels to the body took them out of that clipping, and the section
+       came back showing the alt of every image except the ones on screen.
+
+       Four covers of 120px in a 260px window: two visible, two past the
+       edge. */
+    const row = Array.from(
+      { length: 4 },
+      (_, index) =>
+        `<img src="${PIXEL}" alt="cover ${index}" width="120" height="180"
+              style="width:120px;height:180px;flex:none">`
+    ).join("");
+
+    const shown = await withPage(
+      {
+        html: `<div style="width:260px;overflow:hidden">
+                 <div style="display:flex;gap:10px;width:900px">${row}</div>
+               </div>`,
+        checkers: ["altCheck"],
+        width: 1280,
+        height: 900,
+      },
+      (page) =>
+        page.evaluate(() =>
+          [...document.querySelectorAll(".kraftyAltContent")].map(
+            (label) => label.textContent ?? ""
+          )
+        )
+    );
+
+    assert.deepStrictEqual(
+      shown.map((text) => text.replace("alt: ", "")),
+      ["cover 0", "cover 1"],
+      "a label for an item the page is hiding lands on whatever is there instead"
     );
   });
 

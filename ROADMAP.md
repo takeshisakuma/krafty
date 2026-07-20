@@ -267,6 +267,33 @@ the picture it belongs to; opened, it is above everything and may spread.
 Measured on amazon.co.jp afterwards: worst horizontal drift from its image,
 0px.
 
+Appending to the body then cost the clipping the labels used to inherit. A
+carousel keeps its off-screen items in the document at real coordinates and
+hides them with an ancestor's overflow, so the section came back showing the
+alt of every image except the ones on screen. An image its own page has
+clipped away now gets no label — checked by walking the ancestors that
+clip, with their boxes and styles kept, since ninety images share most of
+their ancestors.
+
+And the background is translucent, with a blur, going solid on hover. This
+contradicts the rule at the top of `content.scss`, and the reasoning there
+is what says it should: panels are opaque because a panel can be dragged
+off whatever it covers. A label cannot. It is pinned to the one thing you
+need to look at, and judging whether an alt describes its image is
+impossible with the image behind a white box. Blurred rather than only
+faded, because plain translucency lays the text over whatever the
+photograph is doing, and a tool that reports unreadable text has no
+business shipping any.
+
+Two hours of the fix went into a test that was wrong rather than code that
+was. A transition is sampled once per rendered frame, so measuring the
+height in a tight loop starves the renderer and returns one number for
+hundreds of reads and then the last — indistinguishable from an animation
+that never ran. Spacing the reads did not settle it either: the growth
+finishes inside about 60ms and the pointer can take longer than that to
+register. `getAnimations()` reports the transition itself, which is what
+was being claimed, and it is either there or it is not.
+
 Opening is animated, which is not decoration. Snapping open read as a
 rendering fault — as though the text had been broken and the pointer
 happened to reveal it — and this label is drawn over somebody else's page,
