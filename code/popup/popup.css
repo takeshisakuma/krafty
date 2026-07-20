@@ -13,12 +13,29 @@ body {
   list-style: none;
 }
 
+/* Which group a checker belongs to answers "which of these do I want"
+   better than the names do: five of them tell you something, three of them
+   show you the page. */
+.checkerGroup {
+  margin: 10px 16px 4px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: #767676;
+}
+
 .checkerButton {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 6px 16px;
+  padding: 6px 16px 6px 12px;
   border: 0;
+  /* Each checker already had a colour, and it only appeared once the
+     pointer was on the button or the checker was running - no help at all
+     to somebody looking for the right one. Shown at rest it is a handle
+     that needs no learning, which is more than a drawn icon could manage
+     for "nest" or "markup". */
+  border-left: 4px solid transparent;
   background: none;
   font: inherit;
   font-size: 14px;
@@ -27,6 +44,10 @@ body {
   color: #333;
   transition: color 0.2s ease-in-out;
   cursor: pointer;
+}
+
+.checkerButton:disabled {
+  border-left-color: #ddd;
 }
 
 .checkerButton:disabled {
@@ -43,9 +64,17 @@ body {
    #d2d2d2 on white fall below 2:1 contrast, which an accessibility tool
    should not ship. */
 
+.headCheckButton {
+  border-left-color: #fe5858;
+}
+
 .headCheckButton:hover:not(:disabled),
 .headCheckButton.active {
   color: #fe5858;
+}
+
+.nestCheckButton {
+  border-left-color: #4dc1ea;
 }
 
 .nestCheckButton:hover:not(:disabled),
@@ -53,9 +82,17 @@ body {
   color: #4dc1ea;
 }
 
+.headingCheckButton {
+  border-left-color: #7a3fc9;
+}
+
 .headingCheckButton:hover:not(:disabled),
 .headingCheckButton.active {
   color: #7a3fc9;
+}
+
+.markupCheckButton {
+  border-left-color: #b0177a;
 }
 
 .markupCheckButton:hover:not(:disabled),
@@ -63,9 +100,17 @@ body {
   color: #b0177a;
 }
 
+.imageCheckButton {
+  border-left-color: #0f766e;
+}
+
 .imageCheckButton:hover:not(:disabled),
 .imageCheckButton.active {
   color: #0f766e;
+}
+
+.outlineCheckButton {
+  border-left-color: #70d549;
 }
 
 .outlineCheckButton:hover:not(:disabled),
@@ -73,9 +118,17 @@ body {
   color: #70d549;
 }
 
+.altCheckButton {
+  border-left-color: #8a8c17;
+}
+
 .altCheckButton:hover:not(:disabled),
 .altCheckButton.active {
   color: #8a8c17;
+}
+
+.brightnessCheckButton {
+  border-left-color: #767676;
 }
 
 .brightnessCheckButton:hover:not(:disabled),

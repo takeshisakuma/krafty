@@ -3,6 +3,27 @@
 /* The checker table and the injection live in ../checkers.js, because the
    service worker that handles keyboard shortcuts needs them too. */
 
+/* Swap the menu into the browser's language, the same way the manual does.
+
+   This was the one surface left in English. Everything else - the store
+   listing, the manual, every finding, every panel - has been in both
+   languages for a while, and the eight labels a reader looks at most often
+   were not. Eight lines of a language that is not yours is a slow thing to
+   scan, which was the complaint that started this. */
+
+for (const element of document.querySelectorAll("[data-i18n]")) {
+  const key = element.getAttribute("data-i18n");
+  const message = key ? chrome.i18n.getMessage(key) : "";
+
+  /* A missing message leaves the English in the markup rather than blanking
+     the element. */
+  if (message) {
+    element.textContent = message;
+  }
+}
+
+document.documentElement.lang = chrome.i18n.getUILanguage();
+
 const statusArea = element("js-status");
 
 /**

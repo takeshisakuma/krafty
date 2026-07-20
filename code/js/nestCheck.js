@@ -290,7 +290,7 @@
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
       className: "kraftyNestInformation",
-      title: kraftyMessage("nestPanelTitle"),
+      title: kraftyMessage("checkerNest"),
       onRescan: run,
       onClose: () => {
         clear();

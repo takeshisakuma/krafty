@@ -223,29 +223,55 @@ test("wiring", async (t) => {
     }
   });
 
-  /* option.html carries the English so the manual still reads correctly if
-     the script does not run, which means the same words live in two places.
-     Asserting they match turns that duplication into something that cannot
-     drift silently. */
-  await t.test("the manual's markup matches its English messages", () => {
-    const en = readJson("code", "_locales", "en", "messages.json");
-    const html = fs.readFileSync(
-      path.join(code, "option", "option.html"),
-      "utf8"
-    );
+  /* Both pages carry the English so they still read correctly if the script
+     does not run, which means the same words live in two places. Asserting
+     they match turns that duplication into something that cannot drift
+     silently. */
+  for (const page of [
+    ["option", "option.html"],
+    ["popup", "popup.html"],
+  ]) {
+    await t.test(`${page[1]} matches its English messages`, () => {
+      const en = readJson("code", "_locales", "en", "messages.json");
+      const html = fs.readFileSync(path.join(code, ...page), "utf8");
 
-    const localised = [
-      ...html.matchAll(/<(\w+)[^>]*\sdata-i18n="(\w+)"[^>]*>([\s\S]*?)<\/\1>/g),
-    ];
+      const localised = [
+        ...html.matchAll(
+          /<(\w+)[^>]*\sdata-i18n="(\w+)"[^>]*>([\s\S]*?)<\/\1>/g
+        ),
+      ];
 
-    assert.ok(localised.length > 0, "expected the manual to be localised");
+      assert.ok(localised.length > 0, `expected ${page[1]} to be localised`);
 
-    for (const [, , key, text] of localised) {
-      assert.ok(en[key], `option.html references ${key}, which has no entry`);
-      assert.strictEqual(
-        text.trim(),
-        en[key].message,
-        `option.html and the en message for ${key} have drifted`
+      for (const [, , key, text] of localised) {
+        assert.ok(en[key], `${page[1]} references ${key}, which has no entry`);
+        assert.strictEqual(
+          text.trim(),
+          en[key].message,
+          `${page[1]} and the en message for ${key} have drifted`
+        );
+      }
+    });
+  }
+
+  /* The five checkers that open a panel take their menu label from that
+     panel's own title key, so the two cannot end up calling one checker
+     different things. */
+  await t.test("a checker's menu label is its panel's title", () => {
+    const html = fs.readFileSync(path.join(code, "popup", "popup.html"), "utf8");
+
+    for (const checker of checkers.filter((one) => one.panelId)) {
+      const button = html.match(
+        new RegExp(`id="${checker.id}"[^>]*data-i18n="(\\w+)"`)
+      );
+
+      assert.ok(button, `${checker.id} has no data-i18n`);
+
+      const source = fs.readFileSync(path.join(code, checker.file), "utf8");
+
+      assert.ok(
+        source.includes(`kraftyMessage("${button[1]}")`),
+        `the menu calls it ${button[1]} but ${checker.file} titles its panel with something else`
       );
     }
   });

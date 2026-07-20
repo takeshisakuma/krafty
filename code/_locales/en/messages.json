@@ -45,7 +45,7 @@
       }
     }
   },
-  "nestPanelTitle": {
+  "checkerNest": {
     "message": "Nest Check",
     "description": "Heading of the findings panel."
   },
@@ -81,11 +81,35 @@
     "message": "Close",
     "description": "Label of the button that dismisses a panel."
   },
+  "checkerOutline": {
+    "message": "Outline Check",
+    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
+  },
+  "checkerAlt": {
+    "message": "alt Check",
+    "description": "Menu label for the checker that draws every image's alt text."
+  },
+  "checkerBrightness": {
+    "message": "Brightness Check",
+    "description": "Menu label for the checker that greys the page."
+  },
+  "popupGroupReports": {
+    "message": "Report findings",
+    "description": "Heading over the checkers that open a panel and say what they found."
+  },
+  "popupGroupOverlays": {
+    "message": "Show the page",
+    "description": "Heading over the checkers that draw over the page instead of reporting."
+  },
+  "popupReview": {
+    "message": "Copy the review",
+    "description": "Runs every checker that reports and puts all of their findings on the clipboard."
+  },
   "panelRescan": {
     "message": "Check again",
     "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
   },
-  "headPanelTitle": {
+  "checkerHead": {
     "message": "Head Check",
     "description": "Heading of the head metadata panel."
   },
@@ -147,7 +171,7 @@
     "message": "no og:image",
     "description": "Shown in place of the card image when og:image is absent."
   },
-  "markupPanelTitle": {
+  "checkerMarkup": {
     "message": "Markup Check",
     "description": "Heading of the markup panel. Named for the family, not for the one check it starts with."
   },
@@ -187,7 +211,7 @@
     "message": "1 table has no header cells, so every cell is announced bare",
     "description": "Used when exactly one table is missing its headers."
   },
-  "imagePanelTitle": {
+  "checkerImage": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."
   },
@@ -265,7 +289,7 @@
     "message": "1 image could not be measured, having not finished loading. Scroll it into view and run the check again.",
     "description": "Used when exactly one image was not measurable."
   },
-  "headingPanelTitle": {
+  "checkerHeading": {
     "message": "Heading Check",
     "description": "Heading of the heading structure panel."
   },

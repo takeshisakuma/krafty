@@ -142,7 +142,7 @@
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
       className: "kraftyHeadingInformation",
-      title: kraftyMessage("headingPanelTitle"),
+      title: kraftyMessage("checkerHeading"),
       onRescan: run,
       onClose: () => {
         panel.remove();

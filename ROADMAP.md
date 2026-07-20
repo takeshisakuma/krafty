@@ -559,6 +559,46 @@ relies on colour.
 The screen takes no pointer events. It is a viewing mode, not a modal, and
 a reviewer has to be able to open the thing they are looking at.
 
+### 18. Eight checkers is a wall of text — done
+
+Asked 2026-07-20, once the menu had doubled: is the order right, and should
+the entries have icons?
+
+Icons were declined, and the reason is not effort. Three of the eight can be
+drawn — image, brightness, alt. The other five are *head*, *nest*,
+*heading*, *markup*, *outline*, which have no conventional picture between
+them. An icon for those is something to be learned, and the person who has
+learned it already knows the list; the reader who cannot tell the entries
+apart at a glance is exactly the reader an invented icon does not help. A
+picture that has to be explained is decoration wearing the clothes of
+information.
+
+Three cheaper things were done instead.
+
+The menu was the last surface still in English. The listing, the manual,
+every finding and every panel had been in both languages for a while, and
+the eight labels a reader looks at most often had not - which made the
+listing's "available in English and Japanese" not quite true. Eight lines of
+a language that is not yours is a slow thing to scan, and that alone was
+most of the complaint.
+
+Each checker already had a colour, appearing only on hover or while
+running - no use at all to somebody looking for the right one. It shows at
+rest now, as a bar down the left edge. No new vocabulary, and it is already
+this extension's way of saying which checker you are looking at.
+
+And the list is split under two headings: five that report findings, three
+that draw over the page. That answers "which of these do I want" with
+structure rather than with names, and it matches the review button
+underneath, which runs the first group.
+
+A checker's menu label is now the same message as its panel's title, so the
+two cannot come to call one checker different things. A test holds it.
+
+The order within each group was left alone. It is the order they were
+built in, and choosing a better one needs to know which gets reached for
+most - a question for use, like item 8, not for reasoning.
+
 ## Deferred, with reasons
 
 ### TypeScript — decided, and re-checked

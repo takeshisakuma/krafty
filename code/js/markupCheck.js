@@ -100,7 +100,7 @@
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
       className: "kraftyMarkupInformation",
-      title: kraftyMessage("markupPanelTitle"),
+      title: kraftyMessage("checkerMarkup"),
       onRescan: run,
       onClose: () => {
         panel.remove();

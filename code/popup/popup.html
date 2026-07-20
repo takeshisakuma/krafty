@@ -8,19 +8,34 @@
 </head>
 <body>
 
+  <!-- The English here is the fallback if the script does not run, and is
+       also the source of the en messages; a test asserts the two still
+       match, so the duplication cannot drift unnoticed.
+
+       The five that open a panel take their label from that panel's own
+       title key, so the menu and the panel cannot end up calling the same
+       checker two different things. -->
+
+  <p class="checkerGroup" data-i18n="popupGroupReports">Report findings</p>
+
   <ul class="checkerList">
-    <li><button type="button" id="js-headCheckButton" class="checkerButton headCheckButton">Head Check</button></li>
-    <li><button type="button" id="js-nestCheckButton" class="checkerButton nestCheckButton">Nest Check</button></li>
-    <li><button type="button" id="js-headingCheckButton" class="checkerButton headingCheckButton">Heading Check</button></li>
-    <li><button type="button" id="js-markupCheckButton" class="checkerButton markupCheckButton">Markup Check</button></li>
-    <li><button type="button" id="js-imageCheckButton" class="checkerButton imageCheckButton">Image Check</button></li>
-    <li><button type="button" id="js-outlineCheckButton" class="checkerButton outlineCheckButton">Outline Check</button></li>
-    <li><button type="button" id="js-altCheckButton" class="checkerButton altCheckButton">alt Check</button></li>
-    <li><button type="button" id="js-brightnessCheckButton" class="checkerButton brightnessCheckButton">Brightness Check</button></li>
+    <li><button type="button" id="js-headCheckButton" class="checkerButton headCheckButton" data-i18n="checkerHead">Head Check</button></li>
+    <li><button type="button" id="js-nestCheckButton" class="checkerButton nestCheckButton" data-i18n="checkerNest">Nest Check</button></li>
+    <li><button type="button" id="js-headingCheckButton" class="checkerButton headingCheckButton" data-i18n="checkerHeading">Heading Check</button></li>
+    <li><button type="button" id="js-markupCheckButton" class="checkerButton markupCheckButton" data-i18n="checkerMarkup">Markup Check</button></li>
+    <li><button type="button" id="js-imageCheckButton" class="checkerButton imageCheckButton" data-i18n="checkerImage">Image Check</button></li>
+  </ul>
+
+  <p class="checkerGroup" data-i18n="popupGroupOverlays">Show the page</p>
+
+  <ul class="checkerList">
+    <li><button type="button" id="js-outlineCheckButton" class="checkerButton outlineCheckButton" data-i18n="checkerOutline">Outline Check</button></li>
+    <li><button type="button" id="js-altCheckButton" class="checkerButton altCheckButton" data-i18n="checkerAlt">alt Check</button></li>
+    <li><button type="button" id="js-brightnessCheckButton" class="checkerButton brightnessCheckButton" data-i18n="checkerBrightness">Brightness Check</button></li>
   </ul>
 
   <p class="reviewRow">
-    <button type="button" id="js-reviewButton" class="reviewButton">Copy the review</button>
+    <button type="button" id="js-reviewButton" class="reviewButton" data-i18n="popupReview">Copy the review</button>
   </p>
 
   <p id="js-status" class="status" role="status" hidden></p>
