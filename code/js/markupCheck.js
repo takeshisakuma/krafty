@@ -71,9 +71,30 @@
       .filter(([, count]) => count > 1)
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
-    /* A table whose cells have no headers to be announced with. Layout
-       tables - the ones with a role saying so - are excluded, because a
-       table used for layout is not claiming to have headers. */
+    /* A table whose cells have no headers to be announced with.
+
+       The shape has to be a table's before the missing headers mean
+       anything, and measuring said so. On ja.wikipedia.org this reported
+       twelve, of which the succession boxes and the navigation boxes - one
+       row, a handful of cells - were layout wearing a table's tags, and on
+       amazon.co.jp the single finding was a one-cell spacer. A table with
+       one row cannot have a header row, and one with a single column is a
+       list. Neither is a data table with something missing.
+
+       Its own rows and cells, not its descendants': Wikipedia nests tables
+       inside tables, and a nested one's `th` would otherwise excuse the
+       table around it. */
+    /**
+     * @param {Element} element
+     * @param {string} child
+     */
+    const own = (element, child) =>
+      [
+        ...element.querySelectorAll(
+          `:scope > ${child}, :scope > thead > ${child}, :scope > tbody > ${child}, :scope > tfoot > ${child}`
+        ),
+      ];
+
     const headerless = [...document.querySelectorAll("table")].filter(
       (table) => {
         if (table.closest(".kraftyPanel")) {
@@ -86,11 +107,22 @@
           return false;
         }
 
-        /* An empty table is somebody's spacer, not a data table missing its
-           headers. */
-        return (
-          table.querySelector("th") === null &&
-          table.querySelector("td") !== null
+        const rows = own(table, "tr");
+
+        if (rows.length < 2) {
+          return false;
+        }
+
+        const widest = Math.max(
+          ...rows.map((row) => row.querySelectorAll(":scope > td").length)
+        );
+
+        if (widest < 2) {
+          return false;
+        }
+
+        return rows.every(
+          (row) => row.querySelectorAll(":scope > th").length === 0
         );
       }
     );

@@ -532,6 +532,27 @@ somebody's spacer.
 not need it, so requiring it would have been a finding on the ordinary
 case — the sort of threshold item 8 is on the watch for.
 
+Measured before shipping, which is the lesson of the four false positives
+found the same day. The first version reported twelve tables on
+ja.wikipedia.org and one on amazon.co.jp, and reading them showed the rule
+was wrong rather than the pages: the succession boxes and navigation boxes
+were one row and a handful of cells, and Amazon's was a single empty cell.
+Layout wearing a table's tags.
+
+So the shape has to be a table's before missing headers mean anything: at
+least two rows, since one row cannot have a header row, and at least two
+columns, since one column is a list. Amazon went to zero and Wikipedia to
+seven of thirty-three — the population table and the climate table among
+them, which are real findings.
+
+The rows and cells counted are the table's own. Wikipedia nests tables, and
+a nested one's `th` would otherwise excuse the table around it.
+
+What is left on Wikipedia is genuinely arguable — a positional map of
+neighbouring prefectures reads as a table to a machine and as a diagram to
+a person. Watch it under item 8. If it turns out noisy, the numbers to
+change are the two thresholds in `js/markupCheck.js`.
+
 ### 17. Brightness greyed the panels off the screen — done
 
 Reported 2026-07-20: turning the brightness checker on made some panels
