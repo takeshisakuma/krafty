@@ -136,10 +136,53 @@ test("markup checker", async (t) => {
 
   await t.test("reports a table whose cells have no headers", async () => {
     const result = await check(
-      `<table><tr><td>Tokyo</td><td>3</td></tr></table>`
+      `<table>
+         <tr><td>Tokyo</td><td>3</td></tr>
+         <tr><td>Osaka</td><td>2</td></tr>
+       </table>`
     );
 
     assert.strictEqual(matchingFindings(result, /header cells/).length, 1);
+  });
+
+  await t.test("wants a table's shape before it wants its headers", async () => {
+    /* Measured on ja.wikipedia.org, which reported twelve tables: the
+       succession boxes and navigation boxes - one row, a few cells - were
+       layout wearing a table's tags, and amazon.co.jp's single finding was
+       a one-cell spacer. A table with one row cannot have a header row, and
+       one with a single column is a list. Neither is a data table with
+       something missing. */
+    const oneRow = await check(
+      `<table><tr><td>next</td><td>previous</td><td>index</td></tr></table>`
+    );
+
+    const oneColumn = await check(
+      `<table><tr><td>first</td></tr><tr><td>second</td></tr></table>`
+    );
+
+    const spacer = await check(`<table><tr><td></td></tr></table>`);
+
+    assert.strictEqual(matchingFindings(oneRow, /header cells/).length, 0);
+    assert.strictEqual(matchingFindings(oneColumn, /header cells/).length, 0);
+    assert.strictEqual(matchingFindings(spacer, /header cells/).length, 0);
+  });
+
+  await t.test("does not let a nested table excuse the one around it", async () => {
+    /* Wikipedia nests tables inside tables. Asking the outer one whether a
+       `th` exists anywhere below it would find the inner one's. */
+    const result = await check(
+      `<table>
+         <tr><td>a</td><td><table><tr><th>inner</th><td>x</td></tr>
+                                  <tr><th>also</th><td>y</td></tr></table></td></tr>
+         <tr><td>b</td><td>c</td></tr>
+       </table>`
+    );
+
+    assert.strictEqual(
+      matchingFindings(result, /header cells/).length,
+      1,
+      "the outer table has no headers of its own"
+    );
   });
 
   await t.test("accepts a table that has headers", async () => {
