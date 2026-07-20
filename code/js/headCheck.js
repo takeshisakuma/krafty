@@ -369,13 +369,18 @@
     heading.textContent = label;
     head.appendChild(heading);
 
-    /* Count code points, so an emoji or a surrogate pair counts as one. */
+    /* Count code points, so an emoji or a surrogate pair counts as one.
+
+       An element rather than a bare text node: loose text inside a flex row
+       becomes an anonymous item that nothing can select, style or position,
+       which is how it ended up drifting away from the label it belongs to. */
     if (count && value) {
-      head.appendChild(
-        document.createTextNode(
-          `　${kraftyMessage("headCharacterCount", [String(length(value))])}`
-        )
-      );
+      const characters = document.createElement("span");
+      characters.className = "kraftyRowCount";
+      characters.textContent = kraftyMessage("headCharacterCount", [
+        String(length(value)),
+      ]);
+      head.appendChild(characters);
     }
 
     const line = document.createElement("div");
