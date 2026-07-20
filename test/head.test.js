@@ -129,6 +129,56 @@ test("head checker", async (t) => {
     assert.strictEqual(duplicates.length, 1);
   });
 
+  await t.test("does not count SVG titles as duplicate document titles", async () => {
+    /* Found on a real site: an icon set drawn as inline SVG, each icon
+       carrying its own <title> as an accessible name. A bare "title"
+       selector matches every namespace in an HTML document, so all of them
+       were counted and the page was told its title was duplicated. */
+    const findings = await withPage(
+      {
+        html: `<p>page</p>
+          <svg viewBox="0 0 16 16"><title>Search</title><path d="M0 0"/></svg>
+          <svg viewBox="0 0 16 16"><title>Menu</title><path d="M0 0"/></svg>
+          <svg viewBox="0 0 16 16"><title>Close</title><path d="M0 0"/></svg>`,
+        checkers: [],
+      },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>A page about something</title>`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() =>
+          [
+            ...(document
+              .getElementById("js-kraftyHeadInformation")
+              ?.querySelectorAll(".kraftyCheck") ?? []),
+          ].map((item) => item.textContent ?? "")
+        );
+      }
+    );
+
+    assert.deepStrictEqual(
+      findings.filter((text) => /title appears/.test(text)),
+      [],
+      "an icon's <title> is its accessible name, not a second document title"
+    );
+  });
+
+  await t.test("still reports a genuinely duplicated title", async () => {
+    /* The narrower selector must not have turned the check off. */
+    const { findings } = await check(
+      `<title>First</title><title>Second</title>`
+    );
+
+    assert.strictEqual(matching(findings, /title appears 2 times/).length, 1);
+  });
+
   await t.test("reports a missing lang attribute", async () => {
     const { findings } = await check(SOUND_HEAD);
 
