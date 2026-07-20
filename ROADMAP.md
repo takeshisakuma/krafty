@@ -327,6 +327,16 @@ Items 13 to 16 came out of a review on the same day and are not all checks:
 14 and 15 are about how the checkers are used rather than what they find.
 13 is the one to do first.
 
+Nothing here goes into 0.9.0. That release already carries two new
+checkers, the alt checker rebuilt, four false positives found by real use,
+the rescan button and the review button, and a store listing rewritten in
+both languages — measured against the published 0.7.0, over two thousand
+lines of `code/`. Review time follows the size of a submission: 0.6.0 to
+0.7.0 was roughly three times the code and took fourteen hours, and 0.8.0
+is still in review with a listing change attached. Item 10 is the next one
+to build and it waits for 0.10.0, because a bigger 0.9.0 buys nothing and
+costs another few days of queue.
+
 An item keeps its number once it is written down, and is marked done where
 it stands rather than moved up. Moving one renumbers everything after it,
 which rewrites every reference to any of them - done twice in a day before
