@@ -223,12 +223,97 @@ somebody actually built would have surfaced any of it. The same is true of
 the questions above, which is why they are still open rather than guessed
 at.
 
-### 9. Overlapping alt labels
+### 9. Overlapping alt labels — confirmed, and fixed
 
-The labels are absolutely positioned, so on image-dense pages (EC product
-grids, exactly the Rakuten case) they overlap and become unreadable.
-Whether this hurts in practice is unconfirmed - check against a real
-workload before designing a fix.
+Confirmed on amazon.co.jp 2026-07-20. 92 images, 33 labels sitting on top
+of another one.
+
+Measuring the overlap undersold the problem, and the note above named the
+wrong thing. Label against label was the smaller half. The damage was label
+against *picture*: alt text on a shop is the product name, fifty to a
+hundred characters, and an opaque box of it in a grid cell grows tall
+enough to hide the image completely. Rows of products were solid columns of
+red text with nothing visible behind them.
+
+That defeats the checker rather than merely crowding it. Whether an alt
+describes its image is the one question here a person has to answer, and
+they cannot answer it about an image they cannot see.
+
+Capped at two lines, opening to the full text on hover, with the whole
+string in a `title` so it is reachable without one. The colours carry the
+mechanical half — present, empty, missing — so that stays readable across
+a whole page at a glance, and the half that needs reading is one pointer
+away. Same split as everywhere else in the tool.
+
+After: 2 labels in a collision, from 33. The pictures are visible.
+
+Then a report from a carousel of book covers turned up the deeper fault,
+which the overlap counting had been describing without explaining. The
+labels were positioned `absolute` with no offsets, which places them at
+their static position — where each would have sat had it stayed in the
+flow. It does not stay in the flow, so the next label's static position
+never advances. Measured on five covers in a row: images at 8, 136, 264,
+392 and 520, and all five labels at 18. Only the last was visible. The rest
+were beneath it, unreadable and — the part that actually broke — unhoverable,
+so the way to open one was behind the thing covering it. They were not
+overlapping their neighbours so much as never leaving the first image.
+
+Positions are measured from each image now and written as coordinates, and
+the label is appended to the body so those coordinates resolve against the
+document rather than whichever ancestor the page happened to position.
+Folded, a label is also capped to its own image's width, so it stays inside
+the picture it belongs to; opened, it is above everything and may spread.
+
+Measured on amazon.co.jp afterwards: worst horizontal drift from its image,
+0px.
+
+Appending to the body then cost the clipping the labels used to inherit. A
+carousel keeps its off-screen items in the document at real coordinates and
+hides them with an ancestor's overflow, so the section came back showing the
+alt of every image except the ones on screen. An image its own page has
+clipped away now gets no label — checked by walking the ancestors that
+clip, with their boxes and styles kept, since ninety images share most of
+their ancestors.
+
+And the background is translucent, with a blur, going solid on hover. This
+contradicts the rule at the top of `content.scss`, and the reasoning there
+is what says it should: panels are opaque because a panel can be dragged
+off whatever it covers. A label cannot. It is pinned to the one thing you
+need to look at, and judging whether an alt describes its image is
+impossible with the image behind a white box. Blurred rather than only
+faded, because plain translucency lays the text over whatever the
+photograph is doing, and a tool that reports unreadable text has no
+business shipping any.
+
+Two hours of the fix went into a test that was wrong rather than code that
+was. A transition is sampled once per rendered frame, so measuring the
+height in a tight loop starves the renderer and returns one number for
+hundreds of reads and then the last — indistinguishable from an animation
+that never ran. Spacing the reads did not settle it either: the growth
+finishes inside about 60ms and the pointer can take longer than that to
+register. `getAnimations()` reports the transition itself, which is what
+was being claimed, and it is either there or it is not.
+
+Opening is animated, which is not decoration. Snapping open read as a
+rendering fault — as though the text had been broken and the pointer
+happened to reveal it — and this label is drawn over somebody else's page,
+where a glitch is the first thing they will assume. Growing says the label
+meant to be folded.
+
+`-webkit-line-clamp` cannot be transitioned, so the height is what moves.
+That needs a target, and a fixed one does not work: any value large enough
+for the longest alt is far past what most need, so the box reaches its
+content height in the first fraction of the transition and the rest plays
+out invisibly. Measured, it finished in about 30ms of 200ms — the same snap
+with a duration attached. The script measures each label and hands its own
+height to the stylesheet as a custom property. Read every label first, then
+write every label, or a page of ninety pays for ninety layouts.
+
+The heavier redesign is still available if two lines turns out to be too
+few — a small badge per image with the text in a panel, the shape the other
+checkers converged on. It was not needed to make the checker work again,
+and it would have traded away the thing this one is good at, which is
+reading alt text *beside* the picture it belongs to.
 
 ## Wanted
 
@@ -507,3 +592,9 @@ the `MODELS` table in `js/nestCheck.js`, not a preferences screen.
   and titles the checker writes itself.
 - The checkers write classes onto the page's own `<body>`, so a page that
   rewrites `class` on `<body>` can clear them.
+- The alt checker places its labels by measuring where the images are when
+  it runs. A page that reflows afterwards — lazy loaded images arriving
+  below the fold is the everyday case — leaves them where they were.
+  Toggling off and on re-measures. The alternative was leaving them at their
+  static position, which put every label in a row on top of the first image,
+  so this is the better of the two snapshots rather than a fix for both.

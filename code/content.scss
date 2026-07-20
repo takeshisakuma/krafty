@@ -624,20 +624,103 @@ $panelInset: 50px;
   display: none;
 }
 
+/* Measured on amazon.co.jp: 92 images, 33 labels sitting on top of another
+   one. The counting undersold it. The real damage is not label against
+   label but label against picture - alt text on a shop is the product name,
+   fifty to a hundred characters, and an opaque box of it in a grid cell
+   grows tall enough to hide the image completely.
+
+   Which defeats the checker. Whether an alt describes its image is the one
+   question here that a person has to answer, and they cannot answer it
+   about an image they cannot see.
+
+   So the label is capped at two lines and opens to its full text on hover.
+   The mechanical part - present, empty, missing - stays legible at a glance
+   across the whole page, which is what the colours are for, and the part
+   that needs reading is one pointer away. */
+
 .kraftyAltChecker {
   .kraftyAltContent {
     position: absolute;
     color: $alertColor;
     font-size: 12px;
     padding: 10px;
-    background-color: #fff;
     box-shadow: 1px 1px 2px #999;
+
+    /* The panels are opaque on purpose, and this is the case that argues
+       the other way. A panel can be dragged off whatever it covers; a label
+       is pinned to the one thing you need to look at, and judging whether
+       an alt describes its image is impossible with the image behind a
+       white box.
+
+       Blurred rather than only faded. Plain translucency lays the text over
+       whatever the photograph happens to be doing, and a tool that reports
+       unreadable text has no business shipping any; the blur keeps the
+       picture recognisable while giving the words a flat field to sit on.
+       Hovering closes it back to solid white, because that is when the text
+       is being read rather than glanced past. */
+    background-color: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(3px);
     margin-top: 10px;
     margin-left: 10px;
-    display: inline-block;
     border-radius: 2px;
     z-index: 2147483646;
     outline: none !important;
+
+    /* Folded, a label stays inside its own image's width, set per label by
+       the script. A wider one reaches across the picture beside it and ends
+       up under that picture's label, where it cannot be read and - the part
+       that actually breaks this - cannot be hovered either, so the way to
+       open it sits behind the thing covering it.
+
+       220px is the width when open, and the width the script measures the
+       height at. */
+    max-width: var(--kraftyAltWidth, 220px);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+
+    /* So max-width is the width the label actually occupies. Under
+       content-box the 10px padding sits outside it, and a label told to
+       match a 120px cover drew 140px - still over the neighbour, which is
+       the whole thing being fixed. It also makes max-height comparable with
+       the scrollHeight the script measures, since that counts padding. */
+    box-sizing: border-box;
+
+    /* Stated, so two lines is a number rather than whatever the page's own
+       line-height happened to be. */
+    line-height: 1.4;
+    max-height: calc(2.8em + 20px);
+
+    /* Opening has to look like something the label does, not something that
+       was wrong until the pointer arrived. Snapping open reads as a
+       rendering fault - the text appears to have been broken and then
+       accidentally revealed - and this label is drawn over somebody's page,
+       where a glitch is the first thing they will assume.
+
+       line-clamp cannot be transitioned, so the height is what moves: the
+       clamp lifts at once and max-height uncovers the text behind it. The
+       transition lives in the hover rule, so leaving snaps shut. That is
+       deliberate too: on the way back the clamp reapplies immediately, and
+       an ellipsis reappearing part way through a shrink is the same glitch
+       the animation is there to avoid. */
+    &:hover {
+      -webkit-line-clamp: 40;
+      /* Free of its image now that it is above everything. */
+      max-width: 220px;
+      /* Set per label by the script, from its own content. The fallback is
+         for the case where that never ran. */
+      max-height: var(--kraftyAltFull, 24em);
+      background-color: #fff;
+      transition:
+        max-height 0.2s ease-out,
+        background-color 0.2s ease-out;
+
+      /* Above its neighbours while open, so the full text is not itself
+         covered by the next label along. */
+      z-index: 2147483647;
+    }
 
     &.kraftyAltMissing {
       color: $alertColor;

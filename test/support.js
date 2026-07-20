@@ -28,6 +28,7 @@ const SCRIPTS = {
   headingCheck: read("code", "js", "headingCheck.js"),
   imageCheck: read("code", "js", "imageCheck.js"),
   markupCheck: read("code", "js", "markupCheck.js"),
+  altCheck: read("code", "js", "altCheck.js"),
 };
 
 /* The real message file, so a mistyped key or a broken placeholder fails
