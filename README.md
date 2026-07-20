@@ -71,6 +71,26 @@ And tables with no header cells, where a screen reader announces every cell
 bare, with nothing to say which column it belongs to. Tables marked as
 layout are left alone.
 
+Then form fields with nothing naming them — no label, wrapping or by `for`,
+no `aria-label`, no `aria-labelledby` that resolves to anything, and no
+`title`. The placeholder inside a field says what it is to anyone looking
+at it and to nobody else. Hidden fields and the button types are not
+counted; those take no label.
+
+And inline SVGs that are neither named nor hidden. Named, an icon is
+announced; marked `aria-hidden`, it is skipped; neither, and what a screen
+reader does with it varies by screen reader. An `aria-hidden` on any
+element above the icon counts, since wrapping one is the ordinary way to
+hide it.
+
+Each of the three is listed underneath as well as counted, and each list
+copies in one go. The fields and the icons have nothing to be called —
+that is the defect — so each row is built from whatever the element does
+carry: its id, its name, its class, or the parent's where it has none of
+its own. An unlabelled field shows its placeholder beside it, which is
+both the quickest way to find it on the page and, usually, the reason the
+label was left off.
+
 Every panel has a check-again button. A check reads the page as it stands
 when it runs, so press it after opening an accordion or scrolling a list
 in.
@@ -177,6 +197,23 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 そして見出しセルの無いテーブル。読み上げでは、どの列の値なのかが分からない
 まま、すべてのセルが読まれます。レイアウト用と明示されたテーブルは対象外
 です。
+
+続いて、名前を持たない入力欄。for による label も、囲んでいる label も、
+`aria-label` も、参照先が存在する `aria-labelledby` も、`title` も無いもの
+です。中に書かれたプレースホルダは、見えている人にだけ何の欄かを伝えます。
+type が hidden とボタン系のものは、そもそも label を取らないので数えません。
+
+そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、
+`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかは
+スクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が
+付いている場合も対象外です。実際にはその書き方が最も一般的だからです。
+
+3種類とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピー
+できます。入力欄とアイコンは「呼び名が無いこと」自体が問題なので、各行は
+その要素が持っているもの——id、name、class、いずれも無ければ親のもの——
+から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す
+手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもある
+からです。
 
 各パネルには再チェックのボタンがあります。チェックはボタンを押した時点の
 ページを見るので、開閉したあとやスクロールしたあとに押し直せます。

@@ -5,7 +5,13 @@
    It starts with duplicated ids, which is the cheapest decision in the
    project - so most of these are about the edges where counting could go
    wrong: the checker's own panel, ids in the head, an empty id, and making
-   sure a page that is fine says so. */
+   sure a page that is fine says so.
+
+   The two accessibility checks that followed are shaped the other way
+   round. Each has several correct spellings and only one defect, so most
+   of their tests assert that correct markup says nothing - which is where
+   a check like this fails, by being right about the defect and noisy about
+   everything else. */
 
 const { test } = require("node:test");
 const assert = require("node:assert");
@@ -205,6 +211,154 @@ test("markup checker", async (t) => {
 
     assert.strictEqual(matchingFindings(presentation, /header cells/).length, 0);
     assert.strictEqual(matchingFindings(empty, /header cells/).length, 0);
+  });
+
+  await t.test("reports a form field with nothing naming it", async () => {
+    const result = await check(
+      `<form><input type="text" placeholder="Search"></form>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /naming it/).length, 1);
+  });
+
+  await t.test("accepts every route to a name", async () => {
+    /* One of these is enough, and a field needs only one. `title` is here
+       although the roadmap item did not list it: it is a real accessible
+       name per spec, so reporting a field that has one would be asserting
+       the name is bad, which is a judgement. */
+    const result = await check(
+      `<label for="a">Name</label><input id="a">
+       <label>Email <input></label>
+       <input aria-label="Phone">
+       <span id="l">Postcode</span><input aria-labelledby="l">
+       <input title="Search">
+       <input type="image" src="s.png" alt="Send">
+       <select aria-label="Prefecture"><option>Tokyo</option></select>
+       <label for="t">Message</label><textarea id="t"></textarea>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /naming/).length, 0);
+  });
+
+  await t.test("names each unlabelled field by whatever it does carry", async () => {
+    /* The whole defect is that these have nothing to be called, so the row
+       is built from the strongest identifier the element has left. */
+    const result = await check(
+      `<input id="q">
+       <input name="email">
+       <input class="postcode">
+       <input type="tel">
+       <form class="search"><input></form>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "input#q",
+      'input[name="email"]',
+      "input.postcode",
+      'input[type="tel"]',
+      "form.search > input",
+    ]);
+  });
+
+  await t.test("puts the placeholder beside the field it belongs to", async () => {
+    /* It is what the field looks like it is called to anyone who can see
+       it, which makes it the fastest way to find the row on the page - and
+       it is usually the reason the label was left off. */
+    const result = await check(`<input name="q" placeholder="Search books">`);
+
+    assert.strictEqual(result.rows.length, 1);
+    assert.match(result.rows[0], /Search books/);
+  });
+
+  await t.test("lists the svgs that were counted", async () => {
+    const result = await check(
+      `<svg class="icon-cart"></svg>
+       <button class="menu"><svg></svg></button>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "svg.icon-cart",
+      "button.menu > svg",
+    ]);
+  });
+
+  await t.test("never builds a row out of its own classes", async () => {
+    /* Every panel element carries a krafty class. A row labelled with one
+       would be describing the checker rather than the page. */
+    const result = await check(`<div class="kraftyThing"><input></div>`);
+
+    assert.strictEqual(result.rows.length, 1);
+    assert.doesNotMatch(result.rows[0], /krafty/);
+  });
+
+  await t.test("wants an aria-labelledby that resolves", async () => {
+    /* Pointing at an id that is not on the page names nothing. That is the
+       failure this check is for, not an excuse from it. */
+    const result = await check(`<input aria-labelledby="missing">`);
+
+    assert.strictEqual(matchingFindings(result, /naming it/).length, 1);
+  });
+
+  await t.test("leaves the fields that take no label alone", async () => {
+    /* Hidden has no field to label, and the button types are named by
+       their own value. */
+    const result = await check(
+      `<input type="hidden" name="token" value="x">
+       <input type="submit" value="Send">
+       <input type="button" value="Cancel">
+       <input type="reset" value="Clear">`
+    );
+
+    assert.strictEqual(matchingFindings(result, /naming/).length, 0);
+  });
+
+  await t.test("reports an svg that is neither named nor hidden", async () => {
+    const result = await check(`<svg viewBox="0 0 1 1"><path d="M0 0"/></svg>`);
+
+    assert.strictEqual(matchingFindings(result, /SVG/).length, 1);
+  });
+
+  await t.test("accepts an svg that is named, and one that is hidden", async () => {
+    const result = await check(
+      `<svg><title>Home</title><path d="M0 0"/></svg>
+       <svg aria-label="Search"></svg>
+       <span id="c">Cart</span><svg aria-labelledby="c"></svg>
+       <svg role="img"></svg>
+       <svg aria-hidden="true"></svg>
+       <span aria-hidden="true"><svg></svg></span>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /SVG/).length, 0);
+  });
+
+  await t.test("reads aria-hidden from above the svg as well as on it", async () => {
+    /* An icon wrapped in a hidden span is the ordinary way this is done
+       correctly. Reading only the svg's own attribute would report every
+       one of them. */
+    const result = await check(
+      `<button aria-hidden="true"><svg></svg></button>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /SVG/).length, 0);
+  });
+
+  await t.test("counts one graphic once, not its inner svg too", async () => {
+    const result = await check(`<svg><svg></svg></svg>`);
+
+    const found = matchingFindings(result, /SVG/);
+
+    assert.strictEqual(found.length, 1);
+    assert.match(found[0], /\b1\b/, "one graphic, not two");
+  });
+
+  await t.test("does not read a shape's title as the graphic's", async () => {
+    /* The head checker was bitten once by svg titles being read as
+       something they were not. A title deeper in belongs to a shape. */
+    const result = await check(
+      `<svg><g><title>a path</title><path d="M0 0"/></g></svg>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /SVG/).length, 1);
   });
 
   await t.test("checks again on demand, without being re-injected", async () => {

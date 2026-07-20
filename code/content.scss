@@ -224,6 +224,19 @@ $panelInset: 50px;
     white-space: nowrap;
   }
 
+  /* The same right-hand column, for a row whose aside is page text rather
+     than a tally. Separate from .kraftyPanelCount because that one is
+     nowrap - correct for `× 3`, and wrong for a placeholder that can be a
+     sentence. Same argument as .kraftyImageRatio below: one class per
+     meaning, so moving a rule cannot quietly restyle the other. */
+  .kraftyPanelHint {
+    flex: 0 1 auto;
+    min-width: 0;
+    color: #767676;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
   /* The body breaks anywhere so long URLs cannot widen the panel. Prose must
      not inherit that, or sentences break mid-word. */
   .kraftyCheck,

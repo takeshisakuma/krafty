@@ -211,6 +211,50 @@
     "message": "見出しセルの無いテーブルが 1 個あります。どのセルも見出しなしで読み上げられます",
     "description": "Used when exactly one table is missing its headers."
   },
+  "markupSectionFields": {
+    "message": "該当する入力欄",
+    "description": "Heading of the section listing form fields with no name."
+  },
+  "markupFieldListLabel": {
+    "message": "名前を持たないもの",
+    "description": "Label above the list of unlabelled form fields. Each row is the field, with its placeholder beside it where it has one."
+  },
+  "markupSectionSvg": {
+    "message": "該当する SVG",
+    "description": "Heading of the section listing SVGs that are neither named nor hidden."
+  },
+  "markupSvgListLabel": {
+    "message": "名前も aria-hidden も無いもの",
+    "description": "Label above the list of SVGs that are neither named nor hidden."
+  },
+  "markupInputNoLabel": {
+    "message": "名前を持たない入力欄が $count$ 個あります",
+    "description": "No label for, no wrapping label, no aria-label, no aria-labelledby that resolves, and no title. Hidden fields and the button types are not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "markupInputNoLabelOne": {
+    "message": "名前を持たない入力欄が 1 個あります",
+    "description": "Used when exactly one field is unlabelled."
+  },
+  "markupSvgNoName": {
+    "message": "名前も aria-hidden も無いインライン SVG が $count$ 個あります。読み上げ方がスクリーンリーダー任せになります",
+    "description": "No title, aria-label, aria-labelledby or role=img to name it, and no aria-hidden on it or above it to skip it.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "6"
+      }
+    }
+  },
+  "markupSvgNoNameOne": {
+    "message": "名前も aria-hidden も無いインライン SVG が 1 個あります。読み上げ方がスクリーンリーダー任せになります",
+    "description": "Used when exactly one SVG is neither named nor hidden."
+  },
   "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."
@@ -606,7 +650,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "見た目には現れない形で誤っているマークアップを報告します。まずは複数回使われている id です。label の for、ページ内アンカー、要素を id で取得しているスクリプトが、いずれも静かに壊れます。",
+    "message": "見た目には現れない形で誤っているマークアップを報告します。複数回使われている id、見出しセルの無いテーブル、名前を持たない入力欄、そして名前も aria-hidden も無いインライン SVG。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
