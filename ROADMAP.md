@@ -327,6 +327,9 @@ Items 13 to 16 came out of a review on the same day and are not all checks:
 14 and 15 are about how the checkers are used rather than what they find.
 13 is the one to do first.
 
+Item 19 came from a list of head tags proposed on 2026-07-21, and is the
+only one of that list worth a check. It is built.
+
 Nothing here goes into 0.9.0. That release already carries two new
 checkers, the alt checker rebuilt, four false positives found by real use,
 the rescan button and the review button, and a store listing rewritten in
@@ -625,6 +628,51 @@ two cannot come to call one checker different things. A test holds it.
 The order within each group was left alone. It is the order they were
 built in, and choosing a better one needs to know which gets reached for
 most - a question for use, like item 8, not for reasoning.
+
+### 19. The hreflang set — built, and waiting for 0.10.0
+
+Asked 2026-07-21, out of a longer list of head tags to consider adding. Most
+of that list was declined and the reasons are worth keeping, because they
+are the same reason each time: a checker earns its place by deciding
+something, and none of these decide anything.
+
+`robots` was already covered. A `sitemap.xml` is not in the head at all and
+cannot be seen from the DOM — `rel="sitemap"` exists and nobody uses it.
+`rel="author"` pointing at humans.txt has done nothing since Google dropped
+rel=author in 2014. An RSS `rel="alternate"` and `format-detection` are real
+tags, but their presence or absence is neither right nor wrong, so they
+could only ever be reference rows.
+
+hreflang was the one left, and it has genuine findings in it. A set that
+does not name the page it sits on is discarded whole, which is an alert. A
+value that does not parse as a language tag is an alert too, and so is a
+country code standing in for a language — `jp` for `ja`, `cn` for `zh`,
+which is the mistake everybody makes. One code given two addresses is a note
+because nothing can resolve it.
+
+Two decisions in it are the same trade as item 8's canonical fixes. `uk` and
+`se` are absent from the country-code table although they are the same
+confusion, because both are real languages — Ukrainian and Northern Sami —
+and a page written in either would be told its correct markup was wrong.
+Being wrong about Ukrainian to be right about Denmark is the worse trade.
+And a page declaring no hreflang at all is not reported: one language needs
+none, so that finding would fire on most of the web.
+
+`x-default`'s absence is not reported either. Google's advice for it is
+conditional on having a page for unmatched languages, and plenty of correct
+sites have none.
+
+Note that this does not replace `checkLangMissing`, and neither replaces the
+other. Search engines take language from the content and from these tags
+rather than from `<html lang>`; a screen reader takes its voice from the
+attribute and knows nothing about hreflang.
+
+Committed to `release/0.9.0` on 2026-07-21, after 0.9.0 was already
+submitted, so it is not in the build under review. It rides 0.10.0 with item
+10 — the paragraph above applies again, unchanged: uploading over a pending
+draft restarts the queue, and a feature addition is not worth a second
+cancelled review when the withdrawal of 0.8.0 has already paid that cost
+once.
 
 ## Deferred, with reasons
 
