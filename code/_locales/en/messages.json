@@ -143,6 +143,84 @@
     "message": "no og:image",
     "description": "Shown in place of the card image when og:image is absent."
   },
+  "imagePanelTitle": {
+    "message": "Image Check",
+    "description": "Heading of the image weight panel."
+  },
+  "imageSectionList": {
+    "message": "The images",
+    "description": "Heading of the section listing the oversized images."
+  },
+  "imageListLabel": {
+    "message": "Served larger than shown",
+    "description": "Label above the list of oversized images."
+  },
+  "imageOversized": {
+    "message": "$count$ images are served much larger than they are shown",
+    "description": "Wasted bytes: the browser downloads pixels it then throws away.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "imageOversizedOne": {
+    "message": "1 image is served much larger than it is shown",
+    "description": "Used when exactly one image is oversized."
+  },
+  "imageNoSize": {
+    "message": "$count$ images have no width and height: the layout jumps as they load",
+    "description": "Without the attributes the browser cannot reserve the space.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "imageNoSizeOne": {
+    "message": "1 image has no width and height: the layout jumps as it loads",
+    "description": "Used when exactly one image is missing its dimensions."
+  },
+  "imageSizeComparison": {
+    "message": "$natural$ shown at $shown$",
+    "description": "The file's own size against the size it is displayed at.",
+    "placeholders": {
+      "natural": {
+        "content": "$1",
+        "example": "3000×2000"
+      },
+      "shown": {
+        "content": "$2",
+        "example": "300×200"
+      }
+    }
+  },
+  "imageAllowanceNote": {
+    "message": "Measured against $allowance$× the displayed size, so an image built for a high-density display is not reported. The ratio on each row is how far past that it goes.",
+    "description": "States the basis, because the threshold is conventional rather than measured.",
+    "placeholders": {
+      "allowance": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "imageUnmeasured": {
+    "message": "$count$ images could not be measured, having not finished loading. Scroll them into view and run the check again.",
+    "description": "Lazy loaded images below the fold have no natural size yet.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "imageUnmeasuredOne": {
+    "message": "1 image could not be measured, having not finished loading. Scroll it into view and run the check again.",
+    "description": "Used when exactly one image was not measurable."
+  },
   "headingPanelTitle": {
     "message": "Heading Check",
     "description": "Heading of the heading structure panel."
@@ -355,6 +433,10 @@
     "message": "Toggle Heading Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandImageCheck": {
+    "message": "Toggle Image Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "Toggle Outline Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -393,6 +475,14 @@
   },
   "manualHeadingBody": {
     "message": "Report what can be checked automatically about the heading structure, and list the headings as an indented outline for you to read.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualImageTitle": {
+    "message": "Image Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualImageBody": {
+    "message": "Find images served much larger than the space they are shown in, and images with no width and height attributes. Allows for high-density displays, so a correctly built retina image is not reported.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

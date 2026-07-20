@@ -38,6 +38,15 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-imageCheckButton",
+    command: "image-check",
+    file: "js/imageCheck.js",
+    bodyClass: "kraftyImageChecker",
+    /* Measures the images against the layout they sit in, and reports into
+       one panel. A subframe is a different layout and would want its own. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",

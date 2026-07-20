@@ -58,6 +58,11 @@ body {
   color: #7a3fc9;
 }
 
+.imageCheckButton:hover:not(:disabled),
+.imageCheckButton.active {
+  color: #0f766e;
+}
+
 .outlineCheckButton:hover:not(:disabled),
 .outlineCheckButton.active {
   color: #70d549;

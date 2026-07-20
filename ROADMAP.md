@@ -130,13 +130,46 @@ copied the head checker's wording, including the carefully narrow "nothing
 wrong in what can be checked automatically", and the copies would have
 drifted the first time one was reworded.
 
+### 7. Images served larger than they are shown — done
+
+`naturalWidth` against `clientWidth`, plus the `width` and `height`
+attributes in the same walk. A seventh checker, for the reason the heading
+outline became a sixth: it reports into a panel, and the alt checker it
+would otherwise have joined is a pure overlay.
+
+The trap named when this was written was high-density displays, and the fix
+for it turned out to be one step further than expected. Reading
+`window.devicePixelRatio` is not enough, because it makes the answer depend
+on the monitor the audit runs on: the same correctly built page comes back
+clean on a retina laptop and covered in findings on an external 1x display,
+where every 2x asset is twice what the CSS box needs. A checker whose
+output changes with the hardware is worse than one that is merely wrong,
+because nothing on screen says which reading you are looking at. The
+allowance is `max(devicePixelRatio, 2)` — never below the 2x a page should
+be ready for — so the answer travels.
+
+Two thresholds are conventional rather than measured, which is the thing
+`checkTooLong` is on the watch list for. Both are stated rather than
+hidden: the panel names the allowance it judged against, and every row
+carries its own ratio, so a reader who disagrees can see exactly what they
+are disagreeing with. If they turn out to be noise, the numbers to change
+are `WASTE_FACTOR` and `MIN_WASTED_PIXELS` in `js/imageCheck.js`.
+
+Measured against brainpad.co.jp: 60 images, one oversized finding, twelve
+missing dimensions. Around the same signal-to-noise as the nest checker's
+1%, and the one finding was real — a 1920×1080 file drawn at 300×169.
+
+An image that has not loaded has no natural size, which lazy loading makes
+routine below the fold. Those are counted and declared rather than passed
+as fine, on the same principle as the head checker's summary.
+
 ## Waiting on real use
 
 Neither of these can be settled by reasoning about them, and guessing would
 mean building something to fix a problem nobody has. They need the extension
 used on real work for a while first.
 
-### 7. Are the Head Check findings the ones worth having?
+### 8. Are the Head Check findings the ones worth having?
 
 The checks were chosen from what a machine *can* decide, not from what
 turned out to matter in practice. On Rakuten they were: no viewport, a 70
@@ -166,7 +199,7 @@ running it on a page somebody actually built would have surfaced it. The
 same is true of the questions above, which is why they are still open
 rather than guessed at.
 
-### 8. Overlapping alt labels
+### 9. Overlapping alt labels
 
 The labels are absolutely positioned, so on image-dense pages (EC product
 grids, exactly the Rakuten case) they overlap and become unreadable.
@@ -176,23 +209,9 @@ workload before designing a fix.
 ## Wanted
 
 Four new checks were asked for on 2026-07-20. The heading outline is item 6
-above; these are the other three. All are things a machine can decide on its
-own, and all sit inside a page with no network involved. Roughly in the
-order they seem worth doing.
-
-### 9. Images served larger than they are shown
-
-`naturalWidth` against `clientWidth` finds a 3000px image displayed at
-300px. No network needed, nothing ambiguous about it, and it is a common
-enough defect that directors get blamed for the page weight.
-
-`width` and `height` attributes missing is the same walk, and is what causes
-the layout to jump while images load.
-
-One trap: `srcset` and high-DPR displays legitimately serve larger than the
-CSS size, so a flat "twice the size" rule would fire on every correctly
-built retina image. The threshold has to account for
-`window.devicePixelRatio`.
+above and the image sizes are item 7; these are the other two. Both are
+things a machine can decide on its own, and both sit inside a page with no
+network involved.
 
 ### 10. Inputs with no label
 

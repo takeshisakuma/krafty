@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Six checks you can turn on over any page, from the toolbar or from a
+Seven checks you can turn on over any page, from the toolbar or from a
 keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
 runs in your own browser, on the tab you are looking at, and Krafty collects
 no data at all. Available in English and Japanese, following your browser's
@@ -51,6 +51,18 @@ software can answer, so they are listed in order and indented by level, as a
 table of contents to read. Headings hidden from everyone are left out, and
 the panel says how many. The whole outline copies as one indented block.
 
+### Image Checker
+
+Finds images served much larger than the space they are drawn in — a
+1920×1080 file shown at 300×169 — and lists them worst first, with the file
+name and the address ready to copy. Also counts the images with no width and
+height attributes, which is what makes a layout jump while it loads.
+
+High-density displays are allowed for, so an image correctly built at twice
+the displayed size is never reported, and the allowance does not depend on
+the monitor you happen to be checking on. The panel states the basis it
+judged against, and each row carries its own ratio.
+
 ### Outline Checker
 
 Draws an outline around every element, so the structure and spacing of a
@@ -74,7 +86,7 @@ the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
 Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。
-6つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
+7つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
 ショートカットから、任意のページに重ねて表示できます。処理はすべてお使いの
 ブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。
 表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
@@ -113,6 +125,17 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。
 目次として読んでご判断ください。誰にも見えない見出しは集計から外し、
 その件数を明記します。構造全体はそのままの字下げでコピーできます。
+
+### 画像チェッカー
+
+表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 の
+ファイルを 300×169 で表示している、といったものです。無駄の大きい順に
+並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と
+height 属性の無い画像の数も出ます。読み込み中にレイアウトがずれる原因です。
+
+高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意
+された画像は指摘しません。判定基準はお使いのモニタに左右されません。
+どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。
 
 ### アウトラインチェッカー
 
