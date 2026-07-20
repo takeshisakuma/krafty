@@ -80,17 +80,52 @@ test("wiring", async (t) => {
     assert.ok(suggested.length <= 4, "Chrome rejects more than four");
   });
 
-  await t.test("every popup button has a checker", () => {
+  await t.test("every popup checker button has a checker", () => {
     const html = fs.readFileSync(
       path.join(code, "popup", "popup.html"),
       "utf8"
     );
-    const ids = [...html.matchAll(/id="(js-\w+Button)"/g)].map((m) => m[1]);
+    const ids = [...html.matchAll(/id="(js-\w+Button)"/g)]
+      .map((m) => m[1])
+      /* The review button runs every checker rather than being one. */
+      .filter((id) => id !== "js-reviewButton");
 
     assert.deepStrictEqual(
       ids.sort(),
       checkers.map((checker) => checker.id).sort()
     );
+  });
+
+  /* The review button reads each panel out of the page by id. Nothing links
+     the id in the table to the one the checker writes, so a rename would
+     leave the review quietly missing a whole checker's findings. */
+  await t.test("every panel id in the table is the one its checker builds", () => {
+    const reporting = checkers.filter((checker) => checker.panelId);
+
+    assert.ok(reporting.length > 0, "expected some checkers to report");
+
+    for (const checker of reporting) {
+      const source = fs.readFileSync(path.join(code, checker.file), "utf8");
+
+      assert.ok(
+        source.includes(`"${checker.panelId}"`),
+        `${checker.file} does not build ${checker.panelId}`
+      );
+    }
+  });
+
+  await t.test("a checker without a panel is not asked for one", () => {
+    /* outline, alt and brightness draw over the page and have nothing to
+       say in text. Giving one a panelId would put an empty heading in the
+       review. */
+    for (const checker of checkers.filter((one) => !one.panelId)) {
+      const source = fs.readFileSync(path.join(code, checker.file), "utf8");
+
+      assert.ok(
+        !source.includes("kraftyPanel("),
+        `${checker.file} builds a panel but has no panelId`
+      );
+    }
   });
 
   await t.test("the popup loads the shared table before its own script", () => {

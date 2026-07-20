@@ -31,6 +31,13 @@ async function check(html) {
   );
 }
 
+/**
+ * @param {{ findings: string[] }} result
+ * @param {RegExp} pattern
+ */
+const matchingFindings = (result, pattern) =>
+  result.findings.filter((text) => pattern.test(text));
+
 test("markup checker", async (t) => {
   await t.test("reports an id used more than once", async () => {
     const result = await check(
@@ -125,6 +132,80 @@ test("markup checker", async (t) => {
     const result = await check(`<div id="">a</div><div id="">b</div>`);
 
     assert.deepStrictEqual(result.findings, []);
+  });
+
+  await t.test("reports a table whose cells have no headers", async () => {
+    const result = await check(
+      `<table><tr><td>Tokyo</td><td>3</td></tr></table>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /header cells/).length, 1);
+  });
+
+  await t.test("accepts a table that has headers", async () => {
+    const result = await check(
+      `<table><tr><th>City</th><th>Count</th></tr>
+              <tr><td>Tokyo</td><td>3</td></tr></table>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /header cells/).length, 0);
+  });
+
+  await t.test("leaves a layout table alone", async () => {
+    /* A table with a role saying it is not a table is not claiming to have
+       headers, and an empty one is somebody's spacer. Flagging either would
+       be noise on pages that are doing nothing wrong. */
+    const presentation = await check(
+      `<table role="presentation"><tr><td>left</td><td>right</td></tr></table>`
+    );
+    const empty = await check(`<table></table>`);
+
+    assert.strictEqual(matchingFindings(presentation, /header cells/).length, 0);
+    assert.strictEqual(matchingFindings(empty, /header cells/).length, 0);
+  });
+
+  await t.test("checks again on demand, without being re-injected", async () => {
+    /* The panels report the document as it stood when they ran, which is
+       what the scanned-at line is about. The button is the cheap half of
+       the MutationObserver under Known limitations. */
+    const counts = await withPage(
+      { html: `<div id="d"></div><div id="d"></div>`, checkers: ["markupCheck"] },
+      async (page) => {
+        /** @returns {Promise<string>} */
+        const finding = () =>
+          page.evaluate(
+            () =>
+              document
+                .getElementById("js-kraftyMarkupInformation")
+                ?.querySelector(".kraftyCheck")?.textContent ?? ""
+          );
+
+        const first = await finding();
+
+        /* What a single page app does after the first scan. */
+        await page.evaluate(() => {
+          for (const id of ["late", "late", "late"]) {
+            const node = document.createElement("span");
+            node.id = id;
+            document.body.appendChild(node);
+          }
+        });
+
+        const stale = await finding();
+
+        await page.click(".kraftyPanelRescan");
+
+        return { first, stale, fresh: await finding() };
+      }
+    );
+
+    assert.match(counts.first, /\b1\b/);
+    assert.strictEqual(
+      counts.stale,
+      counts.first,
+      "a scan does not follow the page; that is what the button is for"
+    );
+    assert.match(counts.fresh, /\b2\b/, "the second id should now be counted");
   });
 
   await t.test("leaves nothing behind when toggled off", async () => {

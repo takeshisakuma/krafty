@@ -32,6 +32,8 @@ declare var kraftyPanel: (options: {
   className: string;
   title: string;
   onClose: () => void;
+  /** Adds a button that runs the check again over the page as it is now. */
+  onRescan?: () => void;
 }) => { panel: HTMLElement; body: HTMLElement };
 
 /* The findings block inside a panel: summary, copy-all button, and the list
@@ -76,6 +78,11 @@ interface Checker {
   bodyClass: string;
   /** Whether subframes are checked too. */
   allFrames: boolean;
+  /**
+   * Element id of the panel this checker builds, for the ones that report
+   * findings. Absent on the three that only draw over the page.
+   */
+  panelId?: string;
 }
 
 declare var kraftyCheckers: Checker[];

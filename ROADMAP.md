@@ -327,6 +327,11 @@ Items 13 to 16 came out of a review on the same day and are not all checks:
 14 and 15 are about how the checkers are used rather than what they find.
 13 is the one to do first.
 
+An item keeps its number once it is written down, and is marked done where
+it stands rather than moved up. Moving one renumbers everything after it,
+which rewrites every reference to any of them - done twice in a day before
+anyone noticed that the ordering was never the point.
+
 ### 10. Inputs with no label
 
 An `input`, `select` or `textarea` with no `label for`, no wrapping label,
@@ -440,7 +445,7 @@ narrowly now and renaming later is worse still: a rename is a store listing
 change, another review, and a name the people already using it have to
 unlearn.
 
-### 14. A re-scan button in each panel
+### 14. A re-scan button in each panel — done
 
 Under Known limitations: a checker judges the document as it stands when it
 runs, so anything a single page app inserts afterwards is missed. The note
@@ -458,7 +463,18 @@ The observer stays the better answer for someone watching a page change
 under them. This is the answer for someone who scrolled, opened an
 accordion, and wants the count again.
 
-### 15. One pass, one report
+Built into `kraftyPanel` as an optional `onRescan`, so a panel gets the
+button by passing one. Each checker's work moved inside a `run()` the
+button calls again; the on/off toggle stayed outside it, because pressing
+rescan must not turn the checker off. The nest checker's `run` starts with
+its existing `clear()`, which undoes the marks it writes on the page as
+well as the panel.
+
+The alt checker has no panel and so has no button, which is a pity: its
+labels are placed by measurement and are the ones most likely to want
+re-placing. Toggling still does it.
+
+### 15. One pass, one report — done
 
 A delivery review means toggling seven checkers in turn and copying seven
 panels. The obvious shape is: run everything, copy once.
@@ -473,14 +489,38 @@ The line to hold is that there must be no total. "12 issues" reads as a
 verdict on the page, and it is the same lie as a score with extra steps.
 Seven headings with their own counts underneath is not.
 
-### 16. Table header cells
+Built as a button under the checker list. It runs the checkers that report
+— only the ones that are off, since running one that is already on would
+toggle it off and take its panel with it — then reads the panels rather
+than deciding anything again, so the report cannot drift from what is on
+screen.
+
+The line is held as a shape, not a wording, and the test says so: at the
+top level there are checker names and nothing else. Every count is indented
+beneath the checker that arrived at it and is that checker's claim. A total
+would have to sit unindented, owned by nobody.
+
+`panelId` in the checker table is what the popup collects, and there is a
+test that each one is the id its checker actually builds — nothing else
+links them, so a rename would have left the review quietly missing a
+checker. The three that only draw over the page have no `panelId`, and a
+test holds that they build no panel either.
+
+### 16. Table header cells — done
 
 A `table` with no `th` at all, and a `th` with no `scope` where the table
 has both a header row and a header column. Decidable, and a real barrier:
 a screen reader announces a cell with its headers, or announces it bare.
 
-Same size and shape as item 10, and the same open question about which
-panel it reports into.
+Built as the second check in the Markup Checker, which is what that name
+was chosen for. Only the missing-`th` half: a table with no header cells at
+all, and only where there are cells to have them. A table marked
+`role="presentation"` is not claiming to be a table, and an empty one is
+somebody's spacer.
+
+`scope` was left out. A table with a header row and no header column does
+not need it, so requiring it would have been a finding on the ordinary
+case — the sort of threshold item 8 is on the watch for.
 
 ## Deferred, with reasons
 

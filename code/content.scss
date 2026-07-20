@@ -112,7 +112,15 @@ $panelInset: 50px;
     font-weight: bold;
   }
 
-  .kraftyPanelClose {
+  .kraftyPanelControls {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 2px;
+  }
+
+  .kraftyPanelClose,
+  .kraftyPanelRescan {
     flex: none;
     margin: 0;
     padding: 2px 7px;
