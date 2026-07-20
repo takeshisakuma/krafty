@@ -153,6 +153,19 @@ Things to watch for while using it:
   argument for adding one.
 - Whether the alert/note split matches what actually needs acting on.
 
+Found so far, 2026-07-20, on brainpad.co.jp: "title appears 4 times" on a
+page with exactly one title. The duplicate check selected `title`, and in
+an HTML document a type selector matches every namespace, so the `<title>`
+elements inside inline SVG — the accessible names of the icons — were
+counted as document titles. Fixed by scoping to `head > title`.
+
+Worth noting how it was found, because it argues for this whole section.
+The check is a one-line `querySelectorAll` that reads correctly, has a test
+behind it, and was wrong on the first real site it met. Nothing short of
+running it on a page somebody actually built would have surfaced it. The
+same is true of the questions above, which is why they are still open
+rather than guessed at.
+
 ### 8. Overlapping alt labels
 
 The labels are absolutely positioned, so on image-dense pages (EC product

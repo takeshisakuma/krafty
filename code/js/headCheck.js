@@ -182,7 +182,14 @@
     ]);
   }
 
-  reportDuplicates("title", "title");
+  /* "head > title", not "title": in an HTML document a type selector matches
+     every namespace, so a bare "title" also collects the <title> elements
+     inside inline SVG. Those are accessible names for icons, not document
+     titles, and any site with an SVG icon set has several - which reported a
+     duplicate title on a page whose title is perfectly fine. The document
+     title is a child of head by definition, so scoping there is both the
+     narrower and the more accurate reading. */
+  reportDuplicates("head > title", "title");
   reportDuplicates('meta[name="description" i]', "description");
   reportDuplicates('link[rel~="canonical" i]', "canonical");
   reportDuplicates('meta[property="og:title" i]', "og:title");
