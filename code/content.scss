@@ -442,11 +442,22 @@ $alertColor: #f00;
       border-bottom: 1px solid #eee;
     }
 
+    /* The label and its character count belong together on the left; only
+       the copy button goes to the right.
+
+       This was justify-content: space-between, which is the right answer for
+       two children and the wrong one for three. The count is a third child,
+       so it was spread into the middle of the row - and on a row with no
+       value, where no copy button is drawn, it was thrown to the far right
+       with nothing to sit beside. */
     .kraftyRowHead {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
       gap: 8px;
+
+      .kraftyCopy {
+        margin-left: auto;
+      }
     }
 
     .kraftyRowValue {

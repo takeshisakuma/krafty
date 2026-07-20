@@ -333,6 +333,79 @@ test("head checker", async (t) => {
     assert.strictEqual(hidden, true);
   });
 
+  await t.test("keeps the character count beside the label it describes", async () => {
+    const layout = await withPage(
+      { html: "<p>page</p>", checkers: [], width: 1280, height: 900 },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>A page about something</title>`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "title"
+          );
+
+          const head = row?.querySelector(".kraftyRowHead");
+          const label = row?.querySelector("strong");
+          const count = row?.querySelector(".kraftyRowCount");
+          const copy = row?.querySelector(".kraftyCopy");
+
+          if (!head || !label || !count || !copy) {
+            return null;
+          }
+
+          const headBox = head.getBoundingClientRect();
+
+          return {
+            gap:
+              count.getBoundingClientRect().left -
+              label.getBoundingClientRect().right,
+            copyFromRight: headBox.right - copy.getBoundingClientRect().right,
+            rowWidth: headBox.width,
+            text: count.textContent ?? "",
+          };
+        });
+      }
+    );
+
+    assert.ok(layout, "expected a title row with a label, a count and a copy");
+
+    /* justify-content: space-between used to push the count into the middle
+       of the row, tens of pixels from the label it belongs to, because it
+       was a third child in a rule written for two. */
+    assert.ok(
+      layout.gap < 20,
+      `the count should sit beside its label, but it is ${Math.round(
+        layout.gap
+      )}px away in a ${Math.round(layout.rowWidth)}px row`
+    );
+
+    /* The other half of the same fix: the button still reaches the edge. */
+    assert.ok(
+      layout.copyFromRight < 2,
+      `the copy button should stay at the right edge, but it is ${Math.round(
+        layout.copyFromRight
+      )}px short of it`
+    );
+
+    /* Spacing is the stylesheet's job. A full width space hard coded in the
+       script would widen this again and be invisible from the CSS. */
+    assert.doesNotMatch(
+      layout.text,
+      /^　/,
+      "the count should not carry its own leading space"
+    );
+  });
+
   await t.test("prefers og values on the card when present", async () => {
     const result = await check(
       `${SOUND_HEAD}
