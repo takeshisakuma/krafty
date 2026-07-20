@@ -417,6 +417,16 @@
       }
     }
   },
+  "headOneOfSeveral": {
+    "message": "(1 of $count$)",
+    "description": "Open Graph lets og:image repeat. Only the first is previewed, so the row says how many there were.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
   "valueNotSet": {
     "message": "(not set)",
     "description": "Shown when a metadata tag is absent."
