@@ -3,6 +3,10 @@
 /* The checker table and the code that runs one, shared by the popup and the
    service worker.
 
+   `panelId` marks the checkers that report findings, which is what the
+   popup's review button collects. The three without one - outline, alt,
+   brightness - draw over the page and have nothing to say in text.
+
    Keyboard shortcuts are handled in a service worker, which cannot see the
    popup's script. Keeping a second copy of this table there would drift the
    moment a checker is added, and the failure would be quiet: the button
@@ -14,6 +18,7 @@
 globalThis.kraftyCheckers = [
   {
     id: "js-headCheckButton",
+    panelId: "js-kraftyHeadInformation",
     command: "head-check",
     file: "js/headCheck.js",
     bodyClass: "kraftyHeadChecker",
@@ -22,6 +27,7 @@ globalThis.kraftyCheckers = [
   },
   {
     id: "js-nestCheckButton",
+    panelId: "js-kraftyNestInformation",
     command: "nest-check",
     file: "js/nestCheck.js",
     bodyClass: "kraftyNestChecker",
@@ -29,6 +35,7 @@ globalThis.kraftyCheckers = [
   },
   {
     id: "js-headingCheckButton",
+    panelId: "js-kraftyHeadingInformation",
     command: "heading-check",
     file: "js/headingCheck.js",
     bodyClass: "kraftyHeadingChecker",
@@ -39,6 +46,7 @@ globalThis.kraftyCheckers = [
   },
   {
     id: "js-markupCheckButton",
+    panelId: "js-kraftyMarkupInformation",
     command: "markup-check",
     file: "js/markupCheck.js",
     bodyClass: "kraftyMarkupChecker",
@@ -49,6 +57,7 @@ globalThis.kraftyCheckers = [
   },
   {
     id: "js-imageCheckButton",
+    panelId: "js-kraftyImageInformation",
     command: "image-check",
     file: "js/imageCheck.js",
     bodyClass: "kraftyImageChecker",

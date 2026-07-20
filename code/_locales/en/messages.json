@@ -471,6 +471,10 @@
     "message": "alt: (empty)",
     "description": "Label for an image with alt=\"\", i.e. marked decorative."
   },
+  "popupReviewCopied": {
+    "message": "Review copied.",
+    "description": "Shown after the popup has put every panel's findings on the clipboard."
+  },
   "popupCannotRun": {
     "message": "Krafty cannot run on this page.",
     "description": "Shown in the popup when the page cannot be scripted."

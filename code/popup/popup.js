@@ -35,9 +35,13 @@ function button(id) {
   return found;
 }
 
-/** @param {string} message */
-const showStatus = (message) => {
+/**
+ * @param {string} message
+ * @param {"error" | "done"} [tone]
+ */
+const showStatus = (message, tone = "error") => {
   statusArea.textContent = message;
+  statusArea.classList.toggle("statusDone", tone === "done");
   statusArea.hidden = false;
 };
 
@@ -51,7 +55,51 @@ const setEnabled = (enabled) => {
   for (const { id } of kraftyCheckers) {
     button(id).disabled = !enabled;
   }
+  button("js-reviewButton").disabled = !enabled;
 };
+
+/**
+ * Read every findings panel on the page and write one report.
+ *
+ * Runs in the page. Takes the panels rather than re-deciding anything, so
+ * the report says exactly what the panels say and cannot drift from them.
+ *
+ * @param {{ id: string, title: string }[]} panels
+ * @returns {string}
+ */
+function collectReview(panels) {
+  const lines = [location.href, document.title, ""];
+
+  for (const { id, title } of panels) {
+    const panel = document.getElementById(id);
+
+    if (!panel) {
+      continue;
+    }
+
+    lines.push(title);
+
+    const summary = panel.querySelector(".kraftyChecksSummary");
+
+    if (summary) {
+      lines.push(`  ${summary.textContent}`);
+    }
+
+    for (const finding of panel.querySelectorAll(".kraftyCheck")) {
+      lines.push(`  - ${finding.textContent}`);
+    }
+
+    /* The nest checker's breakdown is its findings, and it has no
+       .kraftyCheck rows to show for them. */
+    for (const row of panel.querySelectorAll(".kraftyPanelList li")) {
+      lines.push(`  - ${(row.textContent ?? "").replace(/\s+/g, " ").trim()}`);
+    }
+
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
 
 /**
  * Read the state back off the page instead of tracking it in the popup:
@@ -105,6 +153,58 @@ async function init() {
       }
     });
   }
+
+  /* One pass, one block to paste.
+
+     A delivery review means turning seven checkers on in turn and copying
+     as many panels. This runs the ones that report, waits for their panels,
+     and puts what they say in one place.
+
+     There is deliberately no total. "12 issues" reads as a verdict on the
+     page, including the parts nothing looked at, which is the single score
+     this project refuses further down its roadmap. Each checker names
+     itself and says what it found, which claims exactly as much as the
+     panels do. */
+  button("js-reviewButton").addEventListener("click", async () => {
+    clearStatus();
+
+    const reporting = kraftyCheckers.filter((checker) => checker.panelId);
+
+    try {
+      const [state] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => (document.body ? Array.from(document.body.classList) : []),
+      });
+
+      const active = new Set(state?.result ?? []);
+
+      /* Only the ones that are off. Running a checker that is already on
+         would toggle it off and take its panel with it. */
+      for (const checker of reporting) {
+        if (!active.has(checker.bodyClass)) {
+          await kraftyRunChecker(tabId, checker);
+        }
+      }
+
+      const [review] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: collectReview,
+        args: [
+          reporting.map((checker) => ({
+            id: String(checker.panelId),
+            title: button(checker.id).textContent ?? checker.command,
+          })),
+        ],
+      });
+
+      await navigator.clipboard.writeText(String(review?.result ?? ""));
+
+      await syncButtons(tabId);
+      showStatus(chrome.i18n.getMessage("popupReviewCopied"), "done");
+    } catch (error) {
+      showStatus(chrome.i18n.getMessage("popupCannotRun"));
+    }
+  });
 }
 
 init();

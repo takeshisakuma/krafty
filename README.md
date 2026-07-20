@@ -69,6 +69,16 @@ Every panel has a check-again button. A check reads the page as it stands
 when it runs, so press it after opening an accordion or scrolling a list
 in.
 
+### The review
+
+One button under the checker list runs everything that reports and copies
+the result as one block, ready for a ticket: the address, then each checker
+with what it found underneath.
+
+There is no total, on purpose. A single number would be a verdict on the
+whole page, including everything nothing looked at. Each checker says what
+it checked and nothing more.
+
 ### Image Checker
 
 Finds images served much larger than the space they are drawn in — a
@@ -159,6 +169,16 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 各パネルには再チェックのボタンがあります。チェックはボタンを押した時点の
 ページを見るので、開閉したあとやスクロールしたあとに押し直せます。
+
+### レビュー結果のコピー
+
+チェッカー一覧の下のボタンを押すと、報告を行うチェッカーをまとめて実行し、
+結果を1ブロックでコピーします。アドレスがあり、その下にチェッカーごとの
+結果が並ぶ形で、そのまま不具合票に貼れます。
+
+**合計は出しません。意図的です。** 1つの数字は、何も見ていない部分まで
+含めたページ全体への判定として読まれてしまうからです。各チェッカーは、
+自分が確認した範囲だけを述べます。
 
 ### 画像チェッカー
 

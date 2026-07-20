@@ -146,9 +146,26 @@ test("alt checker", async (t) => {
           }));
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        /* Waited out rather than slept through. A fixed pause was enough
+           alone and not enough with the rest of the suite running beside
+           it, which is a test that fails on how busy the machine is. */
+        let open = closed;
+        let previous = -1;
+        const deadline = Date.now() + 3000;
 
-        return { closed, target, running, open: await height() };
+        while (Date.now() < deadline) {
+          const now = await height();
+
+          if (now > closed && now === previous) {
+            open = now;
+            break;
+          }
+
+          previous = now;
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+
+        return { closed, target, running, open };
       }
     );
 

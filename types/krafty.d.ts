@@ -78,6 +78,11 @@ interface Checker {
   bodyClass: string;
   /** Whether subframes are checked too. */
   allFrames: boolean;
+  /**
+   * Element id of the panel this checker builds, for the ones that report
+   * findings. Absent on the three that only draw over the page.
+   */
+  panelId?: string;
 }
 
 declare var kraftyCheckers: Checker[];

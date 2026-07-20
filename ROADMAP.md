@@ -474,7 +474,7 @@ The alt checker has no panel and so has no button, which is a pity: its
 labels are placed by measurement and are the ones most likely to want
 re-placing. Toggling still does it.
 
-### 15. One pass, one report
+### 15. One pass, one report — done
 
 A delivery review means toggling seven checkers in turn and copying seven
 panels. The obvious shape is: run everything, copy once.
@@ -488,6 +488,23 @@ as the seven panels do, in one place.
 The line to hold is that there must be no total. "12 issues" reads as a
 verdict on the page, and it is the same lie as a score with extra steps.
 Seven headings with their own counts underneath is not.
+
+Built as a button under the checker list. It runs the checkers that report
+— only the ones that are off, since running one that is already on would
+toggle it off and take its panel with it — then reads the panels rather
+than deciding anything again, so the report cannot drift from what is on
+screen.
+
+The line is held as a shape, not a wording, and the test says so: at the
+top level there are checker names and nothing else. Every count is indented
+beneath the checker that arrived at it and is that checker's claim. A total
+would have to sit unindented, owned by nobody.
+
+`panelId` in the checker table is what the popup collects, and there is a
+test that each one is the id its checker actually builds — nothing else
+links them, so a rename would have left the review quietly missing a
+checker. The three that only draw over the page have no `panelId`, and a
+test holds that they build no panel either.
 
 ### 16. Table header cells — done
 
