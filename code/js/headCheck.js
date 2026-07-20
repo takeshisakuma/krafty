@@ -85,6 +85,25 @@
    * other is precisely what the tag is for. Reported as a contradiction, it
    * was a false positive on a correctly built site.
    *
+   * Stripping tracking parameters is the same argument again, and the most
+   * common correct use of the tag there is. Arriving at a page from an ad
+   * carries a query string nobody wrote and nobody wants indexed; a
+   * canonical naming the clean address is the page doing its job, not
+   * disowning itself. Reported as a contradiction it fired on Amazon, whose
+   * canonical was the bare URL of the very page being read.
+   *
+   * The query cannot simply be ignored, because it does identify a
+   * different page often enough - ?id=2 is not ?id=1. The rule is
+   * containment: every parameter the canonical names has to be here, with
+   * the same value. A canonical that drops parameters is canonicalising;
+   * one that changes or adds them is pointing somewhere else.
+   *
+   * What this gives up is a canonical from ?page=2 to the bare listing,
+   * which is a real if arguable defect. That is the trade: a finding on
+   * every ad-tracked URL costs more than a missing one on pagination, and
+   * an SEO tool that cries wolf on an ad landing page will be ignored on
+   * the day it is right.
+   *
    * A different host or scheme is still reported. Those are also ordinary
    * canonicalisation, but they are worth a person's glance in a way that a
    * directory index is not, and the finding is a note rather than an alert.
@@ -93,25 +112,36 @@
    * @param {string} b
    */
   const samePage = (a, b) => {
-    /** @param {string} href */
-    const key = (href) => {
-      try {
-        const url = new URL(href);
-        url.hash = "";
-        url.pathname = url.pathname.replace(/\/index\.(html?|php)$/i, "/");
-
-        /* Compared as a key, not rewritten for display, so appending the
-           slash to every path is safe: both sides get it. */
-        if (!url.pathname.endsWith("/")) {
-          url.pathname += "/";
-        }
-        return url.href;
-      } catch (error) {
-        return href;
-      }
+    /** @param {URL} url */
+    const path = (url) => {
+      const withoutIndex = url.pathname.replace(/\/index\.(html?|php)$/i, "/");
+      return withoutIndex.endsWith("/") ? withoutIndex : `${withoutIndex}/`;
     };
 
-    return key(a) === key(b);
+    /** @type {URL} */
+    let target;
+    /** @type {URL} */
+    let here;
+
+    try {
+      target = new URL(a);
+      here = new URL(b);
+    } catch (error) {
+      return a === b;
+    }
+
+    /* origin covers scheme, host and port together. */
+    if (target.origin !== here.origin || path(target) !== path(here)) {
+      return false;
+    }
+
+    for (const [name, value] of target.searchParams) {
+      if (here.searchParams.get(name) !== value) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   /** @param {string | null} value */

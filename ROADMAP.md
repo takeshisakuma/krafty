@@ -192,12 +192,26 @@ an HTML document a type selector matches every namespace, so the `<title>`
 elements inside inline SVG — the accessible names of the icons — were
 counted as document titles. Fixed by scoping to `head > title`.
 
-Worth noting how it was found, because it argues for this whole section.
-The check is a one-line `querySelectorAll` that reads correctly, has a test
-behind it, and was wrong on the first real site it met. Nothing short of
-running it on a page somebody actually built would have surfaced it. The
-same is true of the questions above, which is why they are still open
-rather than guessed at.
+Also 2026-07-20, on `takeshisakuma.github.io` and then on an Amazon ad
+landing URL: the canonical check fired twice on correct pages. First on
+`/index.html` read from `/`, which is one document under two spellings.
+Then on a URL carrying nineteen advertising parameters whose canonical was
+the bare address — which is the most common correct use of the tag there
+is. Both fixed; the second by containment, so a canonical that *drops*
+parameters is canonicalising while one that changes them still reports.
+
+That fix gives up a canonical from `?page=2` to the bare listing, which is
+a real if arguable defect. The trade was deliberate: a finding on every
+ad-tracked URL costs more than a missing one on pagination, because a tool
+that cries wolf on an ad landing page will be ignored on the day it is
+right.
+
+Worth noting how all three were found, because it argues for this whole
+section. Each was a short, readable expression with a test behind it, and
+each was wrong on a real site. Nothing short of running them on pages
+somebody actually built would have surfaced any of it. The same is true of
+the questions above, which is why they are still open rather than guessed
+at.
 
 ### 9. Overlapping alt labels
 
