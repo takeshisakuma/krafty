@@ -13,11 +13,11 @@ const { withPage } = require("./support.js");
  * passed as a script that writes it in. Returns the text of each finding.
  *
  * @param {string} headMarkup
- * @param {{ noDoctype?: boolean }} [options]
+ * @param {{ noDoctype?: boolean, serve?: string }} [options]
  */
 async function check(headMarkup, options = {}) {
   return withPage(
-    { html: "<p>page</p>", checkers: [] },
+    { html: "<p>page</p>", checkers: [], serve: options.serve },
     async (page) => {
       await page.evaluate(
         ([markup, quirks]) => {
@@ -115,9 +115,51 @@ test("head checker", async (t) => {
   });
 
   await t.test("accepts a self-referential canonical", async () => {
-    const { findings } = await check(SOUND_HEAD);
+    /* Served, not set: on about:blank the href cannot be resolved at all,
+       so this passed for as long as it existed without measuring anything. */
+    const { findings } = await check(SOUND_HEAD, { serve: "/" });
 
     assert.strictEqual(matching(findings, /canonical/).length, 0);
+  });
+
+  await t.test("accepts a canonical that only spells this page differently", async () => {
+    /* Found on takeshisakuma.github.io: read at "/", canonical "/index.html".
+       The same document on every static host, and choosing one spelling is
+       what the tag is for - but it was reported as the page disowning
+       itself, which is the most serious thing this checker says about a
+       canonical. */
+    const cases = [
+      ["/index.html", "a directory index"],
+      ["/index.htm", "the other index extension"],
+      ["/index.php", "an index served by php"],
+      [".", "the directory itself"],
+    ];
+
+    for (const [href, what] of cases) {
+      const { findings } = await check(
+        `<title>t</title><link rel="canonical" href="${href}">`,
+        { serve: "/" }
+      );
+
+      assert.strictEqual(
+        matching(findings, /canonical points at another/).length,
+        0,
+        `${what} is not another page`
+      );
+    }
+  });
+
+  await t.test("still reports a canonical on a genuinely different page", async () => {
+    /* The normalising must not have swallowed the check. */
+    const { findings } = await check(
+      `<title>t</title><link rel="canonical" href="/elsewhere/">`,
+      { serve: "/" }
+    );
+
+    assert.strictEqual(
+      matching(findings, /canonical points at another/).length,
+      1
+    );
   });
 
   await t.test("reports duplicated tags", async () => {
