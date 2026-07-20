@@ -206,7 +206,17 @@ ad-tracked URL costs more than a missing one on pagination, because a tool
 that cries wolf on an ad landing page will be ignored on the day it is
 right.
 
-Worth noting how all three were found, because it argues for this whole
+And on `github.com`, which ships three `og:image` tags, each followed by its
+own `og:image:type`, `:width` and `:height`. Reported as a duplicated tag.
+Open Graph documents a property repeating exactly like that, and `og:image`
+is the one everybody uses that way, so this was a defect finding on a page
+following the specification. Dropped from the duplicate check — `og:title`
+stays, because nothing treats that as an array. The count moved to the
+reference row instead, which now reads "(1 of 3)": only the first is
+previewed, and a reader looking at one picture should know there were
+others.
+
+Worth noting how all four were found, because it argues for this whole
 section. Each was a short, readable expression with a test behind it, and
 each was wrong on a real site. Nothing short of running them on pages
 somebody actually built would have surfaced any of it. The same is true of

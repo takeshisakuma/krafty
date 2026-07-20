@@ -247,7 +247,17 @@
   reportDuplicates('meta[name="description" i]', "description");
   reportDuplicates('link[rel~="canonical" i]', "canonical");
   reportDuplicates('meta[property="og:title" i]', "og:title");
-  reportDuplicates('meta[property="og:image" i]', "og:image");
+
+  /* og:image is deliberately absent from that list. Open Graph allows a
+     property to be an array, and og:image is the one everybody uses that
+     way: several images, each followed by its own og:image:type, :width and
+     :height, for the platform to choose from. github.com ships three, which
+     this reported as a duplicated tag - a defect finding on a page doing
+     something the specification documents.
+
+     The count is not thrown away, only moved. The reference row below says
+     which of how many it is showing, because a reader looking at one
+     picture should know there were others. */
 
   /* --- what only a person can decide --- */
 
@@ -391,7 +401,15 @@
     { label: "og:title", value: ogTitle, count: true },
     { label: "og:type", value: metaByProperty("og:type") },
     { label: "og:url", value: metaByProperty("og:url"), url: true },
-    { label: "og:image", value: ogImage, image: "ogp", url: true },
+    {
+      label: "og:image",
+      value: ogImage,
+      image: "ogp",
+      url: true,
+      /* Open Graph lets this be an array, and only the first is previewed.
+         Saying so beats letting a reader think one is all there is. */
+      of: document.querySelectorAll('meta[property="og:image" i]').length,
+    },
     { label: "og:description", value: ogDescription, count: true },
     { label: "og:site_name", value: metaByProperty("og:site_name") },
     { label: "og:locale", value: metaByProperty("og:locale") },
@@ -415,7 +433,7 @@
 
   const referenceSection = section("headSectionReference");
 
-  for (const { label, value, count, image, url } of rows) {
+  for (const { label, value, count, image, url, of } of rows) {
     const row = document.createElement("div");
     row.className = "kraftyRow";
 
@@ -442,6 +460,15 @@
         String(length(value)),
       ]);
       head.appendChild(characters);
+    }
+
+    /* A property the specification lets repeat, where only the first is
+       shown. Not a finding - the row simply says which of how many. */
+    if (of && of > 1) {
+      const which = document.createElement("span");
+      which.className = "kraftyRowCount";
+      which.textContent = kraftyMessage("headOneOfSeveral", [String(of)]);
+      head.appendChild(which);
     }
 
     const line = document.createElement("div");

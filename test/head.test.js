@@ -284,6 +284,77 @@ test("head checker", async (t) => {
     assert.strictEqual(matching(findings, /title appears 2 times/).length, 1);
   });
 
+  await t.test("does not call several og:image a duplicated tag", async () => {
+    /* Found on github.com, which ships three of them with their own
+       og:image:type, :width and :height. Open Graph documents a property
+       repeating like this, so reporting it was a defect finding on a page
+       following the specification. */
+    const result = await withPage(
+      { html: "<p>page</p>", checkers: [] },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <meta property="og:image" content="https://example.com/a.png">
+             <meta property="og:image:width" content="1200">
+             <meta property="og:image" content="https://example.com/b.png">
+             <meta property="og:image:width" content="1200">
+             <meta property="og:image" content="https://example.com/c.png">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+
+          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "og:image"
+          );
+
+          return {
+            /* Same shape check() returns, so matching() works on it. */
+            findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+              (item) => ({
+                level: item.classList.contains("kraftyCheck-alert")
+                  ? "alert"
+                  : "note",
+                text: item.textContent ?? "",
+              })
+            ),
+            rowText: row?.textContent ?? "",
+          };
+        });
+      }
+    );
+
+    assert.strictEqual(
+      matching(result.findings, /og:image appears/).length,
+      0,
+      "an array of og:image is what the specification describes"
+    );
+
+    /* The count is not thrown away, only moved: a reader looking at one
+       preview should know there were three. */
+    assert.match(result.rowText, /3/);
+    assert.match(result.rowText, /a\.png/);
+  });
+
+  await t.test("still reports a duplicated og:title", async () => {
+    /* Only og:image is an array in practice. Removing it from the duplicate
+       check must not have removed the check. */
+    const { findings } = await check(
+      `<title>t</title>
+       <meta property="og:title" content="one">
+       <meta property="og:title" content="two">`
+    );
+
+    assert.strictEqual(matching(findings, /og:title appears 2 times/).length, 1);
+  });
+
   await t.test("reports a missing lang attribute", async () => {
     const { findings } = await check(SOUND_HEAD);
 
