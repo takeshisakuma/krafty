@@ -8,130 +8,69 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Eight checks you can turn on over any page, from the toolbar or from a
-keyboard shortcut you assign yourself. Nothing is sent anywhere: every check
-runs in your own browser, on the tab you are looking at, and Krafty collects
-no data at all. Available in English and Japanese, following your browser's
-language.
+Eight checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
-Reports the problems in a page's head that software can actually decide:
-a robots tag asking search engines to ignore the page, a missing viewport,
-title, description or lang, a missing doctype, a canonical pointing at a
-different page, duplicated tags, text long enough to be cut off, and an
-og:image smaller than sharing platforms want.
+Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, and an og:image smaller than sharing platforms want.
 
-On a multilingual site it checks the hreflang set too: whether it names the
-page it is on, since one that does not is ignored entirely, and whether the
-codes are language codes at all — `jp` and `cn` are countries, and Japanese
-and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported;
-one language needs none.
+On a multilingual site it checks the hreflang set too: whether it names the page it is on, since one that does not is ignored entirely, and whether the codes are language codes at all — `jp` and `cn` are countries, and Japanese and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported; one language needs none.
 
-It will not tell you whether the title is the right title. Nothing can — a
-title can be correctly formed and still say "Home | Home" or carry a staging
-site's name. So the page is drawn the way visitors meet it, as a search
-result and as a shared link, for you to read and judge.
+It will not tell you whether the title is the right title. Nothing can — a title can be correctly formed and still say "Home | Home" or carry a staging site's name. So the page is drawn the way visitors meet it, as a search result and as a shared link, for you to read and judge.
 
-Every value in the head is listed underneath, each with a button to copy it,
-and the URLs open in a new tab.
+Every value in the head is listed underneath, each with a button to copy it, and the URLs open in a new tab.
 
 ### Nest Checker
 
-Highlights every element its parent element is not allowed to contain, such
-as a div directly inside a ul, or an li with no list around it. Hover any
-highlighted element and it tells you the rule it breaks and what the parent
-may contain instead.
+Highlights every element its parent element is not allowed to contain, such as a div directly inside a ul, or an li with no list around it. Hover any highlighted element and it tells you the rule it breaks and what the parent may contain instead.
 
-The panel totals them and breaks them down by pair, and copies the whole
-list in one go so it can go straight into a ticket.
+The panel totals them and breaks them down by pair, and copies the whole list in one go so it can go straight into a ticket.
 
 ### Heading Checker
 
-Reports what can be decided about the heading structure: more than one level
-one heading, a level skipped on the way down, a heading with no text at all,
-and a page with no headings.
+Reports what can be decided about the heading structure: more than one level one heading, a level skipped on the way down, a heading with no text at all, and a page with no headings.
 
-Whether the headings read as a sensible outline of the page is not something
-software can answer, so they are listed in order and indented by level, as a
-table of contents to read. Headings hidden from everyone are left out, and
-the panel says how many. The whole outline copies as one indented block.
+Whether the headings read as a sensible outline of the page is not something software can answer, so they are listed in order and indented by level, as a table of contents to read. Headings hidden from everyone are left out, and the panel says how many. The whole outline copies as one indented block.
 
 ### Markup Checker
 
 Reports markup that is wrong in ways the page does not show.
 
-Ids used more than once: nothing looks different, but a `label` stops
-reaching its field, an in-page link lands on the first one and never the
-second, and any script asking for that element gets whichever came first. A
-page template repeated down a listing produces this without anyone writing
-it.
+Ids used more than once: nothing looks different, but a `label` stops reaching its field, an in-page link lands on the first one and never the second, and any script asking for that element gets whichever came first. A page template repeated down a listing produces this without anyone writing it.
 
-And tables with no header cells, where a screen reader announces every cell
-bare, with nothing to say which column it belongs to. Tables marked as
-layout are left alone.
+And tables with no header cells, where a screen reader announces every cell bare, with nothing to say which column it belongs to. Tables marked as layout are left alone.
 
-Then form fields with nothing naming them — no label, wrapping or by `for`,
-no `aria-label`, no `aria-labelledby` that resolves to anything, and no
-`title`. The placeholder inside a field says what it is to anyone looking
-at it and to nobody else. Hidden fields and the button types are not
-counted; those take no label.
+Then form fields with nothing naming them — no label, wrapping or by `for`, no `aria-label`, no `aria-labelledby` that resolves to anything, and no `title`. The placeholder inside a field says what it is to anyone looking at it and to nobody else. Hidden fields and the button types are not counted; those take no label.
 
-And inline SVGs that are neither named nor hidden. Named, an icon is
-announced; marked `aria-hidden`, it is skipped; neither, and what a screen
-reader does with it varies by screen reader. An `aria-hidden` on any
-element above the icon counts, since wrapping one is the ordinary way to
-hide it.
+And inline SVGs that are neither named nor hidden. Named, an icon is announced; marked `aria-hidden`, it is skipped; neither, and what a screen reader does with it varies by screen reader. An `aria-hidden` on any element above the icon counts, since wrapping one is the ordinary way to hide it.
 
-Each of the three is listed underneath as well as counted, and each list
-copies in one go. The fields and the icons have nothing to be called —
-that is the defect — so each row is built from whatever the element does
-carry: its id, its name, its class, or the parent's where it has none of
-its own. An unlabelled field shows its placeholder beside it, which is
-both the quickest way to find it on the page and, usually, the reason the
-label was left off.
+Each of the three is listed underneath as well as counted, and each list copies in one go. The fields and the icons have nothing to be called — that is the defect — so each row is built from whatever the element does carry: its id, its name, its class, or the parent's where it has none of its own. An unlabelled field shows its placeholder beside it, which is both the quickest way to find it on the page and, usually, the reason the label was left off.
 
-Every panel has a check-again button. A check reads the page as it stands
-when it runs, so press it after opening an accordion or scrolling a list
-in.
+Every panel has a check-again button. A check reads the page as it stands when it runs, so press it after opening an accordion or scrolling a list in.
 
 ### The review
 
-One button under the checker list runs everything that reports and copies
-the result as one block, ready for a ticket: the address, then each checker
-with what it found underneath.
+One button under the checker list runs everything that reports and copies the result as one block, ready for a ticket: the address, then each checker with what it found underneath.
 
-There is no total, on purpose. A single number would be a verdict on the
-whole page, including everything nothing looked at. Each checker says what
-it checked and nothing more.
+There is no total, on purpose. A single number would be a verdict on the whole page, including everything nothing looked at. Each checker says what it checked and nothing more.
 
 ### Image Checker
 
-Finds images served much larger than the space they are drawn in — a
-1920×1080 file shown at 300×169 — and lists them worst first, with the file
-name and the address ready to copy. Also counts the images with no width and
-height attributes, which is what makes a layout jump while it loads.
+Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — and lists them worst first, with the file name and the address ready to copy. Also counts the images with no width and height attributes, which is what makes a layout jump while it loads.
 
-High-density displays are allowed for, so an image correctly built at twice
-the displayed size is never reported, and the allowance does not depend on
-the monitor you happen to be checking on. The panel states the basis it
-judged against, and each row carries its own ratio.
+High-density displays are allowed for, so an image correctly built at twice the displayed size is never reported, and the allowance does not depend on the monitor you happen to be checking on. The panel states the basis it judged against, and each row carries its own ratio.
 
 ### Outline Checker
 
-Draws an outline around every element, so the structure and spacing of a
-layout can be seen at a glance.
+Draws an outline around every element, so the structure and spacing of a layout can be seen at a glance.
 
 ### Alt Checker
 
-Shows the alt text of every image, and separates an image with no alt
-attribute at all from one deliberately marked decorative with an empty alt.
-The two look identical in a browser and mean opposite things.
+Shows the alt text of every image, and separates an image with no alt attribute at all from one deliberately marked decorative with an empty alt. The two look identical in a browser and mean opposite things.
 
 ### Brightness Checker
 
-Turns the page monochrome, which shows up anything that relies on colour
-alone to be understood.
+Turns the page monochrome, which shows up anything that relies on colour alone to be understood.
 
 ## Checkers (Japanese)
 
@@ -139,116 +78,65 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。
-8つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボード
-ショートカットから、任意のページに重ねて表示できます。処理はすべてお使いの
-ブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。
-表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。8つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
-head の中で機械が判断できる問題を報告します。検索避けの robots 指定、
-viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が
-別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには
-小さすぎる og:image。
+head の中で機械が判断できる問題を報告します。検索避けの robots 指定、 viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image。
 
-多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその
-指定はすべて無視されます）、そして値が言語コードとして成立しているか。
-`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が
-無いこと自体は報告しません。単一言語のサイトには不要だからです。
+多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその指定はすべて無視されます）、そして値が言語コードとして成立しているか。`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が無いこと自体は報告しません。単一言語のサイトには不要だからです。
 
-ただし、そのタイトルが適切かどうかまでは分かりません。どんなツールにも
-分かりません。「ホーム | ホーム」もステージング環境の名前が残ったままの
-タイトルも、形式としては何も間違っていないからです。そこで、検索結果と
-SNS で共有したときの見た目をそのまま描画します。判断はご自身の目で。
+ただし、そのタイトルが適切かどうかまでは分かりません。どんなツールにも分かりません。「ホーム | ホーム」もステージング環境の名前が残ったままのタイトルも、形式としては何も間違っていないからです。そこで、検索結果と SNS で共有したときの見た目をそのまま描画します。判断はご自身の目で。
 
-head の全項目はその下に一覧で並びます。値ごとにコピーボタンが付き、URL は
-別タブで開けます。
+head の全項目はその下に一覧で並びます。値ごとにコピーボタンが付き、URL は別タブで開けます。
 
 ### ネストチェッカー
 
-親要素が含むことのできない要素を強調します。ul の直下に置かれた div、
-リストの外にある li、といったものです。強調された要素にカーソルを合わせると、
-どの規則に反しているか、その親に本来置ける要素は何かが表示されます。
+親要素が含むことのできない要素を強調します。ul の直下に置かれた div、リストの外にある li、といったものです。強調された要素にカーソルを合わせると、どの規則に反しているか、その親に本来置ける要素は何かが表示されます。
 
-パネルには件数と、親子の組み合わせごとの内訳が出ます。まとめてコピーできる
-ので、そのまま不具合票に貼れます。
+パネルには件数と、親子の組み合わせごとの内訳が出ます。まとめてコピーできるので、そのまま不具合票に貼れます。
 
 ### 見出しチェッカー
 
-見出し構造について機械が判断できることを報告します。レベル1の見出しが
-複数ある、レベルが飛んでいる、文字列のない見出しがある、そもそも見出しが
-ない、といったものです。
+見出し構造について機械が判断できることを報告します。レベル1の見出しが複数ある、レベルが飛んでいる、文字列のない見出しがある、そもそも見出しがない、といったものです。
 
-その見出しがページの構成として筋が通っているかどうかは、ソフトウェアには
-答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。
-目次として読んでご判断ください。誰にも見えない見出しは集計から外し、
-その件数を明記します。構造全体はそのままの字下げでコピーできます。
+その見出しがページの構成として筋が通っているかどうかは、ソフトウェアには答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。目次として読んでご判断ください。誰にも見えない見出しは集計から外し、その件数を明記します。構造全体はそのままの字下げでコピーできます。
 
 ### マークアップチェッカー
 
 見た目には現れない形で誤っているマークアップを報告します。
 
-複数回使われている id。表示は何も変わりませんが、label が対応する入力欄に
-届かなくなり、ページ内リンクは常に最初の要素にしか飛ばず、その id で要素を
-取得しているスクリプトは先に出てきた方を掴みます。同じテンプレートを一覧で
-繰り返すと、誰も書いていないのに発生します。
+複数回使われている id。表示は何も変わりませんが、label が対応する入力欄に届かなくなり、ページ内リンクは常に最初の要素にしか飛ばず、その id で要素を取得しているスクリプトは先に出てきた方を掴みます。同じテンプレートを一覧で繰り返すと、誰も書いていないのに発生します。
 
-そして見出しセルの無いテーブル。読み上げでは、どの列の値なのかが分からない
-まま、すべてのセルが読まれます。レイアウト用と明示されたテーブルは対象外
-です。
+そして見出しセルの無いテーブル。読み上げでは、どの列の値なのかが分からないまま、すべてのセルが読まれます。レイアウト用と明示されたテーブルは対象外です。
 
-続いて、名前を持たない入力欄。for による label も、囲んでいる label も、
-`aria-label` も、参照先が存在する `aria-labelledby` も、`title` も無いもの
-です。中に書かれたプレースホルダは、見えている人にだけ何の欄かを伝えます。
-type が hidden とボタン系のものは、そもそも label を取らないので数えません。
+続いて、名前を持たない入力欄。for による label も、囲んでいる label も、`aria-label` も、参照先が存在する `aria-labelledby` も、`title` も無いものです。中に書かれたプレースホルダは、見えている人にだけ何の欄かを伝えます。 type が hidden とボタン系のものは、そもそも label を取らないので数えません。
 
-そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、
-`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかは
-スクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が
-付いている場合も対象外です。実際にはその書き方が最も一般的だからです。
+そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかはスクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が付いている場合も対象外です。実際にはその書き方が最も一般的だからです。
 
-3種類とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピー
-できます。入力欄とアイコンは「呼び名が無いこと」自体が問題なので、各行は
-その要素が持っているもの——id、name、class、いずれも無ければ親のもの——
-から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す
-手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもある
-からです。
+3種類とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピーできます。入力欄とアイコンは「呼び名が無いこと」自体が問題なので、各行はその要素が持っているもの——id、name、class、いずれも無ければ親のもの——から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもあるからです。
 
-各パネルには再チェックのボタンがあります。チェックはボタンを押した時点の
-ページを見るので、開閉したあとやスクロールしたあとに押し直せます。
+各パネルには再チェックのボタンがあります。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
 
 ### レビュー結果のコピー
 
-チェッカー一覧の下のボタンを押すと、報告を行うチェッカーをまとめて実行し、
-結果を1ブロックでコピーします。アドレスがあり、その下にチェッカーごとの
-結果が並ぶ形で、そのまま不具合票に貼れます。
+チェッカー一覧の下のボタンを押すと、報告を行うチェッカーをまとめて実行し、結果を1ブロックでコピーします。アドレスがあり、その下にチェッカーごとの結果が並ぶ形で、そのまま不具合票に貼れます。
 
-**合計は出しません。意図的です。** 1つの数字は、何も見ていない部分まで
-含めたページ全体への判定として読まれてしまうからです。各チェッカーは、
-自分が確認した範囲だけを述べます。
+**合計は出しません。意図的です。** 1つの数字は、何も見ていない部分まで含めたページ全体への判定として読まれてしまうからです。各チェッカーは、自分が確認した範囲だけを述べます。
 
 ### 画像チェッカー
 
-表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 の
-ファイルを 300×169 で表示している、といったものです。無駄の大きい順に
-並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と
-height 属性の無い画像の数も出ます。読み込み中にレイアウトがずれる原因です。
+表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と height 属性の無い画像の数も出ます。読み込み中にレイアウトがずれる原因です。
 
-高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意
-された画像は指摘しません。判定基準はお使いのモニタに左右されません。
-どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。
+高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意された画像は指摘しません。判定基準はお使いのモニタに左右されません。どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。
 
 ### アウトラインチェッカー
 
-すべての要素に輪郭線を表示します。レイアウトの構造と余白の取り方が一目で
-分かります。
+すべての要素に輪郭線を表示します。レイアウトの構造と余白の取り方が一目で分かります。
 
 ### alt チェッカー
 
-すべての画像の alt を表示します。alt が未設定の画像と、装飾目的として
-意図的に空の alt を指定した画像は区別して表示します。ブラウザ上では
-まったく同じに見えるのに、意味は正反対だからです。
+すべての画像の alt を表示します。alt が未設定の画像と、装飾目的として意図的に空の alt を指定した画像は区別して表示します。ブラウザ上ではまったく同じに見えるのに、意味は正反対だからです。
 
 ### 明度チェッカー
 
