@@ -869,6 +869,39 @@ test("head checker", async (t) => {
     );
   });
 
+  await t.test("draws a thumbnail for twitter:image, like og:image", async () => {
+    /* The row had url: true but no image key, so it wrote the address and
+       never the picture - the twitter card's own image, shown for everything
+       else that carries one. */
+    const shown = await withPage(
+      { html: "<p>page</p>", checkers: [], width: 1280, height: 900 },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "twitter:image"
+          );
+
+          return Boolean(row?.querySelector("img.headImage"));
+        });
+      }
+    );
+
+    assert.strictEqual(shown, true, "twitter:image should show its picture");
+  });
+
   await t.test("prefers og values on the card when present", async () => {
     const result = await check(
       `${SOUND_HEAD}

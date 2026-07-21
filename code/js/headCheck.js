@@ -558,7 +558,14 @@
       { label: "twitter:site", value: metaByName("twitter:site") },
       { label: "twitter:title", value: metaByName("twitter:title") },
       { label: "twitter:description", value: metaByName("twitter:description") },
-      { label: "twitter:image", value: metaByName("twitter:image"), url: true },
+      {
+        label: "twitter:image",
+        value: metaByName("twitter:image"),
+        /* A thumbnail, like og:image: without this key the row drew only the
+           address and never the picture the card actually shows. */
+        image: "ogp",
+        url: true,
+      },
       { label: "viewport", value: metaByName("viewport") },
       { label: "theme-color", value: metaByName("theme-color") },
       { label: "manifest", value: linkByRel("manifest"), url: true },
