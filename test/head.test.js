@@ -355,6 +355,167 @@ test("head checker", async (t) => {
     assert.strictEqual(matching(findings, /og:title appears 2 times/).length, 1);
   });
 
+  await t.test("says nothing about hreflang when the page declares none", async () => {
+    /* Most of the web is one language and needs none. A finding here would
+       fire nearly everywhere and teach the reader to skip the panel. */
+    const { findings } = await check(SOUND_HEAD, { serve: "/" });
+
+    assert.strictEqual(matching(findings, /hreflang/).length, 0);
+  });
+
+  await t.test("reports an hreflang set that does not name this page", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="en" href="https://example.com/en/">
+       <link rel="alternate" hreflang="fr" href="https://example.com/fr/">`,
+      { serve: "/" }
+    );
+
+    const noSelf = matching(findings, /names this page/);
+
+    assert.strictEqual(noSelf.length, 1);
+    assert.strictEqual(
+      noSelf[0].level,
+      "alert",
+      "a set without a self reference is discarded whole, not partly"
+    );
+  });
+
+  await t.test("accepts a set naming this page through the canonical", async () => {
+    /* An hreflang set lists canonical addresses. Read over one spelling of
+       the site while the canonical names another, a correct set would
+       otherwise be reported as broken. */
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="canonical" href="https://example.com/">
+       <link rel="alternate" hreflang="en" href="https://example.com/">
+       <link rel="alternate" hreflang="ja" href="https://example.com/ja/">`,
+      { serve: "/" }
+    );
+
+    assert.strictEqual(matching(findings, /names this page/).length, 0);
+  });
+
+  await t.test("accepts a set naming this page directly", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="ja" href="/">
+       <link rel="alternate" hreflang="en" href="/en/">`,
+      { serve: "/" }
+    );
+
+    assert.strictEqual(matching(findings, /hreflang/).length, 0);
+  });
+
+  await t.test("reports a country code used as a language", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="jp" href="/">
+       <link rel="alternate" hreflang="en" href="/en/">`,
+      { serve: "/" }
+    );
+
+    const mistaken = matching(findings, /country code/);
+
+    assert.strictEqual(mistaken.length, 1);
+    assert.match(mistaken[0].text, /"ja"/, "it should say which code was meant");
+  });
+
+  await t.test("leaves alone country codes that are also languages", async () => {
+    /* uk is Ukrainian and se is Northern Sami. Both are the same confusion
+       when an author means the United Kingdom or Sweden, and both are
+       correct markup on a page actually written in them - which is not a
+       thing this can tell apart, so it does not try. */
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="uk" href="/">
+       <link rel="alternate" hreflang="se" href="/se/">`,
+      { serve: "/" }
+    );
+
+    assert.strictEqual(matching(findings, /country code/).length, 0);
+  });
+
+  await t.test("reports a value that is not a language tag, and accepts x-default", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="en_US" href="/">
+       <link rel="alternate" hreflang="x-default" href="/">
+       <link rel="alternate" hreflang="en-CA" href="/ca/">`,
+      { serve: "/" }
+    );
+
+    const invalid = matching(findings, /not a language tag/);
+
+    assert.strictEqual(invalid.length, 1, "only en_US is unparseable");
+    assert.match(invalid[0].text, /en_US/);
+  });
+
+  await t.test("reports one finding per bad code, however often it appears", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="jp" href="/">
+       <link rel="alternate" hreflang="jp" href="/">
+       <link rel="alternate" hreflang="jp" href="/">`,
+      { serve: "/" }
+    );
+
+    assert.strictEqual(
+      matching(findings, /country code/).length,
+      1,
+      "a site with forty alternates would bury everything else"
+    );
+  });
+
+  await t.test("reports one code given two addresses", async () => {
+    const { findings } = await check(
+      `<title>t</title>
+       <link rel="alternate" hreflang="ja" href="/">
+       <link rel="alternate" hreflang="EN" href="/en/">
+       <link rel="alternate" hreflang="en" href="/english/">`,
+      { serve: "/" }
+    );
+
+    /* Case carries no meaning in a language tag, so EN and en are one code
+       and this is the same entry twice. */
+    assert.strictEqual(matching(findings, /twice with different/).length, 1);
+  });
+
+  await t.test("lists the hreflang codes in the reference rows", async () => {
+    const row = await withPage(
+      { html: "<p>page</p>", checkers: [] },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <link rel="alternate" hreflang="ja" href="/">
+             <link rel="alternate" hreflang="en-CA" href="/ca/">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+
+          return (
+            [...(panel?.querySelectorAll(".kraftyRow") ?? [])]
+              .find(
+                (candidate) =>
+                  candidate.querySelector("strong")?.textContent === "hreflang"
+              )
+              ?.querySelector(".kraftyRowValue")?.textContent ?? ""
+          );
+        });
+      }
+    );
+
+    assert.match(row, /ja/);
+    assert.match(row, /en-CA/);
+  });
+
   await t.test("reports a missing lang attribute", async () => {
     const { findings } = await check(SOUND_HEAD);
 
@@ -630,6 +791,115 @@ test("head checker", async (t) => {
       /^　/,
       "the count should not carry its own leading space"
     );
+  });
+
+  await t.test("puts a URL beside its thumbnail, not under it", async () => {
+    /* The address used to start at the foot of the image and wrap onto lines
+       below it, so a row showing a 200px picture was twice that tall and the
+       URL took the space. Aligned at the top it fills the room the thumbnail
+       already occupies. */
+    const layout = await withPage(
+      { html: "<p>page</p>", checkers: [], width: 1280, height: 900 },
+      async (page) => {
+        await page.evaluate(() => {
+          /* A data URL: the row must lay out without a network fetch, and
+             the address is long enough to have to wrap beside the image. */
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "favicon"
+          );
+
+          const value = row?.querySelector(".kraftyRowValue");
+          const image = row?.querySelector("img.headImage");
+
+          if (!value || !image) {
+            return null;
+          }
+
+          const valueBox = value.getBoundingClientRect();
+          const imageBox = image.getBoundingClientRect();
+
+          return {
+            /* Both boxes start at the same height when they are aligned at
+               the top. */
+            offset: imageBox.top - valueBox.top,
+            imageWidth: imageBox.width,
+            text: value.textContent ?? "",
+          };
+        });
+      }
+    );
+
+    assert.ok(layout, "expected a favicon row with a thumbnail");
+
+    assert.ok(
+      Math.abs(layout.offset) < 2,
+      `the thumbnail should start at the top of the row, but it is ${Math.round(
+        layout.offset
+      )}px down`
+    );
+
+    /* The image is a flex item now, and one whose width is the point of it:
+       without flex: none the address squeezes it instead of wrapping. */
+    assert.ok(
+      layout.imageWidth > 30,
+      `the favicon should keep its 32px, but it is ${Math.round(
+        layout.imageWidth
+      )}px wide`
+    );
+
+    /* Spacing belongs to the stylesheet. A full width space appended in the
+       script was invisible from the CSS and impossible to change there. */
+    assert.doesNotMatch(
+      layout.text,
+      /　/,
+      "the gap should come from the stylesheet, not from a character"
+    );
+  });
+
+  await t.test("draws a thumbnail for twitter:image, like og:image", async () => {
+    /* The row had url: true but no image key, so it wrote the address and
+       never the picture - the twitter card's own image, shown for everything
+       else that carries one. */
+    const shown = await withPage(
+      { html: "<p>page</p>", checkers: [], width: 1280, height: 900 },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyHeadInformation");
+          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "twitter:image"
+          );
+
+          return Boolean(row?.querySelector("img.headImage"));
+        });
+      }
+    );
+
+    assert.strictEqual(shown, true, "twitter:image should show its picture");
   });
 
   await t.test("prefers og values on the card when present", async () => {

@@ -211,6 +211,50 @@
     "message": "1 table has no header cells, so every cell is announced bare",
     "description": "Used when exactly one table is missing its headers."
   },
+  "markupSectionFields": {
+    "message": "The fields",
+    "description": "Heading of the section listing form fields with no name."
+  },
+  "markupFieldListLabel": {
+    "message": "Nothing names them",
+    "description": "Label above the list of unlabelled form fields. Each row is the field, with its placeholder beside it where it has one."
+  },
+  "markupSectionSvg": {
+    "message": "The SVGs",
+    "description": "Heading of the section listing SVGs that are neither named nor hidden."
+  },
+  "markupSvgListLabel": {
+    "message": "Neither named nor hidden",
+    "description": "Label above the list of SVGs that are neither named nor hidden."
+  },
+  "markupInputNoLabel": {
+    "message": "$count$ form fields have nothing naming them",
+    "description": "No label for, no wrapping label, no aria-label, no aria-labelledby that resolves, and no title. Hidden fields and the button types are not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "markupInputNoLabelOne": {
+    "message": "1 form field has nothing naming it",
+    "description": "Used when exactly one field is unlabelled."
+  },
+  "markupSvgNoName": {
+    "message": "$count$ inline SVGs are neither named nor hidden, so how they are announced depends on the screen reader",
+    "description": "No title, aria-label, aria-labelledby or role=img to name it, and no aria-hidden on it or above it to skip it.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "6"
+      }
+    }
+  },
+  "markupSvgNoNameOne": {
+    "message": "1 inline SVG is neither named nor hidden, so how it is announced depends on the screen reader",
+    "description": "Used when exactly one SVG is neither named nor hidden."
+  },
   "checkerImage": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."
@@ -399,6 +443,44 @@
       }
     }
   },
+  "checkHreflangNoSelf": {
+    "message": "No hreflang names this page: a set that does not include itself is ignored entirely",
+    "description": "Only reported when the page declares hreflang at all - a single language site needs none."
+  },
+  "checkHreflangInvalid": {
+    "message": "hreflang=\"$code$\" is not a language tag, so that alternate is ignored",
+    "description": "Structural check: the value cannot be parsed as BCP 47.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en_US"
+      }
+    }
+  },
+  "checkHreflangMistaken": {
+    "message": "hreflang=\"$code$\" is a country code, not a language: this language is \"$correct$\"",
+    "description": "The common confusion - jp for ja, cn for zh. Only codes that are not languages in their own right are listed.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "jp"
+      },
+      "correct": {
+        "content": "$2",
+        "example": "ja"
+      }
+    }
+  },
+  "checkHreflangConflict": {
+    "message": "hreflang=\"$code$\" is given twice with different addresses",
+    "description": "Nothing can decide which of the two was meant.",
+    "placeholders": {
+      "code": {
+        "content": "$1",
+        "example": "en"
+      }
+    }
+  },
   "checkDuplicate": {
     "message": "$tag$ appears $count$ times",
     "description": "Duplicated tags leave the outcome up to whoever reads them.",
@@ -568,7 +650,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "Report markup that is wrong in ways the page does not show. It starts with ids used more than once, which quietly break label-for, in-page anchors and any script asking for the element.",
+    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields with nothing naming them, and inline SVGs that are neither named nor hidden.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {

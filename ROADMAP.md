@@ -18,6 +18,58 @@ Around 1% is a usable signal, and the findings are genuine (`ul > div` ×25,
 `span > div` ×15, `section > li`, `ul > ul` on Rakuten). The problem is not
 accuracy any more — it is that the output is hard to act on.
 
+Items 10 and 21 were measured the same way on 2026-07-21, the day they were
+built, before anything is stacked on top of them for 0.11.0. Six pages: the
+three above, plus the two that turned up the head checker's false positives
+(amazon.co.jp, brainpad.co.jp) and `takeshisakuma.github.io`.
+
+| | elements | fields | 10 | svg | 21 |
+|---|---|---|---|---|---|
+| MDN | 760 | 0 | 0 | 5 | 1 |
+| Rakuten | 4,899 | 6 | 1 | 3 | 2 |
+| Yahoo! JAPAN | 2,012 | 1 | 0 | 19 | 0 |
+| amazon.co.jp | 2,313 | 2 | 0 | 0 | 0 |
+| brainpad.co.jp | 1,290 | 0 | 0 | 38 | 38 |
+| takeshisakuma.github.io | 267 | 0 | 0 | 13 | 13 |
+
+(The element counts are lower than the nest checker's above because these
+were read at a fixed wait rather than after full settle; the ratios are what
+matter, not the denominators against the older run.)
+
+**Item 10 ships as it is.** One finding across nine eligible fields, and it
+is real: Rakuten's `input#common-header-search-input`, a search box named by
+its placeholder "キーワード検索" and nothing a machine reads. The other
+eight fields said nothing. The placeholder shown beside the row is what
+found it on the page. This is the missing-alt shape exactly — decidable,
+rare, and a genuine defect wherever it fires.
+
+**Item 21 is right and unusable, which is a different problem from being
+wrong.** Yahoo! is the proof it does not fire blindly: nineteen svgs, zero
+findings, every one named or hidden. But brainpad's 38 and the personal
+site's 13 are a true finding repeated until it is noise — the `checkTooLong`
+worry from further down, arrived at by a real page. Two things the rows
+showed, to fix before 0.11.0 stacks on this:
+
+- **The descriptor collapses.** `a > svg` eight times, `i.icon-blank > svg`
+  eight times: an element with no identifier of its own and a parent with
+  none either produces the same string for every row, so the list says "38"
+  and nothing more. A weakness in what was built, not in the check. Fix
+  before release — it is small (a position, or an `href` where the parent is
+  a link).
+- **Two defects of different weight are flagged as one.** `a.twitter > svg`
+  is a link with no accessible name, item 11's territory and the heavier
+  fault; `i.icon-blank > svg` is a decorative icon one `aria-hidden` from
+  correct. All thirteen of the personal site's are the former, all links
+  with only a nameless svg inside. Splitting them needs the accessible-name
+  computation that item 11 builds, so it waits for 0.11.0 and rides that
+  work rather than being written twice. Until then the count and list stand,
+  honestly labelled as what they are.
+
+Two by-products of the run, both already on the list. Rakuten ships ids like
+`##GENRELINKEVENT#` — a template placeholder left unsubstituted, which is
+item 12's quarry exactly. And brainpad's `#logo ×3` is the same element as
+its `svg#logo` duplicate, an id collision that item 13 already reports.
+
 ## Done
 
 ### 1. Explain why an element is flagged — done
@@ -325,7 +377,18 @@ its boundary settling before it is worth building.
 
 Items 13 to 16 came out of a review on the same day and are not all checks:
 14 and 15 are about how the checkers are used rather than what they find.
-13 is the one to do first.
+13 was the one to do first and is done, in 0.9.0.
+
+Item 19 came from a list of head tags proposed on 2026-07-21, and is the
+only one of that list worth a check. It is built.
+
+Items 20 to 22 came from a list of eight accessibility problems proposed
+later on 2026-07-21. Three of the eight are declined outright and are in
+"Deferred, with reasons" below; a fourth is already item 11 and was folded
+into it. What is left is two checks and one collection of contradictions.
+The split was made on the usual line rather than on how worthwhile the
+problem is: all eight are real defects, and the question asked of each was
+whether a script reading the DOM can tell it has found one.
 
 Nothing here goes into 0.9.0. That release already carries two new
 checkers, the alt checker rebuilt, four false positives found by real use,
@@ -337,12 +400,58 @@ is still in review with a listing change attached. Item 10 is the next one
 to build and it waits for 0.10.0, because a bigger 0.9.0 buys nothing and
 costs another few days of queue.
 
+### The order to build them in
+
+Set 2026-07-21, once items 20 to 22 made the list long enough that "what is
+next" stopped being obvious. It follows from the paragraph above rather
+than from how interesting the items are: review time follows submission
+size, so the constraint is how much goes in each release, not how much is
+ready.
+
+| | items |
+|---|---|
+| 0.10.0 | 19 hreflang, built · 10 inputs with no label · 21 svg |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions |
+| 0.12.0 | 20 landmarks |
+| 0.13.0 | 12 development leftovers |
+
+0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
+and is not in the build under review, so it ships whatever else does. The
+other two are the cheapest left — item 10 reports into item 13's panel and
+needs no new one, and item 21 is a single condition. Deliberately small,
+because the release after a long review is the wrong place to be ambitious.
+
+11 and 22 are together because they walk the same elements. Computing an
+accessible name is item 11's work, and it is also what decides item 21's
+svg and half of item 22, so building them apart would write it twice and
+then have to agree with itself. The double-reporting question in item 11 —
+the same icon button found from both ends — gets settled once, there.
+
+20 is alone because it is shaped differently. It draws a structure to be
+read rather than a list of findings, which is item 6's design over again
+and is most of the work in it.
+
+12 is last because it is the one still undecided. Its own entry says the
+checker-or-not question waits until item 11 is built, and 11 is in 0.11.0.
+
+Two things to settle before building, not now: which panel items 21 and 22
+report into, and whether 22 belongs under a checker named Markup at all.
+
+Settled for 21 on 2026-07-21, when it was built: the Markup panel, because
+the alt checker draws over the page and has no findings panel to take it.
+The same answer probably serves 22, and is not yet decided.
+
+0.10.0 is code complete as of 2026-07-21 — items 19, 10 and 21 are in
+`release/0.9.0` and none of them is in the build under review. The version
+in `code/manifest.json` is still 0.9.0 and is bumped at release, per the
+rule that a version is only bumped once the previous one is live.
+
 An item keeps its number once it is written down, and is marked done where
 it stands rather than moved up. Moving one renumbers everything after it,
 which rewrites every reference to any of them - done twice in a day before
 anyone noticed that the ordering was never the point.
 
-### 10. Inputs with no label
+### 10. Inputs with no label — done
 
 An `input`, `select` or `textarea` with no `label for`, no wrapping label,
 no `aria-label` and no `aria-labelledby`. Exactly the same kind of finding
@@ -350,6 +459,33 @@ as a missing alt, equally decidable, and currently missing while alt is
 covered — which is half a job.
 
 Skip `hidden`, `submit`, `button` and `reset`, which do not take one.
+
+Built 2026-07-21, into the Markup Checker's panel as item 13 planned.
+
+Two things were added to the specification above while building, both to
+stop it reporting correct markup. `title` counts as a name, because it is
+one per spec — a field carrying one is not nameless, and whether it is a
+*good* name is the kind of judgement this project does not make. And an
+`aria-labelledby` only counts if it resolves to an element with text: a
+reference to an id that is not on the page names nothing, which is the
+failure being looked for rather than an excuse from it.
+
+`input type="image"` is named by its `alt`, so `alt` is a naming route too.
+That one is drawn by the alt checker as well, and both are right to show
+it — the same argument as item 11's overlap, from the other side.
+
+Listed as well as counted, decided the same day and after shipping the
+count alone was considered. A count of unlabelled fields is a number with
+nowhere to go: the table check can be count-only because a table is
+visible on the page, and an unlabelled field looks exactly like a labelled
+one. So each is given a row built from whatever identifier it still
+carries — id, then `name`, then class, then `type`, then the parent's
+descriptor when the element itself offers nothing.
+
+That descriptor is a label to read, not a selector, and is deliberately
+not promised to be one. Making it paste into `querySelector` would mean
+escaping and uniqueness work that nothing here asks for, and would invite
+it to be trusted for something it was not built for.
 
 ### 11. Link text
 
@@ -362,6 +498,23 @@ pointing at different URLs, which is a genuine contradiction. Whether a
 given phrase is too vague is a judgement, and the list of vague phrases is
 per-language, so lean towards listing the link texts for the reader rather
 than asserting which are wrong.
+
+Extended 2026-07-21, from the accessibility list: a link or button with no
+accessible name at all. That is the same finding one step further along —
+not text too vague to place, but nothing to read out, so a screen reader
+announces "link" or "button" and stops. It belongs here rather than in a
+checker of its own, because it is decided from the same computation the
+vague-text listing needs anyway.
+
+The name comes from the element's text, then `aria-label`, then
+`aria-labelledby`, then the `alt` of an image inside it, then `title`.
+Empty on all of them is the finding, and an icon-only button is where it
+happens: an inline `svg` and nothing else inside a `button` is silent, and
+looks finished on screen. Note the overlap with item 21 — the same button
+appears in both, once for having no name and once for the svg being the
+reason. Neither should be suppressed for the other; they are the same
+defect described from the two ends, and a director fixing it needs the end
+nearest the markup.
 
 ### 12. Development leftovers
 
@@ -425,7 +578,14 @@ Undecided: whether this is an eighth checker or joins item 11's, since
 several of these are link and resource addresses and that walk is the same
 one. Worth deciding when item 11 is built rather than now.
 
-### 13. Duplicated `id`
+### 13. Duplicated `id` — done
+
+Shipped in 0.9.0 as the Markup Checker, on the design below. Item 16 landed
+in the same panel as planned; item 10 is still to come and goes there too.
+Marked done late — it was built while the heading here still read as
+Wanted, which is worth noticing rather than quietly correcting: an item
+that ships without its entry changing is an item the roadmap stopped
+describing.
 
 `document.querySelectorAll("[id]")`, counted. No threshold, no judgement,
 no per-language list — the cheapest check in the project and the one with
@@ -626,6 +786,133 @@ The order within each group was left alone. It is the order they were
 built in, and choosing a better one needs to know which gets reached for
 most - a question for use, like item 8, not for reasoning.
 
+### 19. The hreflang set — built, and waiting for 0.10.0
+
+Asked 2026-07-21, out of a longer list of head tags to consider adding. Most
+of that list was declined and the reasons are worth keeping, because they
+are the same reason each time: a checker earns its place by deciding
+something, and none of these decide anything.
+
+`robots` was already covered. A `sitemap.xml` is not in the head at all and
+cannot be seen from the DOM — `rel="sitemap"` exists and nobody uses it.
+`rel="author"` pointing at humans.txt has done nothing since Google dropped
+rel=author in 2014. An RSS `rel="alternate"` and `format-detection` are real
+tags, but their presence or absence is neither right nor wrong, so they
+could only ever be reference rows.
+
+hreflang was the one left, and it has genuine findings in it. A set that
+does not name the page it sits on is discarded whole, which is an alert. A
+value that does not parse as a language tag is an alert too, and so is a
+country code standing in for a language — `jp` for `ja`, `cn` for `zh`,
+which is the mistake everybody makes. One code given two addresses is a note
+because nothing can resolve it.
+
+Two decisions in it are the same trade as item 8's canonical fixes. `uk` and
+`se` are absent from the country-code table although they are the same
+confusion, because both are real languages — Ukrainian and Northern Sami —
+and a page written in either would be told its correct markup was wrong.
+Being wrong about Ukrainian to be right about Denmark is the worse trade.
+And a page declaring no hreflang at all is not reported: one language needs
+none, so that finding would fire on most of the web.
+
+`x-default`'s absence is not reported either. Google's advice for it is
+conditional on having a page for unmatched languages, and plenty of correct
+sites have none.
+
+Note that this does not replace `checkLangMissing`, and neither replaces the
+other. Search engines take language from the content and from these tags
+rather than from `<html lang>`; a screen reader takes its voice from the
+attribute and knows nothing about hreflang.
+
+Committed to `release/0.9.0` on 2026-07-21, after 0.9.0 was already
+submitted, so it is not in the build under review. It rides 0.10.0 with item
+10 — the paragraph above applies again, unchanged: uploading over a pending
+draft restarts the queue, and a feature addition is not worth a second
+cancelled review when the withdrawal of 0.8.0 has already paid that cost
+once.
+
+### 20. Landmarks
+
+Asked 2026-07-21. The best fit of the eight, and it takes the shape of the
+heading outline rather than of an alert list, for the same reason.
+
+What a machine can decide: no `main` on the page, or more than one; and two
+landmarks of the same role that cannot be told apart, because they share an
+accessible name or because neither has one. Two `nav` elements with no
+labels are announced identically, and a screen reader user listing the
+landmarks to jump between them is given the same word twice.
+
+What it cannot decide is the part the proposal led with — whether the page
+defines the landmark regions it ought to. That is the outline problem
+again. A page with one `main` and nothing else may be correct or may have a
+header and a footer built out of unmarked divs, and nothing in the DOM
+separates those two. So draw the landmarks in document order, nested, with
+each one's role and accessible name, and let it be read. The alerts sit
+above it; the structure below it is the thing worth having.
+
+Take roles from both directions, the elements and the explicit `role`
+attributes: `main`, `nav`, `header`, `footer`, `aside`, `section` with a
+name, `form` with a name, plus `role="main"` and the rest. `header` and
+`footer` are only landmarks when they are not inside a sectioning element,
+which is a rule to implement rather than a judgement, and getting it wrong
+in the lenient direction would report a card's footer as a page footer.
+
+### 21. SVG with no accessible name and no `aria-hidden` — done
+
+Asked 2026-07-21. Small, cheap, decidable: an inline `svg` with no
+`<title>`, no `aria-label`, no `aria-labelledby`, no `role="img"` and no
+`aria-hidden="true"`. It is announced inconsistently across screen readers,
+which is worse than either a name or silence, because it cannot be
+predicted from the markup.
+
+Worth doing partly because this project has already been bitten by exactly
+this markup from the other side: the duplicate-tag bug in item 8 was `title`
+elements inside inline icons being counted as document titles. The svg
+`<title>` is the icon's accessible name and the checker read it as the
+page's. Whatever is written here should not repeat that — scope every
+selector, and remember that in an HTML document a type selector crosses
+namespaces.
+
+Built 2026-07-21, in the Markup Checker's panel. That settles the open
+question of where it reports: the alt checker was the other candidate and
+cannot take it, because it draws labels over the page and has no findings
+panel to report into. The markup panel's own description — wrong in ways
+the page does not show — fits an icon whose announcement varies by screen
+reader about as exactly as it fits a duplicated id.
+
+Two things came out of building it, both about not reporting correct
+pages. `aria-hidden` is read with `closest` rather than off the svg,
+because an icon inside a hidden wrapper is the ordinary correct spelling
+and reading only the element itself would report every one of them. And an
+svg inside another svg is one graphic, counted once.
+
+The `<title>` is matched as a direct child only. A title deeper in belongs
+to a shape inside the graphic, not to the graphic — which is the same
+distinction item 8's bug got wrong, arrived at deliberately this time.
+
+### 22. Contradictions in the ARIA already there
+
+Asked 2026-07-21, as two separate proposals — invalid ARIA attributes, and
+custom controls that cannot be focused. Both proposals as stated are
+declined below. What survives from them is this: cases where the attributes
+present on an element disagree with each other, which needs no table of
+what should have been there and no guess about intent.
+
+- `role="button"`, `link`, `checkbox` or another interactive role on an
+  element that cannot take focus — no `tabindex`, and not natively
+  focusable. The role promises a control and the element cannot be reached
+  to use it.
+- `aria-hidden="true"` on an element that is focusable, or that contains
+  one. The element is removed from the accessibility tree and left in the
+  tab order, so it takes focus and is announced as nothing.
+- `tabindex` above zero, which reorders the whole document's tab sequence
+  against its reading order rather than the local one it looks like.
+
+Each of these is a statement the page makes twice, differently. That is the
+same kind of finding as a canonical pointing elsewhere or an `id` used
+twice, and it is why they are worth having when the general ARIA validation
+they were carved out of is not.
+
 ## Deferred, with reasons
 
 ### TypeScript — decided, and re-checked
@@ -709,6 +996,84 @@ rather than a dismissal: the W3C validator cannot reach a page behind a
 login, and cannot see a DOM that JavaScript built. Krafty can do both. That
 is a genuine gap, and "a validator already exists" does not close it. If
 this is ever revisited, that is the case to answer — not the difficulty.
+
+### `div` and `span` used as buttons — the handlers are not there to read
+
+Proposed 2026-07-21, and the one it hurts most to decline, because it names
+a defect that is everywhere and genuinely harmful.
+
+The check as proposed is "an element with an `onClick` but no `role` and no
+`tabindex`". The trouble is the first half. An inline `onclick` attribute is
+in the DOM and can be read; a handler attached with `addEventListener` is
+not, and is not reachable from a content script at all. `getEventListeners`
+belongs to the devtools console, not to the page. And a `div` acting as a
+button on a site built this decade was almost certainly given its handler by
+a framework, through `addEventListener`, from a bundle.
+
+So the check would walk a React page, find no inline handlers, and report
+that it found nothing wrong — having been unable to look at the place the
+handlers live. That is the CSS argument above and item 12's `console.log`
+arriving a third time by the same road, and the answer does not change for
+being asked about accessibility: a checker that cannot distinguish "clean"
+from "could not see" must not report either.
+
+What is salvageable from it went into item 22, from the other direction.
+Where the author did add `role="button"` and stopped, the contradiction is
+in the DOM and needs no handler to prove it. That catches the half-converted
+case and misses the untouched `div` entirely, which is worth saying plainly
+rather than letting the panel imply otherwise.
+
+### `aria-required` and `aria-invalid` — would report correct pages
+
+Proposed 2026-07-21. Declined because both halves fire on markup that is
+right.
+
+`aria-required="true"` is not what makes a field required; the HTML
+`required` attribute is, and the browser maps it to the same state in the
+accessibility tree. A form using `required` correctly needs no ARIA at all,
+and a check for the missing attribute would flag every one of them. It would
+be reporting a redundancy as a defect.
+
+`aria-invalid` is worse, because it is a state and not a property. It is
+correct only while the field actually is in error, and correct to be absent
+otherwise. A script reading the DOM cannot tell which of those it is looking
+at — it would need to know what the user typed and what the validation
+concluded. Absent is the right answer almost every time it is checked.
+
+The useful form-field finding is the one already written down as item 10: no
+label by any of the four routes. That is decidable, it is a defect whenever
+it is found, and it is the missing half of the alt checker.
+
+### Keyboard operability of custom controls — needs the page driven
+
+Proposed 2026-07-21: whether a hand-built dropdown or modal can be reached
+with Tab. Declined as a check because answering it means operating the page
+— pressing keys, watching where focus lands, opening the thing first —
+and a checker reads a page as it stands. Krafty's rescan button exists
+precisely because the DOM at rest is all any of these get to see.
+
+Focusability itself, as opposed to operability, is in item 22.
+
+### `outline: none` — reachable in part, and the part is the wrong part
+
+Proposed 2026-07-21. Declined, and the reason is not the one the CSS
+section above would suggest. `outline: none` is a valid declaration, so
+unlike `colr: red` it survives parsing and is present in the CSSOM. Rules
+in same-origin stylesheets can be walked and matched.
+
+Two things stop it anyway. Cross-origin stylesheets still throw on
+`cssRules`, and a site serving its CSS from a CDN is the ordinary case, not
+the exotic one — so the coverage would be silently partial in the same way
+again. Not measured; it did not need to be, because of the second thing.
+
+The second is that the finding is a judgement even when the rule is found.
+`outline: none` is correct wherever a visible replacement is provided, and
+`:focus-visible` with a ring, a border, a background change or a shadow are
+all normal ways to provide one. Deciding whether what replaced it is
+visible enough is a contrast question, which is the one thing already
+refused above. A check that flagged every `outline: none` would be telling
+well-built sites they are wrong, and one that tried to judge the
+replacement would be guessing.
 
 ### A single score — deliberately not
 

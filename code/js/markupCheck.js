@@ -2,10 +2,10 @@
 
 /* Markup that is wrong in ways the page does not show.
 
-   It starts with two checks, and is named for the family rather than for
-   either of them, because unlabelled form fields report into this same
-   panel when they are built. Renaming a checker after it ships costs a
-   store listing, another review, and a name its users have to unlearn.
+   Named for the family rather than for any one check, which is what let the
+   third and fourth arrive without renaming anything. Renaming a checker
+   after it ships costs a store listing, another review, and a name its
+   users have to unlearn.
 
    A duplicated id is the cheapest thing this project can decide - count the
    ids, look for a number above one - and among the most consequential.
@@ -17,6 +17,16 @@
    A table with no header cells is the same kind of quiet. It looks like a
    table and reads as one, and a screen reader announces every cell bare,
    with nothing to say which column or row it belongs to.
+
+   A form field with no label is the same defect as a missing alt, one
+   element along: the placeholder or the text beside it says what it is to
+   anyone looking, and nothing says it to anyone not.
+
+   An inline svg with no name and no aria-hidden is the odd one, because the
+   defect is that it is neither. Named, it is announced; hidden, it is
+   skipped; neither, and what happens depends on which screen reader is
+   reading - which cannot be predicted from the markup, so it cannot be
+   checked by looking at the page either.
 
    And none of it shows. That is why it belongs in a tool used to review a
    page that looks finished, rather than being left to a validator nobody
@@ -37,6 +47,68 @@
   if (!document.body.classList.toggle(BODY_CLASS)) {
     return;
   }
+
+  /** Enough of an element to find it again on the page, and no more.
+
+     A duplicated id names itself, which is why that list needed none of
+     this. An unlabelled field and a nameless icon are the opposite: what is
+     wrong with them is precisely that they have nothing to be called. So
+     the row has to be built out of whatever the element does carry, in the
+     order of how much it narrows things down.
+
+     This is not a selector and is not promised to be one. It is a label to
+     read, and writing it to be pasted into querySelector would mean
+     escaping and uniqueness work that nothing here asks for.
+
+     @param {Element} element */
+  const descriptor = (element) => {
+    const tag = element.localName;
+
+    if (element.id !== "") {
+      return `${tag}#${element.id}`;
+    }
+
+    const name = element.getAttribute("name");
+
+    if (name) {
+      return `${tag}[name="${name}"]`;
+    }
+
+    /* Not the checker's own classes; those say nothing about the page. */
+    const className = [...element.classList].find(
+      (value) => !value.startsWith("krafty")
+    );
+
+    if (className) {
+      return `${tag}.${className}`;
+    }
+
+    const type = element.getAttribute("type");
+
+    if (type) {
+      return `${tag}[type="${type}"]`;
+    }
+
+    return tag;
+  };
+
+  /** A bare tag on its own - `input`, `svg` - is no help at all on a page
+     with forty of them, so borrow the parent's identity when the element
+     has none of its own.
+     @param {Element} element */
+  const locate = (element) => {
+    const own = descriptor(element);
+
+    if (own !== element.localName) {
+      return own;
+    }
+
+    const parent = element.parentElement;
+
+    return parent && parent !== document.body
+      ? `${descriptor(parent)} > ${own}`
+      : own;
+  };
 
   /* Everything below runs again when the panel's rescan button is pressed,
      which is why the toggle is not part of it. */
@@ -127,6 +199,135 @@
       }
     );
 
+    /* A form field nothing names.
+
+       The routes to a name are checked in the order the accessible name
+       calculation uses them, and a field needs only one. `title` is in the
+       list although the roadmap item did not name it: it is a genuine name
+       per spec, so a field carrying one is not nameless. Whether it is a
+       *good* name is a judgement, and this checker does not make those. */
+    /** @type {Map<string, boolean>} */
+    const namedByFor = new Map();
+
+    for (const label of document.querySelectorAll("label[for]")) {
+      const target = label.getAttribute("for") ?? "";
+      const hasText = (label.textContent ?? "").trim() !== "";
+
+      /* Two labels can point at one field, and only one of them has to say
+         something. Never let a later empty one overwrite an earlier name. */
+      namedByFor.set(target, (namedByFor.get(target) ?? false) || hasText);
+    }
+
+    /** @param {Element} field */
+    const isNamed = (field) => {
+      const labelledBy = (field.getAttribute("aria-labelledby") ?? "").trim();
+
+      if (labelledBy !== "") {
+        /* Only if it resolves. A reference to an id that is not on the page
+           names nothing, which is the failure this check exists to find. */
+        const named = labelledBy
+          .split(/\s+/)
+          .some(
+            (id) =>
+              (document.getElementById(id)?.textContent ?? "").trim() !== ""
+          );
+
+        if (named) {
+          return true;
+        }
+      }
+
+      if ((field.getAttribute("aria-label") ?? "").trim() !== "") {
+        return true;
+      }
+
+      if (field.id !== "" && namedByFor.get(field.id)) {
+        return true;
+      }
+
+      /* A label wrapped around the field, which needs no `for` at all. */
+      const wrapping = field.closest("label");
+
+      if (wrapping && (wrapping.textContent ?? "").trim() !== "") {
+        return true;
+      }
+
+      if ((field.getAttribute("title") ?? "").trim() !== "") {
+        return true;
+      }
+
+      /* `input type="image"` is named by its alt, the same way an img is.
+         The alt checker draws that one; this one only has to know it counts
+         as a name so a correct button is not reported here as well. */
+      if ((field.getAttribute("alt") ?? "").trim() !== "") {
+        return true;
+      }
+
+      return false;
+    };
+
+    /* Types that take no label: hidden has no field to label, and the three
+       button types are named by their own value or text. */
+    const UNLABELLABLE = new Set(["hidden", "submit", "button", "reset"]);
+
+    const unlabelled = [
+      ...document.querySelectorAll("input, select, textarea"),
+    ].filter((field) => {
+      if (field.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      const type = (field.getAttribute("type") ?? "").toLowerCase();
+
+      if (field instanceof HTMLInputElement && UNLABELLABLE.has(type)) {
+        return false;
+      }
+
+      return !isNamed(field);
+    });
+
+    /* An inline svg that is neither named nor hidden.
+
+       aria-hidden is read with closest, not off the element: an icon
+       wrapped in a hidden span is the ordinary way this is done correctly,
+       and reading only the svg would report every one of them. */
+    const namelessSvg = [...document.querySelectorAll("svg")].filter((svg) => {
+      if (svg.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      /* An svg inside an svg is one graphic, and its parent already
+         answered for it. */
+      if (svg.parentElement?.closest("svg")) {
+        return false;
+      }
+
+      if (svg.closest('[aria-hidden="true"]')) {
+        return false;
+      }
+
+      const role = (svg.getAttribute("role") ?? "").toLowerCase();
+
+      if (role === "img" || role === "presentation" || role === "none") {
+        return false;
+      }
+
+      if ((svg.getAttribute("aria-label") ?? "").trim() !== "") {
+        return false;
+      }
+
+      if ((svg.getAttribute("aria-labelledby") ?? "").trim() !== "") {
+        return false;
+      }
+
+      /* The svg's own title, scoped to a direct child. A title deeper in
+         belongs to a shape inside the graphic, and the head checker has
+         already been bitten once by reading svg titles as something else. */
+      const title = svg.querySelector(":scope > title");
+
+      return (title?.textContent ?? "").trim() === "";
+    });
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -152,41 +353,100 @@
       reportText("note", kraftyCount("markupTableNoHeader", headerless.length));
     }
 
-    if (duplicated.length > 0) {
-      const listSection = kraftySection(body, "markupSectionIds");
+    if (unlabelled.length > 0) {
+      reportText("note", kraftyCount("markupInputNoLabel", unlabelled.length));
+    }
 
-      kraftyListHead(
-        listSection,
-        "markupIdListLabel",
-        kraftyMessage("copyFindings"),
-        () =>
-          [
-            location.href,
-            ...duplicated.map(([id, count]) => `- #${id} × ${count}`),
-          ].join("\n")
+    if (namelessSvg.length > 0) {
+      reportText("note", kraftyCount("markupSvgNoName", namelessSvg.length));
+    }
+
+    /** A titled section holding a list of rows, each a label and an optional
+       aside. The ids list was the only one of these until the two
+       accessibility checks arrived wanting the same shape; a third copy is
+       what usually gets one of them subtly wrong.
+
+       @param {string} sectionKey
+       @param {string} labelKey
+       @param {{ label: string, aside?: string, asideClass?: string }[]} rows */
+    const listOf = (sectionKey, labelKey, rows) => {
+      const section = kraftySection(body, sectionKey);
+
+      kraftyListHead(section, labelKey, kraftyMessage("copyFindings"), () =>
+        [
+          location.href,
+          ...rows.map(
+            (row) => `- ${row.label}${row.aside ? ` ${row.aside}` : ""}`
+          ),
+        ].join("\n")
       );
 
       const list = document.createElement("ul");
       list.className = "kraftyPanelList";
 
-      for (const [id, count] of duplicated) {
+      for (const row of rows) {
         const item = document.createElement("li");
 
         const label = document.createElement("code");
-        /* textContent, not insertAdjacentHTML: the id comes from the page
-           and must never be parsed as markup. */
-        label.textContent = `#${id}`;
+        /* textContent, not insertAdjacentHTML: every one of these is built
+           out of the page's own ids, names and classes, and must never be
+           parsed as markup. */
+        label.textContent = row.label;
         item.appendChild(label);
 
-        const times = document.createElement("span");
-        times.className = "kraftyPanelCount";
-        times.textContent = `× ${count}`;
-        item.appendChild(times);
+        if (row.aside) {
+          const aside = document.createElement("span");
+          aside.className = row.asideClass ?? "kraftyPanelCount";
+          aside.textContent = row.aside;
+          item.appendChild(aside);
+        }
 
         list.appendChild(item);
       }
 
-      listSection.appendChild(list);
+      section.appendChild(list);
+    };
+
+    if (duplicated.length > 0) {
+      listOf(
+        "markupSectionIds",
+        "markupIdListLabel",
+        duplicated.map(([id, count]) => ({
+          label: `#${id}`,
+          aside: `× ${count}`,
+        }))
+      );
+    }
+
+    if (unlabelled.length > 0) {
+      listOf(
+        "markupSectionFields",
+        "markupFieldListLabel",
+        unlabelled.map((field) => {
+          /* The placeholder is what the field looks like it is called, to
+             everyone who can see it. That makes it the fastest way to find
+             the row's field on the page - and it is also the reason the
+             field was left unlabelled, so it belongs beside the finding
+             rather than being treated as one. */
+          const placeholder = (
+            field.getAttribute("placeholder") ?? ""
+          ).trim();
+
+          return {
+            label: locate(field),
+            aside: placeholder === "" ? undefined : placeholder,
+            asideClass: "kraftyPanelHint",
+          };
+        })
+      );
+    }
+
+    if (namelessSvg.length > 0) {
+      listOf(
+        "markupSectionSvg",
+        "markupSvgListLabel",
+        namelessSvg.map((svg) => ({ label: locate(svg) }))
+      );
     }
 
     const scanned = document.createElement("div");
