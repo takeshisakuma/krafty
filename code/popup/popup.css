@@ -45,6 +45,10 @@ body {
   font-size: 14px;
   font-weight: bold;
   text-align: left;
+  /* Kept on one line. A checker's name is its handle, and Japanese wraps
+     between any two characters, so "アウトラインチェック" broke to a stray
+     "ック" on the next line - the menu grows to fit the label instead. */
+  white-space: nowrap;
   color: #333;
   transition: color 0.2s ease-in-out;
   cursor: pointer;
