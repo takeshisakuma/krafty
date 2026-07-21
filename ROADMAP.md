@@ -18,6 +18,58 @@ Around 1% is a usable signal, and the findings are genuine (`ul > div` ×25,
 `span > div` ×15, `section > li`, `ul > ul` on Rakuten). The problem is not
 accuracy any more — it is that the output is hard to act on.
 
+Items 10 and 21 were measured the same way on 2026-07-21, the day they were
+built, before anything is stacked on top of them for 0.11.0. Six pages: the
+three above, plus the two that turned up the head checker's false positives
+(amazon.co.jp, brainpad.co.jp) and `takeshisakuma.github.io`.
+
+| | elements | fields | 10 | svg | 21 |
+|---|---|---|---|---|---|
+| MDN | 760 | 0 | 0 | 5 | 1 |
+| Rakuten | 4,899 | 6 | 1 | 3 | 2 |
+| Yahoo! JAPAN | 2,012 | 1 | 0 | 19 | 0 |
+| amazon.co.jp | 2,313 | 2 | 0 | 0 | 0 |
+| brainpad.co.jp | 1,290 | 0 | 0 | 38 | 38 |
+| takeshisakuma.github.io | 267 | 0 | 0 | 13 | 13 |
+
+(The element counts are lower than the nest checker's above because these
+were read at a fixed wait rather than after full settle; the ratios are what
+matter, not the denominators against the older run.)
+
+**Item 10 ships as it is.** One finding across nine eligible fields, and it
+is real: Rakuten's `input#common-header-search-input`, a search box named by
+its placeholder "キーワード検索" and nothing a machine reads. The other
+eight fields said nothing. The placeholder shown beside the row is what
+found it on the page. This is the missing-alt shape exactly — decidable,
+rare, and a genuine defect wherever it fires.
+
+**Item 21 is right and unusable, which is a different problem from being
+wrong.** Yahoo! is the proof it does not fire blindly: nineteen svgs, zero
+findings, every one named or hidden. But brainpad's 38 and the personal
+site's 13 are a true finding repeated until it is noise — the `checkTooLong`
+worry from further down, arrived at by a real page. Two things the rows
+showed, to fix before 0.11.0 stacks on this:
+
+- **The descriptor collapses.** `a > svg` eight times, `i.icon-blank > svg`
+  eight times: an element with no identifier of its own and a parent with
+  none either produces the same string for every row, so the list says "38"
+  and nothing more. A weakness in what was built, not in the check. Fix
+  before release — it is small (a position, or an `href` where the parent is
+  a link).
+- **Two defects of different weight are flagged as one.** `a.twitter > svg`
+  is a link with no accessible name, item 11's territory and the heavier
+  fault; `i.icon-blank > svg` is a decorative icon one `aria-hidden` from
+  correct. All thirteen of the personal site's are the former, all links
+  with only a nameless svg inside. Splitting them needs the accessible-name
+  computation that item 11 builds, so it waits for 0.11.0 and rides that
+  work rather than being written twice. Until then the count and list stand,
+  honestly labelled as what they are.
+
+Two by-products of the run, both already on the list. Rakuten ships ids like
+`##GENRELINKEVENT#` — a template placeholder left unsubstituted, which is
+item 12's quarry exactly. And brainpad's `#logo ×3` is the same element as
+its `svg#logo` duplicate, an id collision that item 13 already reports.
+
 ## Done
 
 ### 1. Explain why an element is flagged — done
