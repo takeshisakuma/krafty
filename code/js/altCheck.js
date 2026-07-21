@@ -72,7 +72,7 @@
      the same pass as everything else, with the ancestors' boxes and styles
      kept, because a page of ninety images shares most of its ancestors. */
 
-  /** @type {Map<Element, { clipsX: boolean, clipsY: boolean, box: DOMRect }>} */
+  /** @type {Map<Element, { clipsX: boolean, clipsY: boolean, fixed: boolean, box: DOMRect }>} */
   const frames = new Map();
 
   /** @param {Element} element */
@@ -84,11 +84,45 @@
       known = {
         clipsX: styles.overflowX !== "visible",
         clipsY: styles.overflowY !== "visible",
+        fixed: styles.position === "fixed",
         box: element.getBoundingClientRect(),
       };
       frames.set(element, known);
     }
     return known;
+  };
+
+  /* Every position here is a document coordinate, which is right for an image
+     that scrolls with the page: the label is pinned to the spot on the
+     document where the image sat, and the two move together.
+
+     An image fixed to the viewport does not move with the document - a banner
+     that rides along as you scroll keeps its place on screen while the page
+     runs underneath it. A document-pinned label for one slides away the moment
+     you scroll and ends up over whatever the scroll brought past, describing
+     the wrong picture. Such a label is fixed to the viewport too, at the same
+     coordinates the image holds.
+
+     Fixedness is inherited: an image inside a position: fixed element rides the
+     viewport whatever its own position says. So the image and its ancestors are
+     checked, reusing the frames already read for the clipping test above. */
+  /** @param {Element} image */
+  const ridesViewport = (image) => {
+    if (getComputedStyle(image).position === "fixed") {
+      return true;
+    }
+
+    for (
+      let parent = image.parentElement;
+      parent && parent !== document.body;
+      parent = parent.parentElement
+    ) {
+      if (frameOf(parent).fixed) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   /**
@@ -135,9 +169,13 @@
     }
 
     const { text, state } = describe(image);
+    const fixed = ridesViewport(image);
 
     const label = document.createElement("span");
     label.className = state ? `${LABEL_CLASS} ${state}` : LABEL_CLASS;
+    if (fixed) {
+      label.classList.add("kraftyAltFixed");
+    }
     label.textContent = text;
 
     /* The label shows two lines and opens the rest on hover. The same text
@@ -146,8 +184,16 @@
     label.title = text;
 
     const box = places[index];
-    label.style.left = `${box.left + originX}px`;
-    label.style.top = `${box.top + originY}px`;
+    if (fixed) {
+      /* Viewport coordinates with no scroll origin added, and position: fixed
+         from the stylesheet, so the label keeps its place on screen alongside
+         the image instead of being left where the page has scrolled past. */
+      label.style.left = `${box.left}px`;
+      label.style.top = `${box.top}px`;
+    } else {
+      label.style.left = `${box.left + originX}px`;
+      label.style.top = `${box.top + originY}px`;
+    }
 
     /* Appended to the body rather than beside the image, so the coordinates
        resolve against the document instead of whichever ancestor the page

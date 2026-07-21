@@ -763,6 +763,14 @@ $panelInset: 50px;
       z-index: 2147483647;
     }
 
+    /* A label for an image fixed to the viewport rides along with it, rather
+       than being pinned to the document and left behind the moment the page
+       scrolls. The script sets the coordinates to match; this only switches
+       what they are measured from. */
+    &.kraftyAltFixed {
+      position: fixed;
+    }
+
     &.kraftyAltMissing {
       color: $alertColor;
       font-weight: bold;

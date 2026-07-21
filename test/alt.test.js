@@ -305,6 +305,57 @@ test("alt checker", async (t) => {
     );
   });
 
+  await t.test("keeps a fixed banner's label on the banner when the page scrolls", async () => {
+    /* A label sits at the document coordinates its image had, which rides
+       with the page - right for an image that scrolls. A banner fixed to the
+       viewport does not scroll: it holds its place on screen while the page
+       runs under it, and a document-pinned label slides off it and ends up
+       over whatever the scroll brought past. Such a label is fixed too. */
+    const gap = await withPage(
+      {
+        html: `<div style="position:fixed;top:0;left:0">
+                 <img src="${PIXEL}" alt="banner" width="200" height="60"
+                      style="width:200px;height:60px">
+               </div>
+               <div style="height:3000px"></div>`,
+        checkers: ["altCheck"],
+        width: 800,
+        height: 600,
+      },
+      async (page) => {
+        /** @returns {Promise<number>} */
+        const distance = () =>
+          page.evaluate(() => {
+            const image = document.querySelector("img");
+            const label = document.querySelector(".kraftyAltContent");
+            if (!image || !label) return -1;
+
+            /* How far the label's top-left sits from the image's, on screen.
+               A label that tracks the banner keeps this constant; one left
+               behind at document coordinates grows it by the scroll. */
+            const a = image.getBoundingClientRect();
+            const b = label.getBoundingClientRect();
+            return Math.round(Math.hypot(b.left - a.left, b.top - a.top));
+          });
+
+        const before = await distance();
+        await page.evaluate(() => window.scrollTo(0, 1500));
+        const after = await distance();
+
+        return { before, after };
+      }
+    );
+
+    assert.ok(gap.before >= 0, "expected a fixed banner with a label");
+    assert.strictEqual(
+      gap.after,
+      gap.before,
+      `the label should ride the banner, but it drifted ${
+        gap.after - gap.before
+      }px on a 1500px scroll`
+    );
+  });
+
   await t.test("still separates a missing alt from a deliberately empty one", async () => {
     /* The two look identical in a browser and mean opposite things, which
        is the reason this checker exists. */
