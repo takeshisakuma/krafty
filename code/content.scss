@@ -359,6 +359,22 @@ $panelInset: 50px;
   }
 }
 
+/* --- leftovers checker --- */
+
+#js-kraftyLeftoversInformation.kraftyLeftoversInformation {
+  display: none;
+}
+
+.kraftyLeftoversChecker {
+  #js-kraftyLeftoversInformation.kraftyLeftoversInformation {
+    /* Cascaded down the top-left with the markup and image panels: the three
+       answer the same "is this ready to ship" question and are the ones most
+       likely to be open together. A corner is where a panel starts, not where
+       it stays - they are draggable. */
+    @include panel(top-left, 2);
+  }
+}
+
 /* --- image checker --- */
 
 #js-kraftyImageInformation.kraftyImageInformation {

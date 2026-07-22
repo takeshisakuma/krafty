@@ -491,6 +491,76 @@
     "message": "読み込みが終わっていないため測定できなかった画像が 1 個あります。表示領域までスクロールしてから再度実行してください。",
     "description": "Used when exactly one image was not measurable."
   },
+  "checkerLeftovers": {
+    "message": "残骸チェック",
+    "description": "Heading of the leftovers panel, and its menu label. Development leftovers a page shipped with."
+  },
+  "leftoversLocal": {
+    "message": "訪問者が到達できないローカル・プライベートアドレスを指すリソースが $count$ 個あります",
+    "description": "localhost, 127.x, a 192.168 or 10.x host, a .local name, in a src, href, srcset or action. The page's own host is not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversLocalOne": {
+    "message": "訪問者が到達できないローカル・プライベートアドレスを指すリソースが 1 個あります",
+    "description": "Used when exactly one resource points at a local or private address."
+  },
+  "leftoversMixed": {
+    "message": "https ページ上で http 読み込みしているリソースが $count$ 個あります。ブラウザにブロックされます",
+    "description": "Mixed content: an http resource on an https page. Fully decidable and already broken.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "leftoversMixedOne": {
+    "message": "https ページ上で http 読み込みしているリソースが 1 個あります。ブラウザにブロックされます",
+    "description": "Used when exactly one resource is mixed content."
+  },
+  "leftoversPlaceholder": {
+    "message": "プレースホルダ画像サービスのままの画像が $count$ 個あります",
+    "description": "placehold.co, dummyimage.com and the like: an image nobody swapped for the real one. A closed list.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "leftoversPlaceholderOne": {
+    "message": "プレースホルダ画像サービスのままの画像が 1 個あります",
+    "description": "Used when exactly one image is from a placeholder service."
+  },
+  "leftoversSectionLocal": {
+    "message": "ローカル・プライベートアドレス",
+    "description": "Heading of the section listing resources on a local or private host."
+  },
+  "leftoversLocalListLabel": {
+    "message": "訪問者は到達できません",
+    "description": "Label above the list of local and private addresses. Each row is the address, with the element's tag."
+  },
+  "leftoversSectionMixed": {
+    "message": "混在コンテンツ",
+    "description": "Heading of the section listing http resources on an https page."
+  },
+  "leftoversMixedListLabel": {
+    "message": "https ページではブロックされます",
+    "description": "Label above the list of mixed-content resources."
+  },
+  "leftoversSectionPlaceholder": {
+    "message": "プレースホルダ画像",
+    "description": "Heading of the section listing images from a placeholder service."
+  },
+  "leftoversPlaceholderListLabel": {
+    "message": "プレースホルダサービスのまま",
+    "description": "Label above the list of placeholder images."
+  },
   "checkerHeading": {
     "message": "見出しチェック",
     "description": "Heading of the heading structure panel."
@@ -763,6 +833,10 @@
     "message": "画像チェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandLeftoversCheck": {
+    "message": "残骸チェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "アウトラインチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -817,6 +891,14 @@
   },
   "manualImageBody": {
     "message": "表示領域よりかなり大きく配信されている画像と、width / height 属性の無い画像を見つけます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversTitle": {
+    "message": "残骸チェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversBody": {
+    "message": "ページが公開時に残してしまった開発時の痕跡を見つけます。訪問者が到達できないローカル・プライベートアドレスを指すリソース、https ページ上でブラウザにブロックされる http リソース、プレースホルダ画像サービスのままの画像です。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

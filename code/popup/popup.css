@@ -117,6 +117,15 @@ body {
   color: #0f766e;
 }
 
+.leftoversCheckButton {
+  border-left-color: #c2410c;
+}
+
+.leftoversCheckButton:hover:not(:disabled),
+.leftoversCheckButton.active {
+  color: #c2410c;
+}
+
 .outlineCheckButton {
   border-left-color: #70d549;
 }

@@ -36,6 +36,9 @@
     "image-check": {
       "description": "__MSG_commandImageCheck__"
     },
+    "leftovers-check": {
+      "description": "__MSG_commandLeftoversCheck__"
+    },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"
     },

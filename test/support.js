@@ -28,6 +28,7 @@ const SCRIPTS = {
   headingCheck: read("code", "js", "headingCheck.js"),
   imageCheck: read("code", "js", "imageCheck.js"),
   markupCheck: read("code", "js", "markupCheck.js"),
+  leftoversCheck: read("code", "js", "leftoversCheck.js"),
   altCheck: read("code", "js", "altCheck.js"),
   brightnessCheck: read("code", "js", "brightnessCheck.js"),
 };

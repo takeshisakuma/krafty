@@ -491,6 +491,76 @@
     "message": "1 image could not be measured, having not finished loading. Scroll it into view and run the check again.",
     "description": "Used when exactly one image was not measurable."
   },
+  "checkerLeftovers": {
+    "message": "Leftovers Check",
+    "description": "Heading of the leftovers panel, and its menu label. Development leftovers a page shipped with."
+  },
+  "leftoversLocal": {
+    "message": "$count$ resources point at a local or private address no visitor can reach",
+    "description": "localhost, 127.x, a 192.168 or 10.x host, a .local name, in a src, href, srcset or action. The page's own host is not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversLocalOne": {
+    "message": "1 resource points at a local or private address no visitor can reach",
+    "description": "Used when exactly one resource points at a local or private address."
+  },
+  "leftoversMixed": {
+    "message": "$count$ resources load over http on an https page, so the browser blocks them",
+    "description": "Mixed content: an http resource on an https page. Fully decidable and already broken.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "leftoversMixedOne": {
+    "message": "1 resource loads over http on an https page, so the browser blocks it",
+    "description": "Used when exactly one resource is mixed content."
+  },
+  "leftoversPlaceholder": {
+    "message": "$count$ images still come from a placeholder service",
+    "description": "placehold.co, dummyimage.com and the like: an image nobody swapped for the real one. A closed list.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "leftoversPlaceholderOne": {
+    "message": "1 image still comes from a placeholder service",
+    "description": "Used when exactly one image is from a placeholder service."
+  },
+  "leftoversSectionLocal": {
+    "message": "Local and private addresses",
+    "description": "Heading of the section listing resources on a local or private host."
+  },
+  "leftoversLocalListLabel": {
+    "message": "No visitor can reach these",
+    "description": "Label above the list of local and private addresses. Each row is the address, with the element's tag."
+  },
+  "leftoversSectionMixed": {
+    "message": "Mixed content",
+    "description": "Heading of the section listing http resources on an https page."
+  },
+  "leftoversMixedListLabel": {
+    "message": "Blocked on an https page",
+    "description": "Label above the list of mixed-content resources."
+  },
+  "leftoversSectionPlaceholder": {
+    "message": "Placeholder images",
+    "description": "Heading of the section listing images from a placeholder service."
+  },
+  "leftoversPlaceholderListLabel": {
+    "message": "Still from a placeholder service",
+    "description": "Label above the list of placeholder images."
+  },
   "checkerHeading": {
     "message": "Heading Check",
     "description": "Heading of the heading structure panel."
@@ -763,6 +833,10 @@
     "message": "Toggle Image Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandLeftoversCheck": {
+    "message": "Toggle Leftovers Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "Toggle Outline Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -817,6 +891,14 @@
   },
   "manualImageBody": {
     "message": "Find images served much larger than the space they are shown in, and images with no width and height attributes. Allows for high-density displays, so a correctly built retina image is not reported.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversTitle": {
+    "message": "Leftovers Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversBody": {
+    "message": "Find development leftovers a page shipped with: resources pointing at a local or private address no visitor can reach, http resources on an https page that the browser blocks, and images still coming from a placeholder service.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
