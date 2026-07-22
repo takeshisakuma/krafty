@@ -511,6 +511,60 @@ test("markup checker", async (t) => {
     assert.match(row, /a\.cart/);
   });
 
+  await t.test("reports a link that points nowhere", async () => {
+    /* An empty href or a bare # goes nowhere. A real fragment like #section
+       is an in-page jump and is left alone. */
+    const result = await check(
+      `<a href="">Empty</a>
+       <a href="#">Hash</a>
+       <a href="#section">Real jump</a>`
+    );
+
+    const dead = matchingFindings(result, /point nowhere/);
+
+    assert.strictEqual(dead.length, 1);
+    assert.match(dead[0], /\b2\b/, "the two dead ones, not the real jump");
+  });
+
+  await t.test("reports one name that leads to different places", async () => {
+    /* In a screen reader's link list the same word appears twice and goes
+       somewhere different, with nothing to tell them apart. */
+    const result = await check(
+      `<a href="/tokyo">Our office</a><a href="/osaka">Our office</a>`
+    );
+
+    assert.strictEqual(
+      matchingFindings(result, /more than one place/).length,
+      1
+    );
+  });
+
+  await t.test("accepts one name reused for the same destination", async () => {
+    /* Two links with the same text and the same href are one link written
+       twice, not a contradiction. */
+    const result = await check(
+      `<a href="/x">Home</a><a href="/x">Home</a>`
+    );
+
+    assert.strictEqual(
+      matchingFindings(result, /more than one place/).length,
+      0
+    );
+  });
+
+  await t.test("lists a vague link text without asserting it is wrong", async () => {
+    /* Whether a phrase is too vague is a judgement, so these are listed for
+       the reader rather than reported as a finding - the summary stays
+       clean. */
+    const result = await check(
+      `<a href="/a">詳細</a><a href="/b">こちら</a>`
+    );
+
+    assert.deepStrictEqual(result.findings, [], "a listing, not a finding");
+    assert.ok(result.rows.some((text) => text.includes("詳細")));
+    assert.ok(result.rows.some((text) => text.includes("こちら")));
+  });
+
   await t.test("checks again on demand, without being re-injected", async () => {
     /* The panels report the document as it stood when they ran, which is
        what the scanned-at line is about. The button is the cheap half of

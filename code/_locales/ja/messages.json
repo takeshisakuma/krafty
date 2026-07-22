@@ -295,6 +295,58 @@
     "message": "リンク・ボタンを無名にしている",
     "description": "Aside on an SVG row that is the reason its link or button has no accessible name."
   },
+  "markupLinkDead": {
+    "message": "どこにもリンクしていない（href が空か # だけの）リンクが $count$ 個あります",
+    "description": "A link whose href is empty or just # goes nowhere. A fragment like #main is a real in-page jump and is not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupLinkDeadOne": {
+    "message": "どこにもリンクしていない（href が空か # だけの）リンクが 1 個あります",
+    "description": "Used when exactly one link points nowhere."
+  },
+  "markupSectionDeadLinks": {
+    "message": "リンク先のないリンク",
+    "description": "Heading of the section listing links whose href is empty or a bare #."
+  },
+  "markupDeadLinkListLabel": {
+    "message": "どこにも遷移しません",
+    "description": "Label above the list of dead links. Each row is the link, with its text beside it."
+  },
+  "markupLinkSameText": {
+    "message": "同じテキストで複数の遷移先を持つリンクが $count$ 種類あります。リンク一覧では同じ名前が別の場所へ飛びます",
+    "description": "One accessible name pointing at several distinct addresses. A screen reader user navigating by link cannot tell them apart.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupLinkSameTextOne": {
+    "message": "同じテキストで複数の遷移先を持つリンクが 1 種類あります。リンク一覧では同じ名前が別の場所へ飛びます",
+    "description": "Used when exactly one link text is reused for different destinations."
+  },
+  "markupSectionReused": {
+    "message": "使い回されたリンクテキスト",
+    "description": "Heading of the section listing link texts used for more than one destination."
+  },
+  "markupReusedListLabel": {
+    "message": "同名で遷移先が複数",
+    "description": "Label above the list of reused link texts. Each row is the text, with how many destinations it has."
+  },
+  "markupSectionVague": {
+    "message": "確認したいリンクテキスト",
+    "description": "Heading of the section listing link texts that are vague out of context. Listed, not asserted to be wrong."
+  },
+  "markupVagueListLabel": {
+    "message": "単独では曖昧 — 判断はお任せ",
+    "description": "Label above the list of vague link texts. Whether a phrase is too vague is a judgement, so these are listed for the reader."
+  },
   "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."

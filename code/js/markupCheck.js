@@ -493,6 +493,113 @@
       (svg) => !leavesControlUnnamed(svg)
     );
 
+    /* A link that goes nowhere: an empty href, or a bare `#`. A fragment
+       like `#main` is a real in-page jump and is left alone; only `#` on its
+       own is the placeholder a build leaves behind. This is a defect for
+       everyone, not only a screen reader, so aria-hidden is not a reason to
+       skip it. */
+    const deadLinks = [...document.querySelectorAll("a[href]")].filter(
+      (link) => {
+        if (link.closest(".kraftyPanel")) {
+          return false;
+        }
+
+        const href = (link.getAttribute("href") ?? "").trim();
+
+        return href === "" || href === "#";
+      }
+    );
+
+    /* One accessible name pointing at more than one place. In a screen
+       reader's link list the same word appears twice and goes somewhere
+       different each time, with nothing to tell them apart. Grouped by the
+       name a reader hears, counting the distinct addresses under it.
+
+       hrefs are compared as written rather than resolved: about:blank has no
+       base to resolve a relative one against, which is the trap support.js
+       warns of, and the raw attribute is what the author typed anyway. The
+       nameless and the dead are the other findings' business, so both are
+       left out of this one. */
+    /** @type {Map<string, { name: string, hrefs: Set<string> }>} */
+    const named = new Map();
+
+    for (const link of document.querySelectorAll("a[href]")) {
+      if (link.closest(".kraftyPanel") || link.closest('[aria-hidden="true"]')) {
+        continue;
+      }
+
+      const name = accessibleName(link);
+      const href = (link.getAttribute("href") ?? "").trim();
+
+      if (name === "" || href === "" || href === "#") {
+        continue;
+      }
+
+      const key = name.toLowerCase();
+      const entry = named.get(key) ?? { name, hrefs: new Set() };
+      entry.hrefs.add(href);
+      named.set(key, entry);
+    }
+
+    const reused = [...named.values()]
+      .filter((entry) => entry.hrefs.size > 1)
+      .sort((a, b) => b.hrefs.size - a.hrefs.size);
+
+    /* Link text that says nothing out of the run of the page. Whether a
+       phrase is too vague is a judgement and the list of them is
+       per-language, so these are listed for the reader to weigh rather than
+       asserted to be wrong - the same treatment the head checker gives the
+       values only a person can judge. English and Japanese are checked
+       together because a page mixes them. */
+    const VAGUE = new Set([
+      "click here",
+      "here",
+      "read more",
+      "more",
+      "learn more",
+      "see more",
+      "details",
+      "detail",
+      "this",
+      "this link",
+      "link",
+      "continue reading",
+      "continue",
+      "こちら",
+      "こちらから",
+      "こちらをクリック",
+      "詳細",
+      "詳しくはこちら",
+      "もっと見る",
+      "続きを読む",
+      "続きを見る",
+      "リンク",
+      "ここ",
+      "ここをクリック",
+    ]);
+
+    /** @type {Map<string, { name: string, count: number }>} */
+    const vague = new Map();
+
+    for (const link of document.querySelectorAll("a[href]")) {
+      if (link.closest(".kraftyPanel") || link.closest('[aria-hidden="true"]')) {
+        continue;
+      }
+
+      const name = accessibleName(link);
+
+      if (name === "" || !VAGUE.has(name.toLowerCase())) {
+        continue;
+      }
+
+      const key = name.toLowerCase();
+      const entry = vague.get(key) ?? { name, count: 0 };
+      entry.count += 1;
+      vague.set(key, entry);
+    }
+
+    const vagueTexts = [...vague.values()].sort((a, b) => b.count - a.count);
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -524,6 +631,14 @@
 
     if (namelessLinks.length > 0) {
       reportText("alert", kraftyCount("markupLinkNoName", namelessLinks.length));
+    }
+
+    if (deadLinks.length > 0) {
+      reportText("alert", kraftyCount("markupLinkDead", deadLinks.length));
+    }
+
+    if (reused.length > 0) {
+      reportText("note", kraftyCount("markupLinkSameText", reused.length));
     }
 
     /* Split by weight: the svgs that leave a control unnamed are an alert,
@@ -636,6 +751,46 @@
 
           return { label, aside, asideClass: "kraftyPanelHint" };
         })
+      );
+    }
+
+    if (deadLinks.length > 0) {
+      listOf(
+        "markupSectionDeadLinks",
+        "markupDeadLinkListLabel",
+        deadLinks.map((link) => {
+          /* Its text, so the reader knows which link goes nowhere - a dead
+             link is often named, it just does not lead anywhere. */
+          const name = accessibleName(link);
+
+          return {
+            label: locate(link),
+            aside: name === "" ? undefined : name,
+            asideClass: "kraftyPanelHint",
+          };
+        })
+      );
+    }
+
+    if (reused.length > 0) {
+      listOf(
+        "markupSectionReused",
+        "markupReusedListLabel",
+        reused.map((entry) => ({
+          label: entry.name,
+          aside: `× ${entry.hrefs.size}`,
+        }))
+      );
+    }
+
+    if (vagueTexts.length > 0) {
+      listOf(
+        "markupSectionVague",
+        "markupVagueListLabel",
+        vagueTexts.map((entry) => ({
+          label: entry.name,
+          aside: entry.count > 1 ? `× ${entry.count}` : undefined,
+        }))
       );
     }
 
