@@ -55,15 +55,17 @@ showed, to fix before 0.11.0 stacks on this:
   none either produces the same string for every row, so the list says "38"
   and nothing more. A weakness in what was built, not in the check. Fix
   before release — it is small (a position, or an `href` where the parent is
-  a link).
+  a link). *Done 2026-07-22: a classless link reads its `href`, and a weakly
+  identified borrowed parent gets an `:nth-of-type` position.*
 - **Two defects of different weight are flagged as one.** `a.twitter > svg`
   is a link with no accessible name, item 11's territory and the heavier
   fault; `i.icon-blank > svg` is a decorative icon one `aria-hidden` from
   correct. All thirteen of the personal site's are the former, all links
   with only a nameless svg inside. Splitting them needs the accessible-name
   computation that item 11 builds, so it waits for 0.11.0 and rides that
-  work rather than being written twice. Until then the count and list stand,
-  honestly labelled as what they are.
+  work rather than being written twice. *Done 2026-07-22 with item 11: the
+  svg that is the only content of an unnamed control is an alert, the
+  decorative rest a note.*
 
 Two by-products of the run, both already on the list. Rakuten ships ids like
 `##GENRELINKEVENT#` — a template placeholder left unsubstituted, which is
@@ -410,8 +412,8 @@ ready.
 
 | | items |
 |---|---|
-| 0.10.0 | 19 hreflang, built · 10 inputs with no label · 21 svg |
-| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions |
+| 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions — built |
 | 0.12.0 | 20 landmarks |
 | 0.13.0 | 12 development leftovers |
 
@@ -446,12 +448,21 @@ report into, and whether 22 belongs under a checker named Markup at all.
 
 Settled for 21 on 2026-07-21, when it was built: the Markup panel, because
 the alt checker draws over the page and has no findings panel to take it.
-The same answer probably serves 22, and is not yet decided.
+Settled the same way for both 11 and 22 on 2026-07-22, when they were built:
+the Markup panel, on the grounds the checker was named for the family rather
+than for its first check, so a link or an ARIA contradiction belongs there
+as much as a duplicated id does — and the accessible-name computation the
+three share stays in one file that way.
 
 0.10.0 is code complete as of 2026-07-21 — items 19, 10 and 21 are in
 `release/0.9.0` and none of them is in the build under review. The version
 in `code/manifest.json` is still 0.9.0 and is bumped at release, per the
 rule that a version is only bumped once the previous one is live.
+
+0.11.0 is code complete as of 2026-07-22 — items 11 and 22, both in the
+Markup Checker, on the branches `feature/link-text` and
+`feature/aria-contradictions` stacked on `fix/svg-descriptor-collapse`. The
+manifest still reads 0.10.0, bumped at release by the same rule.
 
 An item keeps its number once it is written down, and is marked done where
 it stands rather than moved up. Moving one renumbers everything after it,
@@ -494,7 +505,7 @@ not promised to be one. Making it paste into `querySelector` would mean
 escaping and uniqueness work that nothing here asks for, and would invite
 it to be trusted for something it was not built for.
 
-### 11. Link text
+### 11. Link text — done
 
 Empty `href`, `href="#"`, and links whose text says only "こちら", "click
 here", "詳細" and the like: read out of context in a screen reader's link
@@ -522,6 +533,22 @@ appears in both, once for having no name and once for the svg being the
 reason. Neither should be suppressed for the other; they are the same
 defect described from the two ends, and a director fixing it needs the end
 nearest the markup.
+
+Built 2026-07-22, in the Markup Checker, in two commits. The accessible name
+came out first, in an order the note above got loose about: the ARIA
+computation reads `aria-labelledby`, then `aria-label`, then the text or an
+inner image's `alt`, then `title` — `aria-label` above the text on purpose,
+so a link labelled "Home" whose visible text is "こちら" is named rather than
+called vague. That one helper decides the nameless link or button (an
+alert), item 21's weight split, and half of item 22. The empty and `#`
+hrefs are an alert too — they fail everyone who clicks, not only a reader —
+and a `#section` fragment is left alone. One name pointing at several URLs
+is a note. The vague phrases are listed, English and Japanese together,
+because a page mixes them, and never asserted, so the summary stays clean
+over a page whose only fault is a soft one.
+
+The double-reporting question settled as the note said it should: the button
+and its svg both report, from the two ends, neither suppressed.
 
 ### 12. Development leftovers
 
@@ -897,7 +924,7 @@ The `<title>` is matched as a direct child only. A title deeper in belongs
 to a shape inside the graphic, not to the graphic — which is the same
 distinction item 8's bug got wrong, arrived at deliberately this time.
 
-### 22. Contradictions in the ARIA already there
+### 22. Contradictions in the ARIA already there — done
 
 Asked 2026-07-21, as two separate proposals — invalid ARIA attributes, and
 custom controls that cannot be focused. Both proposals as stated are
@@ -920,7 +947,16 @@ same kind of finding as a canonical pointing elsewhere or an `id` used
 twice, and it is why they are worth having when the general ARIA validation
 they were carved out of is not.
 
-### 23. Point at the flagged element on the page
+Built 2026-07-22 with item 11, in the Markup Checker. Two of the three are
+alerts — the unreachable role and the still-tabbable `aria-hidden` — and the
+positive `tabindex` a note. Where it could report correct markup it does not:
+the composite roles that a roving `tabindex` manages (radio, tab, option,
+menuitem, treeitem) are left out of the interactive-role set, since a resting
+child with no `tabindex` is right there, not wrong; and the role check wants
+no `tabindex` at all rather than a non-negative one, because a `-1` is the
+roving pattern's own spelling and the author having addressed focus. The
+`aria-hidden` check reports only the outermost, so a hidden subtree is one
+finding and not one per focusable inside it.
 
 Asked 2026-07-22. The markup and image checkers already hold the real
 elements they report — `namelessSvg`, `unlabelled`, the headerless tables,
