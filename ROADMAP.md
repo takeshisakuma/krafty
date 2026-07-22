@@ -413,7 +413,7 @@ ready.
 | | items |
 |---|---|
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
-| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions — built |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element — built |
 | 0.12.0 | 20 landmarks |
 | 0.13.0 | 12 development leftovers |
 
@@ -436,12 +436,14 @@ and is most of the work in it.
 12 is last because it is the one still undecided. Its own entry says the
 checker-or-not question waits until item 11 is built, and 11 is in 0.11.0.
 
-23 and 24 were added 2026-07-22 and are left out of the table on purpose:
-where they fall against 11, 22, 20 and 12 is not settled. What is settled is
-23 before 24 — pointing at an element is small and stands alone, isolating
-the panels is the larger job and the one 23 is built to survive. Neither is
-a check, so neither competes for the accessible-name work the accessibility
-items share; they can slot in wherever a release has room.
+23 and 24 were added 2026-07-22, left out of the table at first because where
+they fell against 11, 22, 20 and 12 was not settled. What was settled is 23
+before 24 — pointing at an element is small and stands alone, isolating the
+panels is the larger job and the one 23 is built to survive. Neither is a
+check, so neither competes for the accessible-name work the accessibility
+items share; they slot in wherever a release has room. 23 took that room in
+0.11.0 the day it was proposed, riding the link and ARIA findings it points
+at; 24 is still unplaced.
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
@@ -958,6 +960,8 @@ roving pattern's own spelling and the author having addressed focus. The
 `aria-hidden` check reports only the outermost, so a hidden subtree is one
 finding and not one per focusable inside it.
 
+### 23. Point at the flagged element on the page — done
+
 Asked 2026-07-22. The markup and image checkers already hold the real
 elements they report — `namelessSvg`, `unlabelled`, the headerless tables,
 the oversized and dimensionless images — but a row shows only the text
@@ -995,6 +999,19 @@ This eases item 21 rather than replacing it. The descriptor still has to be
 legible in the copied report, so the collapse is still worth fixing; it just
 stops being the only thing standing between a finding and the element it
 names.
+
+Built 2026-07-22, in 0.11.0, as `kraftyPointAt` in `panel.js` so the markup
+and image checkers share one implementation. Every single-element findings
+row is wired to it — the markup checker's fields, links, dead links, svgs,
+unreachable roles, focus traps and positive tabindex, and the image checker's
+oversized rows. A row that names several elements — a duplicated id, a reused
+link text — has no one thing to point at and stays inert, which decided
+against pointing from those rows rather than guessing which element they
+meant. The box went in the page from the first line, as specified, and both
+checkers drop it when the panel is rebuilt or closed so a pinned box never
+outlives its findings. The dimensionless images and the headerless tables are
+counted rather than listed, so they have no row to point from yet; when they
+grow one, it points the same way.
 
 ### 24. Panels isolated from the page's CSS
 
