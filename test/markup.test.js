@@ -616,6 +616,68 @@ test("markup checker", async (t) => {
     assert.strictEqual(matchingFindings(result, /tab sequence/).length, 1);
   });
 
+  await t.test("points at a flagged element on hover and click", async () => {
+    /* Item 23. The row's descriptor is weakest for exactly these elements,
+       so the box over the real element is the way to find it. It is drawn in
+       the page body, not the panel, so item 24's shadow roots cannot carry
+       it off. */
+    await withPage(
+      {
+        html: `<button style="width:40px;height:40px"><svg></svg></button>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) => {
+        const row = ".kraftyPanelList li.kraftyLocatable";
+
+        await page.hover(row);
+
+        const hover = await page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerHover");
+          return {
+            exists: box !== null,
+            inBody: box?.parentElement === document.body,
+            shown: box instanceof HTMLElement && box.hidden === false,
+          };
+        });
+
+        assert.ok(hover.exists, "a hover box is drawn");
+        assert.ok(hover.inBody, "in the page body, not inside a panel");
+        assert.ok(hover.shown, "and shown while the row is hovered");
+
+        await page.click(row);
+
+        const pinned = await page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerPin");
+          return {
+            exists: box !== null,
+            inBody: box?.parentElement === document.body,
+          };
+        });
+
+        assert.ok(pinned.exists && pinned.inBody, "clicking pins a box");
+      }
+    );
+  });
+
+  await t.test("does not offer to point at a row naming several elements", async () => {
+    /* A duplicated id names every element that carries it, so there is no
+       single thing to point at. The row stays inert. */
+    const locatable = await withPage(
+      {
+        html: `<div id="d"></div><div id="d"></div>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) =>
+        page.evaluate(() =>
+          [...document.querySelectorAll(".kraftyPanelList li")].map((li) =>
+            li.classList.contains("kraftyLocatable")
+          )
+        )
+    );
+
+    assert.deepStrictEqual(locatable, [false]);
+  });
+
   await t.test("checks again on demand, without being re-injected", async () => {
     /* The panels report the document as it stood when they ran, which is
        what the scanned-at line is about. The button is the cheap half of

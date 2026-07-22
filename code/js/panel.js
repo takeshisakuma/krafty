@@ -354,6 +354,109 @@
     };
   };
 
+  /* Point at the flagged element on the page (item 23).
+
+     A row shows the descriptor `locate()` builds - `a > svg`,
+     `input[type="tel"]` - which is weakest for exactly the elements these
+     checks flag, the ones whose whole fault is having no identifier of their
+     own. Drawing a box over the real element sidesteps that: hover a row to
+     preview it, click to scroll to it and pin the box. The descriptor stays,
+     because it is what the copy button puts in a ticket, where there is no
+     page to point at.
+
+     The box is an overlay positioned in document coordinates and appended to
+     the body, not to a panel. So it never moves or restyles the page element
+     the way an `outline` on the element itself would, and item 24's
+     shadow-rooted panels cannot carry it off. The coordinates are the
+     element's position in the document (rect plus scroll), which does not
+     change as the page scrolls, so the box stays glued to the element
+     through the travel and after it - the same reasoning as the alt labels,
+     and the same snapshot limitation if the page reflows. */
+
+  const HOVER_BOX = "js-kraftyPointerHover";
+  const PIN_BOX = "js-kraftyPointerPin";
+
+  /**
+   * @param {string} id
+   * @param {string} className
+   * @returns {HTMLElement}
+   */
+  const overlayBox = (id, className) => {
+    const existing = document.getElementById(id);
+
+    if (existing instanceof HTMLElement) {
+      return existing;
+    }
+
+    const box = document.createElement("div");
+    box.id = id;
+    box.className = className;
+    box.hidden = true;
+    document.body.appendChild(box);
+    return box;
+  };
+
+  /**
+   * @param {HTMLElement} box
+   * @param {Element} target
+   */
+  const placeBox = (box, target) => {
+    const rect = target.getBoundingClientRect();
+
+    /* A display:none or unrendered target has no box to point at. */
+    if (rect.width === 0 && rect.height === 0) {
+      box.hidden = true;
+      return;
+    }
+
+    box.style.left = `${rect.left + window.scrollX}px`;
+    box.style.top = `${rect.top + window.scrollY}px`;
+    box.style.width = `${rect.width}px`;
+    box.style.height = `${rect.height}px`;
+    box.hidden = false;
+  };
+
+  /**
+   * Wire a findings row to the page element it names: hover previews, click
+   * travels. A row with no locatable element - a duplicated id names several,
+   * a reused link text as many - simply does not call this and stays inert.
+   *
+   * @param {HTMLElement} row
+   * @param {Element} target
+   */
+  globalThis.kraftyPointAt = (row, target) => {
+    row.classList.add("kraftyLocatable");
+
+    row.addEventListener("pointerenter", () => {
+      placeBox(overlayBox(HOVER_BOX, "kraftyPointerBox"), target);
+    });
+
+    row.addEventListener("pointerleave", () => {
+      const box = document.getElementById(HOVER_BOX);
+      if (box) {
+        box.hidden = true;
+      }
+    });
+
+    row.addEventListener("click", (event) => {
+      /* A row may hold a copy button; a press on it is a copy, not a travel.
+         The copy button also stops the event, so this is belt and braces. */
+      if (event.target instanceof Element && event.target.closest("button, a")) {
+        return;
+      }
+
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      placeBox(overlayBox(PIN_BOX, "kraftyPointerBox kraftyPointerPin"), target);
+    });
+  };
+
+  /* Drop both boxes. Called when a panel is (re)built or closed, so a pinned
+     box does not outlive the findings it belonged to. */
+  globalThis.kraftyClearPointer = () => {
+    document.getElementById(HOVER_BOX)?.remove();
+    document.getElementById(PIN_BOX)?.remove();
+  };
+
   /**
    * Build an empty panel. Callers fill the returned body.
    *

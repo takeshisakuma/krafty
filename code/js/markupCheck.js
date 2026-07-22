@@ -255,6 +255,9 @@
      which is why the toggle is not part of it. */
   const run = () => {
     document.getElementById(PANEL_ID)?.remove();
+    /* A pinned pointer box belongs to the last scan; the rows about to be
+       rebuilt are its only way home, so it goes with them. */
+    kraftyClearPointer();
 
     /* --- reading the document --- */
 
@@ -738,6 +741,7 @@
       onRescan: run,
       onClose: () => {
         panel.remove();
+        kraftyClearPointer();
         /* Drop the class too, or the popup would keep showing this checker
            as active with nothing on screen. */
         document.body.classList.remove(BODY_CLASS);
@@ -810,9 +814,13 @@
        accessibility checks arrived wanting the same shape; a third copy is
        what usually gets one of them subtly wrong.
 
+       A row that carries an `element` can point at it on the page (item 23);
+       one that names several - a duplicated id, a reused link text - leaves
+       it off, because there is no single thing to point at.
+
        @param {string} sectionKey
        @param {string} labelKey
-       @param {{ label: string, aside?: string, asideClass?: string }[]} rows */
+       @param {{ label: string, aside?: string, asideClass?: string, element?: Element }[]} rows */
     const listOf = (sectionKey, labelKey, rows) => {
       const section = kraftySection(body, sectionKey);
 
@@ -843,6 +851,10 @@
           aside.className = row.asideClass ?? "kraftyPanelCount";
           aside.textContent = row.aside;
           item.appendChild(aside);
+        }
+
+        if (row.element) {
+          kraftyPointAt(item, row.element);
         }
 
         list.appendChild(item);
@@ -880,6 +892,7 @@
             label: locate(field),
             aside: placeholder === "" ? undefined : placeholder,
             asideClass: "kraftyPanelHint",
+            element: field,
           };
         })
       );
@@ -899,7 +912,7 @@
           const aside =
             href !== "" && !label.includes(href) ? href : undefined;
 
-          return { label, aside, asideClass: "kraftyPanelHint" };
+          return { label, aside, asideClass: "kraftyPanelHint", element };
         })
       );
     }
@@ -917,6 +930,7 @@
             label: locate(link),
             aside: name === "" ? undefined : name,
             asideClass: "kraftyPanelHint",
+            element: link,
           };
         })
       );
@@ -952,8 +966,9 @@
           label: locate(svg),
           aside: kraftyMessage("markupSvgControlTag"),
           asideClass: "kraftyPanelHint",
+          element: svg,
         })),
-        ...svgDecorative.map((svg) => ({ label: locate(svg) })),
+        ...svgDecorative.map((svg) => ({ label: locate(svg), element: svg })),
       ]);
     }
 
@@ -965,6 +980,7 @@
           label: locate(element),
           aside: (element.getAttribute("role") ?? "").trim(),
           asideClass: "kraftyPanelHint",
+          element,
         }))
       );
     }
@@ -973,7 +989,10 @@
       listOf(
         "markupSectionHiddenFocus",
         "markupHiddenFocusListLabel",
-        hiddenFocusable.map((element) => ({ label: locate(element) }))
+        hiddenFocusable.map((element) => ({
+          label: locate(element),
+          element,
+        }))
       );
     }
 
@@ -985,6 +1004,7 @@
           label: locate(element),
           aside: `tabindex=${element.getAttribute("tabindex")}`,
           asideClass: "kraftyPanelHint",
+          element,
         }))
       );
     }

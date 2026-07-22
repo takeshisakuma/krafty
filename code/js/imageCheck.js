@@ -46,6 +46,9 @@
      which is why the toggle is not part of it. */
   const run = () => {
     document.getElementById(PANEL_ID)?.remove();
+    /* A pinned pointer box belongs to the last scan; the rows about to be
+       rebuilt are its only way home. */
+    kraftyClearPointer();
 
     /* --- the rules --- */
 
@@ -62,7 +65,7 @@
        pixels the panel fills up with sprites and spacer images. */
     const MIN_WASTED_PIXELS = 200;
 
-    /** @type {{ src: string, natural: string, shown: string, ratio: number }[]} */
+    /** @type {{ src: string, natural: string, shown: string, ratio: number, element: HTMLImageElement }[]} */
     const oversized = [];
     let missingDimensions = 0;
     let unmeasured = 0;
@@ -108,6 +111,7 @@
           natural: `${image.naturalWidth}×${image.naturalHeight}`,
           shown: `${shownWidth}×${shownHeight}`,
           ratio,
+          element: image,
         });
       }
     }
@@ -124,6 +128,7 @@
       onRescan: run,
       onClose: () => {
         panel.remove();
+        kraftyClearPointer();
         /* Drop the class too, or the popup would keep showing this checker as
            active with nothing on screen. */
         document.body.classList.remove(BODY_CLASS);
@@ -193,6 +198,11 @@
         item.appendChild(
           kraftyCopyButton(kraftyMessage("copyValue", ["src"]), () => entry.src)
         );
+
+        /* Point at the image on the page: hover to preview, click to travel.
+           The copy button stops its own click, so pressing it does not also
+           scroll the page. */
+        kraftyPointAt(item, entry.element);
 
         list.appendChild(item);
       }

@@ -219,6 +219,17 @@ $panelInset: 50px;
     border-bottom: 1px solid #eee;
   }
 
+  /* A row that can point at its element on the page (item 23). The cursor and
+     the hover tint are the whole affordance - the box itself is drawn over
+     the page, not in here. */
+  .kraftyLocatable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f4f6f8;
+    }
+  }
+
   .kraftyPanelCount {
     color: #666;
     white-space: nowrap;
@@ -806,5 +817,35 @@ $panelInset: 50px;
     /* The page underneath stays usable: this is a viewing mode, not a
        modal. */
     pointer-events: none;
+  }
+}
+
+/* --- pointing at a flagged element (item 23) --- */
+
+/* Drawn over the page, not inside a panel, so these are top-level rather than
+   nested under a checker. The box marks the element a findings row names; a
+   light one follows the pointer down the list, a stronger one stays where a
+   click sent the page. */
+.kraftyPointerBox {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 2px solid $alertColor;
+  border-radius: 2px;
+
+  /* Above the page, below the panels and the alt labels: the box shows over
+     the content it marks without covering the panel that sent you to it. */
+  z-index: 2147483644;
+
+  /* A pale halo so the outline reads against a dark background as well as a
+     light one, the same problem the alt labels solve with a shadow. */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.65);
+
+  &.kraftyPointerPin {
+    border-width: 3px;
+    background-color: rgba(255, 0, 0, 0.08);
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.65),
+      0 0 8px 2px rgba(255, 0, 0, 0.35);
   }
 }
