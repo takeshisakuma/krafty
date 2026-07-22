@@ -161,6 +161,82 @@
     return `${context.text}${position} > ${self.text}`;
   };
 
+  /* Links and buttons, native and by role. The name check and item 21's
+     weight split both ask "is this the control that the nameless thing sits
+     inside", and both mean the same four things by a control. A bare `<a>`
+     with no href is not one - it is a target or a fragment of script, not
+     something a screen reader lists as a link - so href is required. */
+  const INTERACTIVE = 'a[href], button, [role="link"], [role="button"]';
+
+  /** The text an element offers as its own name: its text, or, when it has
+     none, the alt of an image inside it. An icon link is the case that
+     matters - `<a href><img alt="Home"></a>` is named by the picture, and
+     `<a href><svg></svg></a>` is named by nothing.
+     @param {Element} element */
+  const ownText = (element) => {
+    const text = (element.textContent ?? "").replace(/\s+/g, " ").trim();
+
+    if (text !== "") {
+      return text;
+    }
+
+    for (const image of element.querySelectorAll("img")) {
+      const alt = (image.getAttribute("alt") ?? "").trim();
+
+      if (alt !== "") {
+        return alt;
+      }
+    }
+
+    return "";
+  };
+
+  /** What a screen reader would read out for an element, or "" when it would
+     read nothing. Enough of the accessible name computation to tell a named
+     control from a nameless one, in precedence order - aria-labelledby that
+     resolves, aria-label, the element's own text, then title - and not the
+     whole ARIA algorithm, which this project has no business half-doing.
+
+     aria-label is above the text on purpose: a link labelled "Home" whose
+     visible text is "こちら" is named, and reading the text first would call
+     it vague when it is not. A labelledby that resolves to nothing falls
+     through, the same failure the field check looks for.
+
+     @param {Element} element */
+  const accessibleName = (element) => {
+    const labelledBy = (element.getAttribute("aria-labelledby") ?? "").trim();
+
+    if (labelledBy !== "") {
+      const named = labelledBy
+        .split(/\s+/)
+        .map((id) =>
+          (document.getElementById(id)?.textContent ?? "")
+            .replace(/\s+/g, " ")
+            .trim()
+        )
+        .filter(Boolean)
+        .join(" ");
+
+      if (named !== "") {
+        return named;
+      }
+    }
+
+    const label = (element.getAttribute("aria-label") ?? "").trim();
+
+    if (label !== "") {
+      return label;
+    }
+
+    const text = ownText(element);
+
+    if (text !== "") {
+      return text;
+    }
+
+    return (element.getAttribute("title") ?? "").trim();
+  };
+
   /* Everything below runs again when the panel's rescan button is pressed,
      which is why the toggle is not part of it. */
   const run = () => {
@@ -379,6 +455,44 @@
       return (title?.textContent ?? "").trim() === "";
     });
 
+    /* A link or button a screen reader would announce as nothing. The icon
+       button is where this lives: a `<button>` or `<a href>` holding only an
+       svg is silent and looks finished. aria-hidden ones are skipped, the
+       same as the svgs above - one removed from the accessibility tree is
+       not announced at all, so a missing name on it reaches nobody either
+       way, and item 22 is where that contradiction belongs. */
+    const namelessLinks = [
+      ...document.querySelectorAll(INTERACTIVE),
+    ].filter((element) => {
+      if (element.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      if (element.closest('[aria-hidden="true"]')) {
+        return false;
+      }
+
+      return accessibleName(element) === "";
+    });
+
+    /* Item 21's weight split, which waited for this computation. A nameless
+       svg that is the only content of a control is the reason that control
+       has no name - the heavier fault, item 11's from the other end - while
+       one that is merely undeclared decoration is a note. The same svg
+       appears here and in namelessLinks by design: the two are one defect
+       seen from the markup and from the reader, and a director fixing it
+       wants both. */
+    /** @param {Element} svg */
+    const leavesControlUnnamed = (svg) => {
+      const control = svg.closest(INTERACTIVE);
+      return control !== null && accessibleName(control) === "";
+    };
+
+    const svgUnnamedControl = namelessSvg.filter(leavesControlUnnamed);
+    const svgDecorative = namelessSvg.filter(
+      (svg) => !leavesControlUnnamed(svg)
+    );
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -408,8 +522,22 @@
       reportText("note", kraftyCount("markupInputNoLabel", unlabelled.length));
     }
 
-    if (namelessSvg.length > 0) {
-      reportText("note", kraftyCount("markupSvgNoName", namelessSvg.length));
+    if (namelessLinks.length > 0) {
+      reportText("alert", kraftyCount("markupLinkNoName", namelessLinks.length));
+    }
+
+    /* Split by weight: the svgs that leave a control unnamed are an alert,
+       the decorative rest a note. Reported as two findings so the count a
+       reader acts on first is separated from the count they may leave. */
+    if (svgUnnamedControl.length > 0) {
+      reportText(
+        "alert",
+        kraftyCount("markupSvgUnnamedControl", svgUnnamedControl.length)
+      );
+    }
+
+    if (svgDecorative.length > 0) {
+      reportText("note", kraftyCount("markupSvgNoName", svgDecorative.length));
     }
 
     /** A titled section holding a list of rows, each a label and an optional
@@ -492,12 +620,36 @@
       );
     }
 
-    if (namelessSvg.length > 0) {
+    if (namelessLinks.length > 0) {
       listOf(
-        "markupSectionSvg",
-        "markupSvgListLabel",
-        namelessSvg.map((svg) => ({ label: locate(svg) }))
+        "markupSectionLinks",
+        "markupLinkListLabel",
+        namelessLinks.map((element) => {
+          const label = locate(element);
+          const href = (element.getAttribute("href") ?? "").trim();
+
+          /* The address is what a nameless link is otherwise mute about, so
+             it is worth showing - unless the label already carries it, which
+             it does for a link that had nothing else to be named by. */
+          const aside =
+            href !== "" && !label.includes(href) ? href : undefined;
+
+          return { label, aside, asideClass: "kraftyPanelHint" };
+        })
       );
+    }
+
+    if (namelessSvg.length > 0) {
+      /* The heavier ones first, each tagged with why it is heavier: it is
+         the reason a link or button next to it has no name. */
+      listOf("markupSectionSvg", "markupSvgListLabel", [
+        ...svgUnnamedControl.map((svg) => ({
+          label: locate(svg),
+          aside: kraftyMessage("markupSvgControlTag"),
+          asideClass: "kraftyPanelHint",
+        })),
+        ...svgDecorative.map((svg) => ({ label: locate(svg) })),
+      ]);
     }
 
     const scanned = document.createElement("div");

@@ -255,6 +255,46 @@
     "message": "1 inline SVG is neither named nor hidden, so how it is announced depends on the screen reader",
     "description": "Used when exactly one SVG is neither named nor hidden."
   },
+  "markupSectionLinks": {
+    "message": "The links",
+    "description": "Heading of the section listing links and buttons with no accessible name."
+  },
+  "markupLinkListLabel": {
+    "message": "Nothing names them",
+    "description": "Label above the list of links and buttons with no accessible name. A link's address is shown beside it."
+  },
+  "markupLinkNoName": {
+    "message": "$count$ links or buttons have no accessible name, so a screen reader announces only their role",
+    "description": "No text, no aria-label, no aria-labelledby that resolves, no alt on an image inside, and no title. The icon-only button is the usual case.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupLinkNoNameOne": {
+    "message": "1 link or button has no accessible name, so a screen reader announces only its role",
+    "description": "Used when exactly one link or button has no accessible name."
+  },
+  "markupSvgUnnamedControl": {
+    "message": "$count$ inline SVGs are the only content of a link or button, leaving it unnamed",
+    "description": "The heavier half of the SVG finding: the svg is the reason its containing link or button has no accessible name.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupSvgUnnamedControlOne": {
+    "message": "1 inline SVG is the only content of a link or button, leaving it unnamed",
+    "description": "Used when exactly one SVG leaves its control unnamed."
+  },
+  "markupSvgControlTag": {
+    "message": "leaves a control unnamed",
+    "description": "Aside on an SVG row that is the reason its link or button has no accessible name."
+  },
   "checkerImage": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."

@@ -271,9 +271,11 @@ test("markup checker", async (t) => {
   });
 
   await t.test("lists the svgs that were counted", async () => {
+    /* The button is named so this stays a test of the svg list; a nameless
+       one is item 11's business, covered on its own below. */
     const result = await check(
       `<svg class="icon-cart"></svg>
-       <button class="menu"><svg></svg></button>`
+       <button class="menu" aria-label="Menu"><svg></svg></button>`
     );
 
     assert.deepStrictEqual(result.rows, [
@@ -286,10 +288,12 @@ test("markup checker", async (t) => {
     /* Item 21's collapse, measured: a nameless svg inside a link with no
        class of its own, eight of them, all `a > svg`. The href is the one
        identifier such a link still carries, and it is what the copied report
-       needs to point at one row rather than at "eight". */
+       needs to point at one row rather than at "eight". The links are named
+       here so this stays a test of the descriptor; the nameless case is item
+       11's, below. */
     const result = await check(
-      `<a href="/twitter"><svg></svg></a>
-       <a href="/facebook"><svg></svg></a>`
+      `<a href="/twitter">Twitter <svg></svg></a>
+       <a href="/facebook">Facebook <svg></svg></a>`
     );
 
     assert.deepStrictEqual(result.rows, [
@@ -416,6 +420,95 @@ test("markup checker", async (t) => {
     );
 
     assert.strictEqual(matchingFindings(result, /SVG/).length, 1);
+  });
+
+  await t.test("reports a link with no accessible name", async () => {
+    /* An icon link - an svg and nothing else inside an `a href` - is silent
+       and looks finished. A screen reader announces "link" and stops. */
+    const result = await check(`<a href="/cart"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("reports a button that is only an icon", async () => {
+    const result = await check(`<button><svg></svg></button>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("accepts every route to a link or button's name", async () => {
+    /* Text, aria-label, an aria-labelledby that resolves, the alt of an
+       image inside, or title. One is enough. */
+    const result = await check(
+      `<a href="/a">Home</a>
+       <a href="/b" aria-label="Search"><svg></svg></a>
+       <span id="ln">Cart</span><a href="/c" aria-labelledby="ln"><svg></svg></a>
+       <a href="/d"><img src="i.png" alt="Basket"></a>
+       <button title="Menu"><svg></svg></button>
+       <button>Send</button>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+  });
+
+  await t.test("honours aria-label over text a link cannot read", async () => {
+    /* A labelled icon link is named, and its svg is decoration rather than
+       the reason the link is unnamed - so no alert on either end. */
+    const result = await check(`<a href="/x" aria-label="Home"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 0);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+  });
+
+  await t.test("leaves an aria-hidden link alone", async () => {
+    /* Removed from the accessibility tree, it is announced as nothing at
+       all, so a missing name on it reaches nobody. */
+    const result = await check(`<a href="/x" aria-hidden="true"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+  });
+
+  await t.test("splits svgs by whether they leave a control unnamed", async () => {
+    /* Item 21's weight split. The svg inside a nameless link is the reason
+       it has no name - the heavier fault, an alert - while the one in a
+       plain `<i>` is undeclared decoration, a note. */
+    const result = await check(
+      `<a href="/x"><svg></svg></a>
+       <i class="deco"><svg></svg></i>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 1);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+    /* And the link itself is reported from the other end. */
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("a named button's icon is decoration, not the reason", async () => {
+    const result = await check(`<button aria-label="Menu"><svg></svg></button>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 0);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+  });
+
+  await t.test("lists a nameless link with its address", async () => {
+    /* The address is what a nameless link is otherwise mute about. */
+    const result = await check(`<a class="cart" href="/basket"><svg></svg></a>`);
+
+    const row = result.rows.find((text) => text.includes("/basket"));
+
+    assert.ok(row, "the link is listed with its address");
+    assert.match(row, /a\.cart/);
   });
 
   await t.test("checks again on demand, without being re-injected", async () => {

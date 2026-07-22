@@ -255,6 +255,46 @@
     "message": "名前も aria-hidden も無いインライン SVG が 1 個あります。読み上げ方がスクリーンリーダー任せになります",
     "description": "Used when exactly one SVG is neither named nor hidden."
   },
+  "markupSectionLinks": {
+    "message": "該当するリンク・ボタン",
+    "description": "Heading of the section listing links and buttons with no accessible name."
+  },
+  "markupLinkListLabel": {
+    "message": "名前を持たないもの",
+    "description": "Label above the list of links and buttons with no accessible name. A link's address is shown beside it."
+  },
+  "markupLinkNoName": {
+    "message": "アクセシブルな名前を持たないリンク・ボタンが $count$ 個あります。スクリーンリーダーは役割しか読み上げません",
+    "description": "No text, no aria-label, no aria-labelledby that resolves, no alt on an image inside, and no title. The icon-only button is the usual case.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupLinkNoNameOne": {
+    "message": "アクセシブルな名前を持たないリンク・ボタンが 1 個あります。スクリーンリーダーは役割しか読み上げません",
+    "description": "Used when exactly one link or button has no accessible name."
+  },
+  "markupSvgUnnamedControl": {
+    "message": "リンクやボタンの唯一の中身になっていて、それを無名にしているインライン SVG が $count$ 個あります",
+    "description": "The heavier half of the SVG finding: the svg is the reason its containing link or button has no accessible name.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupSvgUnnamedControlOne": {
+    "message": "リンクやボタンの唯一の中身になっていて、それを無名にしているインライン SVG が 1 個あります",
+    "description": "Used when exactly one SVG leaves its control unnamed."
+  },
+  "markupSvgControlTag": {
+    "message": "リンク・ボタンを無名にしている",
+    "description": "Aside on an SVG row that is the reason its link or button has no accessible name."
+  },
   "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."
