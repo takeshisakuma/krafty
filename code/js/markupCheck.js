@@ -48,30 +48,59 @@
     return;
   }
 
-  /** Enough of an element to find it again on the page, and no more.
-
-     A duplicated id names itself, which is why that list needed none of
-     this. An unlabelled field and a nameless icon are the opposite: what is
-     wrong with them is precisely that they have nothing to be called. So
-     the row has to be built out of whatever the element does carry, in the
-     order of how much it narrows things down.
-
-     This is not a selector and is not promised to be one. It is a label to
-     read, and writing it to be pasted into querySelector would mean
-     escaping and uniqueness work that nothing here asks for.
+  /** The element's index among its like siblings, as an `:nth-of-type`, or
+     nothing when it stands alone. It is a position to tell one of a row of
+     identical elements from the next, so a single one - where there is
+     nothing to tell it from - gets no suffix and stays clean.
 
      @param {Element} element */
-  const descriptor = (element) => {
+  const positionOf = (element) => {
+    const parent = element.parentElement;
+
+    if (!parent) {
+      return "";
+    }
+
+    const kin = [...parent.children].filter(
+      (child) => child.localName === element.localName
+    );
+
+    return kin.length > 1
+      ? `:nth-of-type(${kin.indexOf(element) + 1})`
+      : "";
+  };
+
+  /** The strongest identifier an element carries on its own, and whether it
+     is strong enough to name one element by itself.
+
+     An id, a name, or a link's href points at a single element; a shared
+     class or a bare tag can be the same string for a whole row of siblings.
+     That difference is what item 21 measured: `a > svg` and
+     `i.icon-blank > svg`, repeated identically down a list until the count
+     was all it said. A weak identifier is one that wants a position beside
+     it when it is borrowed as another element's context; a strong one does
+     not, and gets none so the common case stays legible.
+
+     A link's href is here because it is the one thing a nameless icon link
+     still carries - `<a href="/twitter"><svg></svg></a>` has nothing else -
+     and it is read only for a link with no class, so a classed link keeps
+     its class, which usually reads better than a URL.
+
+     None of this is a selector, and none of it is promised to be one.
+
+     @param {Element} element
+     @returns {{ text: string, weak: boolean, bare: boolean }} */
+  const identify = (element) => {
     const tag = element.localName;
 
     if (element.id !== "") {
-      return `${tag}#${element.id}`;
+      return { text: `${tag}#${element.id}`, weak: false, bare: false };
     }
 
     const name = element.getAttribute("name");
 
     if (name) {
-      return `${tag}[name="${name}"]`;
+      return { text: `${tag}[name="${name}"]`, weak: false, bare: false };
     }
 
     /* Not the checker's own classes; those say nothing about the page. */
@@ -80,34 +109,56 @@
     );
 
     if (className) {
-      return `${tag}.${className}`;
+      return { text: `${tag}.${className}`, weak: true, bare: false };
+    }
+
+    if (
+      element instanceof HTMLAnchorElement ||
+      element instanceof HTMLAreaElement
+    ) {
+      const href = element.getAttribute("href");
+
+      if (href) {
+        return { text: `${tag}[href="${href}"]`, weak: false, bare: false };
+      }
     }
 
     const type = element.getAttribute("type");
 
     if (type) {
-      return `${tag}[type="${type}"]`;
+      return { text: `${tag}[type="${type}"]`, weak: true, bare: false };
     }
 
-    return tag;
+    return { text: tag, weak: true, bare: true };
   };
 
-  /** A bare tag on its own - `input`, `svg` - is no help at all on a page
-     with forty of them, so borrow the parent's identity when the element
-     has none of its own.
+  /** A label to find the element again on the page, and no more.
+
+     An element that names itself is named by itself. One with nothing -
+     `input`, `svg` - is no help at all on a page with forty of them, so it
+     borrows the parent's identity. Where that borrowed identity is weak - a
+     shared class, a bare tag - a position is added, because it is the same
+     string for every sibling otherwise, which is exactly item 21's collapse.
+     A strong parent identity (an href, an id) is left to stand on its own.
+
      @param {Element} element */
   const locate = (element) => {
-    const own = descriptor(element);
+    const self = identify(element);
 
-    if (own !== element.localName) {
-      return own;
+    if (!self.bare) {
+      return self.text;
     }
 
     const parent = element.parentElement;
 
-    return parent && parent !== document.body
-      ? `${descriptor(parent)} > ${own}`
-      : own;
+    if (!parent || parent === document.body) {
+      return self.text;
+    }
+
+    const context = identify(parent);
+    const position = context.weak ? positionOf(parent) : "";
+
+    return `${context.text}${position} > ${self.text}`;
   };
 
   /* Everything below runs again when the panel's rescan button is pressed,

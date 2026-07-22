@@ -282,6 +282,63 @@ test("markup checker", async (t) => {
     ]);
   });
 
+  await t.test("tells a row of identical icons apart", async () => {
+    /* Item 21's collapse, measured: a nameless svg inside a link with no
+       class of its own, eight of them, all `a > svg`. The href is the one
+       identifier such a link still carries, and it is what the copied report
+       needs to point at one row rather than at "eight". */
+    const result = await check(
+      `<a href="/twitter"><svg></svg></a>
+       <a href="/facebook"><svg></svg></a>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      'a[href="/twitter"] > svg',
+      'a[href="/facebook"] > svg',
+    ]);
+  });
+
+  await t.test("positions icons a shared class cannot separate", async () => {
+    /* The other half of the collapse: `i.icon-blank > svg` repeated, where
+       the class is real but identical down the row. A class is a weak
+       identifier when it is borrowed as an svg's context, so the sibling
+       position is added to keep the rows distinct. */
+    const result = await check(
+      `<span>
+         <i class="icon"><svg></svg></i>
+         <i class="icon"><svg></svg></i>
+         <i class="icon"><svg></svg></i>
+       </span>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "i.icon:nth-of-type(1) > svg",
+      "i.icon:nth-of-type(2) > svg",
+      "i.icon:nth-of-type(3) > svg",
+    ]);
+  });
+
+  await t.test("leaves a lone borrowed identity unpositioned", async () => {
+    /* A position tells one sibling from the next; with a single icon there
+       is nothing to tell it from, so the suffix would be noise. */
+    const result = await check(`<i class="icon"><svg></svg></i>`);
+
+    assert.deepStrictEqual(result.rows, ["i.icon > svg"]);
+  });
+
+  await t.test("positions icons whose link has nothing at all", async () => {
+    /* No class and no href either - a link built as a button. The bare tag
+       is as weak as a shared class, so it is positioned the same way. */
+    const result = await check(
+      `<nav><a><svg></svg></a><a><svg></svg></a></nav>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "a:nth-of-type(1) > svg",
+      "a:nth-of-type(2) > svg",
+    ]);
+  });
+
   await t.test("never builds a row out of its own classes", async () => {
     /* Every panel element carries a krafty class. A row labelled with one
        would be describing the checker rather than the page. */
