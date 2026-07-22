@@ -55,15 +55,17 @@ showed, to fix before 0.11.0 stacks on this:
   none either produces the same string for every row, so the list says "38"
   and nothing more. A weakness in what was built, not in the check. Fix
   before release — it is small (a position, or an `href` where the parent is
-  a link).
+  a link). *Done 2026-07-22: a classless link reads its `href`, and a weakly
+  identified borrowed parent gets an `:nth-of-type` position.*
 - **Two defects of different weight are flagged as one.** `a.twitter > svg`
   is a link with no accessible name, item 11's territory and the heavier
   fault; `i.icon-blank > svg` is a decorative icon one `aria-hidden` from
   correct. All thirteen of the personal site's are the former, all links
   with only a nameless svg inside. Splitting them needs the accessible-name
   computation that item 11 builds, so it waits for 0.11.0 and rides that
-  work rather than being written twice. Until then the count and list stand,
-  honestly labelled as what they are.
+  work rather than being written twice. *Done 2026-07-22 with item 11: the
+  svg that is the only content of an unnamed control is an alert, the
+  decorative rest a note.*
 
 Two by-products of the run, both already on the list. Rakuten ships ids like
 `##GENRELINKEVENT#` — a template placeholder left unsubstituted, which is
@@ -410,10 +412,10 @@ ready.
 
 | | items |
 |---|---|
-| 0.10.0 | 19 hreflang, built · 10 inputs with no label · 21 svg |
-| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions |
+| 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
 | 0.12.0 | 20 landmarks |
-| 0.13.0 | 12 development leftovers |
+| 0.13.0 | 12 the rest — the staging/dummy listings, and inline console.log if ever |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -431,20 +433,50 @@ the same icon button found from both ends — gets settled once, there.
 read rather than a list of findings, which is item 6's design over again
 and is most of the work in it.
 
-12 is last because it is the one still undecided. Its own entry says the
-checker-or-not question waits until item 11 is built, and 11 is in 0.11.0.
+12 was last because it was the one still undecided: the checker-or-not
+question waited until item 11 was built. With 11 built, its decidable half —
+resource addresses — was pulled forward into 0.11.0 as a checker of its own,
+the Leftovers checker, on the reasoning that a localhost URL is a deployment
+leftover rather than markup wrong in a way the page hides, so the Markup
+family would have had to stretch to hold it. What is left of 12 is the
+judgement half — staging hostnames and dummy text, listed not asserted — and
+inline console.log, which the entry below still argues is barely worth the
+reach; those keep 0.13.0, if they are done at all.
+
+23 and 24 were added 2026-07-22, left out of the table at first because where
+they fell against 11, 22, 20 and 12 was not settled. What was settled is 23
+before 24 — pointing at an element is small and stands alone, isolating the
+panels is the larger job and the one 23 is built to survive. Neither is a
+check, so neither competes for the accessible-name work the accessibility
+items share; they slot in wherever a release has room. 23 took that room in
+0.11.0 the day it was proposed, riding the link and ARIA findings it points
+at; 24 is still unplaced.
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
 
 Settled for 21 on 2026-07-21, when it was built: the Markup panel, because
 the alt checker draws over the page and has no findings panel to take it.
-The same answer probably serves 22, and is not yet decided.
+Settled the same way for both 11 and 22 on 2026-07-22, when they were built:
+the Markup panel, on the grounds the checker was named for the family rather
+than for its first check, so a link or an ARIA contradiction belongs there
+as much as a duplicated id does — and the accessible-name computation the
+three share stays in one file that way.
 
 0.10.0 is code complete as of 2026-07-21 — items 19, 10 and 21 are in
 `release/0.9.0` and none of them is in the build under review. The version
 in `code/manifest.json` is still 0.9.0 and is bumped at release, per the
 rule that a version is only bumped once the previous one is live.
+
+0.11.0 is code complete as of 2026-07-22 — items 11 and 22 in the Markup
+Checker, item 23 shared across the markup and image panels, and item 12's
+resource subset as a new Leftovers checker. Five branches stacked on
+`fix/svg-descriptor-collapse`: `feature/link-text`,
+`feature/aria-contradictions`, `feature/point-at-element`,
+`feature/leftovers-check`. The manifest still reads 0.10.0, bumped at release
+by the same rule. It grew past the two items the table first planned because
+23 and 12 were both asked for and both small; the release-size caution still
+holds, and is the reason 20 and 24 were left for later.
 
 An item keeps its number once it is written down, and is marked done where
 it stands rather than moved up. Moving one renumbers everything after it,
@@ -487,7 +519,7 @@ not promised to be one. Making it paste into `querySelector` would mean
 escaping and uniqueness work that nothing here asks for, and would invite
 it to be trusted for something it was not built for.
 
-### 11. Link text
+### 11. Link text — done
 
 Empty `href`, `href="#"`, and links whose text says only "こちら", "click
 here", "詳細" and the like: read out of context in a screen reader's link
@@ -516,13 +548,44 @@ reason. Neither should be suppressed for the other; they are the same
 defect described from the two ends, and a director fixing it needs the end
 nearest the markup.
 
-### 12. Development leftovers
+Built 2026-07-22, in the Markup Checker, in two commits. The accessible name
+came out first, in an order the note above got loose about: the ARIA
+computation reads `aria-labelledby`, then `aria-label`, then the text or an
+inner image's `alt`, then `title` — `aria-label` above the text on purpose,
+so a link labelled "Home" whose visible text is "こちら" is named rather than
+called vague. That one helper decides the nameless link or button (an
+alert), item 21's weight split, and half of item 22. The empty and `#`
+hrefs are an alert too — they fail everyone who clicks, not only a reader —
+and a `#section` fragment is left alone. One name pointing at several URLs
+is a note. The vague phrases are listed, English and Japanese together,
+because a page mixes them, and never asserted, so the summary stays clean
+over a page whose only fault is a soft one.
+
+The double-reporting question settled as the note said it should: the button
+and its svg both report, from the two ends, neither suppressed.
+
+### 12. Development leftovers — resource subset built
 
 Asked for 2026-07-20: find the things that were only ever meant to be there
 during the build — `console.log` was the example given. The instinct is
 right and it is the kind of defect a director is blamed for. The example is
 the weakest member of the family, though, and working out why is most of
 the design.
+
+Built 2026-07-22, in 0.11.0, the decidable resource half only, as the
+Leftovers checker: a local or private host in a `src`/`href`/`srcset`/
+`action` (an alert, the page's own host excluded so a page served from
+localhost does not flag its own relative URLs), mixed content (an alert), and
+a placeholder image service from the closed list (a note). Its own checker,
+not the Markup family — the reasoning below on "an eighth checker or joins
+item 11's" settled here, once item 11 was built, on the side of its own: a
+localhost URL is a deployment leftover, not markup wrong in a way the page
+hides. The mixed-content positive case has no browser test — the http harness
+cannot serve https — so it is code and reasoning without a fixture, noted
+rather than hidden. What the sections below mark **decidable** but is not yet
+built — the developer markers in HTML comments, and inline
+`console.log`/`debugger`/`alert` behind the honesty note — and everything
+marked a **listing** stay for later; the rest of this entry is why.
 
 **Why `console.log` itself is close to unreachable.** Two walls, and the
 second decides it.
@@ -890,7 +953,7 @@ The `<title>` is matched as a direct child only. A title deeper in belongs
 to a shape inside the graphic, not to the graphic — which is the same
 distinction item 8's bug got wrong, arrived at deliberately this time.
 
-### 22. Contradictions in the ARIA already there
+### 22. Contradictions in the ARIA already there — done
 
 Asked 2026-07-21, as two separate proposals — invalid ARIA attributes, and
 custom controls that cannot be focused. Both proposals as stated are
@@ -912,6 +975,99 @@ Each of these is a statement the page makes twice, differently. That is the
 same kind of finding as a canonical pointing elsewhere or an `id` used
 twice, and it is why they are worth having when the general ARIA validation
 they were carved out of is not.
+
+Built 2026-07-22 with item 11, in the Markup Checker. Two of the three are
+alerts — the unreachable role and the still-tabbable `aria-hidden` — and the
+positive `tabindex` a note. Where it could report correct markup it does not:
+the composite roles that a roving `tabindex` manages (radio, tab, option,
+menuitem, treeitem) are left out of the interactive-role set, since a resting
+child with no `tabindex` is right there, not wrong; and the role check wants
+no `tabindex` at all rather than a non-negative one, because a `-1` is the
+roving pattern's own spelling and the author having addressed focus. The
+`aria-hidden` check reports only the outermost, so a hidden subtree is one
+finding and not one per focusable inside it.
+
+### 23. Point at the flagged element on the page — done
+
+Asked 2026-07-22. The markup and image checkers already hold the real
+elements they report — `namelessSvg`, `unlabelled`, the headerless tables,
+the oversized and dimensionless images — but a row shows only the text
+`locate()` builds from them: `svg.svg`, `a > svg`. That descriptor is
+weakest for exactly the elements these checks flag, the ones whose whole
+fault is having no identifier of their own; item 21's descriptor collapse is
+the same weakness named from the other side.
+
+Pointing at the element sidesteps it. A good descriptor stops being the only
+way to find the row's element once the tool can draw a box over it, which is
+what Lighthouse and axe do. Keep the descriptor — it is still what the copy
+button puts in the ticket, where there is no page to point at — and attach
+the element to its row.
+
+The box is absolutely positioned from `getBoundingClientRect()`, not an
+`outline` on the page element. The outline checker sets outlines on the page
+directly and is right to, because it marks every element at once and a
+one-pixel shift across all of them is invisible; a single box asked to sit
+exactly on one element must not move that element or be restyled by the
+page's own rules, and an overlay owes nothing to either. It also has to live
+in the page rather than inside any panel — the same place the alt labels
+go — so that item 24's shadow-rooted panels do not carry it off. Put it
+there from the first line written.
+
+Interaction is hover to preview, click to travel. Moving down the list draws
+a light box under each row in turn; clicking a row scrolls its element into
+view and draws a stronger box that stays. Click-only with no scroll was the
+alternative and is declined for the population it serves: the flagged
+elements are small and scattered — nine images with no dimensions, thirteen
+nameless icons — and most are below the fold on the page as first seen. A
+highlight with no scroll would light an element the reader cannot see, and
+read as doing nothing at the worst moment.
+
+This eases item 21 rather than replacing it. The descriptor still has to be
+legible in the copied report, so the collapse is still worth fixing; it just
+stops being the only thing standing between a finding and the element it
+names.
+
+Built 2026-07-22, in 0.11.0, as `kraftyPointAt` in `panel.js` so the markup
+and image checkers share one implementation. Every single-element findings
+row is wired to it — the markup checker's fields, links, dead links, svgs,
+unreachable roles, focus traps and positive tabindex, and the image checker's
+oversized rows. A row that names several elements — a duplicated id, a reused
+link text — has no one thing to point at and stays inert, which decided
+against pointing from those rows rather than guessing which element they
+meant. The box went in the page from the first line, as specified, and both
+checkers drop it when the panel is rebuilt or closed so a pinned box never
+outlives its findings. The dimensionless images and the headerless tables are
+counted rather than listed, so they have no row to point from yet; when they
+grow one, it points the same way.
+
+### 24. Panels isolated from the page's CSS
+
+Asked 2026-07-22, from https://timetechnologies.ltd/, where a panel came up
+with the wrong font size and padding. The panels live in the page's own DOM,
+styled by the global `content.css` through prefixed classes and a handful of
+`!important`s. That protects only what is stated: a property the stylesheet
+sets is safe, an inherited one it does not set is taken from the page, and a
+page rule specific or `!important` enough to match a `div`, `span` or `ul li`
+inside the panel reaches in. `panel.js` already marks left/top/right/bottom
+`!important` for this exact reason — the page is "not to be trusted" — but
+doing it a property at a time is a list that is never finished.
+
+The answer is a shadow root per panel, styled inside it, with
+`:host { all: initial }` to cut the inheritance the prefixes cannot reach. An
+`all: initial` reset without a shadow was the lighter option and is declined:
+it is verbose and still loses to a page `!important`, which a shadow boundary
+does not.
+
+The cost is that `content.css` has to split. The panel rules move inside the
+shadow, delivered as a string rather than as a global stylesheet, which is a
+change to how the SCSS is built. The rest — the alt labels, the outline and
+nest marks, the brightness screen — stay global, because they draw on the
+page's own elements and cannot be moved into a panel's shadow. `panel.js`
+reads the host's rectangle to drag and place it, so the drag logic is mostly
+untouched, and the clipboard and i18n paths do not change.
+
+Bigger than item 23 and after it. It is also why item 23's box is specified
+to live in the page rather than in a panel.
 
 ## Deferred, with reasons
 
