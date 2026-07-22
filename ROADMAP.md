@@ -434,6 +434,13 @@ and is most of the work in it.
 12 is last because it is the one still undecided. Its own entry says the
 checker-or-not question waits until item 11 is built, and 11 is in 0.11.0.
 
+23 and 24 were added 2026-07-22 and are left out of the table on purpose:
+where they fall against 11, 22, 20 and 12 is not settled. What is settled is
+23 before 24 — pointing at an element is small and stands alone, isolating
+the panels is the larger job and the one 23 is built to survive. Neither is
+a check, so neither competes for the accessible-name work the accessibility
+items share; they can slot in wherever a release has room.
+
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
 
@@ -912,6 +919,75 @@ Each of these is a statement the page makes twice, differently. That is the
 same kind of finding as a canonical pointing elsewhere or an `id` used
 twice, and it is why they are worth having when the general ARIA validation
 they were carved out of is not.
+
+### 23. Point at the flagged element on the page
+
+Asked 2026-07-22. The markup and image checkers already hold the real
+elements they report — `namelessSvg`, `unlabelled`, the headerless tables,
+the oversized and dimensionless images — but a row shows only the text
+`locate()` builds from them: `svg.svg`, `a > svg`. That descriptor is
+weakest for exactly the elements these checks flag, the ones whose whole
+fault is having no identifier of their own; item 21's descriptor collapse is
+the same weakness named from the other side.
+
+Pointing at the element sidesteps it. A good descriptor stops being the only
+way to find the row's element once the tool can draw a box over it, which is
+what Lighthouse and axe do. Keep the descriptor — it is still what the copy
+button puts in the ticket, where there is no page to point at — and attach
+the element to its row.
+
+The box is absolutely positioned from `getBoundingClientRect()`, not an
+`outline` on the page element. The outline checker sets outlines on the page
+directly and is right to, because it marks every element at once and a
+one-pixel shift across all of them is invisible; a single box asked to sit
+exactly on one element must not move that element or be restyled by the
+page's own rules, and an overlay owes nothing to either. It also has to live
+in the page rather than inside any panel — the same place the alt labels
+go — so that item 24's shadow-rooted panels do not carry it off. Put it
+there from the first line written.
+
+Interaction is hover to preview, click to travel. Moving down the list draws
+a light box under each row in turn; clicking a row scrolls its element into
+view and draws a stronger box that stays. Click-only with no scroll was the
+alternative and is declined for the population it serves: the flagged
+elements are small and scattered — nine images with no dimensions, thirteen
+nameless icons — and most are below the fold on the page as first seen. A
+highlight with no scroll would light an element the reader cannot see, and
+read as doing nothing at the worst moment.
+
+This eases item 21 rather than replacing it. The descriptor still has to be
+legible in the copied report, so the collapse is still worth fixing; it just
+stops being the only thing standing between a finding and the element it
+names.
+
+### 24. Panels isolated from the page's CSS
+
+Asked 2026-07-22, from https://timetechnologies.ltd/, where a panel came up
+with the wrong font size and padding. The panels live in the page's own DOM,
+styled by the global `content.css` through prefixed classes and a handful of
+`!important`s. That protects only what is stated: a property the stylesheet
+sets is safe, an inherited one it does not set is taken from the page, and a
+page rule specific or `!important` enough to match a `div`, `span` or `ul li`
+inside the panel reaches in. `panel.js` already marks left/top/right/bottom
+`!important` for this exact reason — the page is "not to be trusted" — but
+doing it a property at a time is a list that is never finished.
+
+The answer is a shadow root per panel, styled inside it, with
+`:host { all: initial }` to cut the inheritance the prefixes cannot reach. An
+`all: initial` reset without a shadow was the lighter option and is declined:
+it is verbose and still loses to a page `!important`, which a shadow boundary
+does not.
+
+The cost is that `content.css` has to split. The panel rules move inside the
+shadow, delivered as a string rather than as a global stylesheet, which is a
+change to how the SCSS is built. The rest — the alt labels, the outline and
+nest marks, the brightness screen — stay global, because they draw on the
+page's own elements and cannot be moved into a panel's shadow. `panel.js`
+reads the host's rectangle to drag and place it, so the drag logic is mostly
+untouched, and the clipboard and i18n paths do not change.
+
+Bigger than item 23 and after it. It is also why item 23's box is specified
+to live in the page rather than in a panel.
 
 ## Deferred, with reasons
 
