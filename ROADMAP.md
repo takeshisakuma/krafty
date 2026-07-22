@@ -413,9 +413,9 @@ ready.
 | | items |
 |---|---|
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
-| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element — built |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
 | 0.12.0 | 20 landmarks |
-| 0.13.0 | 12 development leftovers |
+| 0.13.0 | 12 the rest — the staging/dummy listings, and inline console.log if ever |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -433,8 +433,15 @@ the same icon button found from both ends — gets settled once, there.
 read rather than a list of findings, which is item 6's design over again
 and is most of the work in it.
 
-12 is last because it is the one still undecided. Its own entry says the
-checker-or-not question waits until item 11 is built, and 11 is in 0.11.0.
+12 was last because it was the one still undecided: the checker-or-not
+question waited until item 11 was built. With 11 built, its decidable half —
+resource addresses — was pulled forward into 0.11.0 as a checker of its own,
+the Leftovers checker, on the reasoning that a localhost URL is a deployment
+leftover rather than markup wrong in a way the page hides, so the Markup
+family would have had to stretch to hold it. What is left of 12 is the
+judgement half — staging hostnames and dummy text, listed not asserted — and
+inline console.log, which the entry below still argues is barely worth the
+reach; those keep 0.13.0, if they are done at all.
 
 23 and 24 were added 2026-07-22, left out of the table at first because where
 they fell against 11, 22, 20 and 12 was not settled. What was settled is 23
@@ -461,10 +468,15 @@ three share stays in one file that way.
 in `code/manifest.json` is still 0.9.0 and is bumped at release, per the
 rule that a version is only bumped once the previous one is live.
 
-0.11.0 is code complete as of 2026-07-22 — items 11 and 22, both in the
-Markup Checker, on the branches `feature/link-text` and
-`feature/aria-contradictions` stacked on `fix/svg-descriptor-collapse`. The
-manifest still reads 0.10.0, bumped at release by the same rule.
+0.11.0 is code complete as of 2026-07-22 — items 11 and 22 in the Markup
+Checker, item 23 shared across the markup and image panels, and item 12's
+resource subset as a new Leftovers checker. Five branches stacked on
+`fix/svg-descriptor-collapse`: `feature/link-text`,
+`feature/aria-contradictions`, `feature/point-at-element`,
+`feature/leftovers-check`. The manifest still reads 0.10.0, bumped at release
+by the same rule. It grew past the two items the table first planned because
+23 and 12 were both asked for and both small; the release-size caution still
+holds, and is the reason 20 and 24 were left for later.
 
 An item keeps its number once it is written down, and is marked done where
 it stands rather than moved up. Moving one renumbers everything after it,
@@ -552,13 +564,28 @@ over a page whose only fault is a soft one.
 The double-reporting question settled as the note said it should: the button
 and its svg both report, from the two ends, neither suppressed.
 
-### 12. Development leftovers
+### 12. Development leftovers — resource subset built
 
 Asked for 2026-07-20: find the things that were only ever meant to be there
 during the build — `console.log` was the example given. The instinct is
 right and it is the kind of defect a director is blamed for. The example is
 the weakest member of the family, though, and working out why is most of
 the design.
+
+Built 2026-07-22, in 0.11.0, the decidable resource half only, as the
+Leftovers checker: a local or private host in a `src`/`href`/`srcset`/
+`action` (an alert, the page's own host excluded so a page served from
+localhost does not flag its own relative URLs), mixed content (an alert), and
+a placeholder image service from the closed list (a note). Its own checker,
+not the Markup family — the reasoning below on "an eighth checker or joins
+item 11's" settled here, once item 11 was built, on the side of its own: a
+localhost URL is a deployment leftover, not markup wrong in a way the page
+hides. The mixed-content positive case has no browser test — the http harness
+cannot serve https — so it is code and reasoning without a fixture, noted
+rather than hidden. What the sections below mark **decidable** but is not yet
+built — the developer markers in HTML comments, and inline
+`console.log`/`debugger`/`alert` behind the honesty note — and everything
+marked a **listing** stay for later; the rest of this entry is why.
 
 **Why `console.log` itself is close to unreachable.** Two walls, and the
 second decides it.
