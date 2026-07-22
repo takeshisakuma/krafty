@@ -347,6 +347,72 @@
     "message": "単独では曖昧 — 判断はお任せ",
     "description": "Label above the list of vague link texts. Whether a phrase is too vague is a judgement, so these are listed for the reader."
   },
+  "markupRoleNotFocusable": {
+    "message": "操作用の role を持つのにフォーカスできない要素が $count$ 個あります。約束した操作に到達できません",
+    "description": "role=button, link, checkbox and the like on an element that is neither natively focusable nor given a tabindex. Composite roles managed by a roving tabindex are not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupRoleNotFocusableOne": {
+    "message": "操作用の role を持つのにフォーカスできない要素が 1 個あります。約束した操作に到達できません",
+    "description": "Used when exactly one element has an interactive role it cannot be focused to use."
+  },
+  "markupSectionRoleFocus": {
+    "message": "到達できない role",
+    "description": "Heading of the section listing elements with an interactive role that cannot take focus."
+  },
+  "markupRoleFocusListLabel": {
+    "message": "role はあるがフォーカス手段がない",
+    "description": "Label above the list. Each row is the element, with its role beside it."
+  },
+  "markupHiddenFocusable": {
+    "message": "aria-hidden なのにタブ順に残っている要素が $count$ 個あります。何も読み上げられないものにフォーカスが当たります",
+    "description": "aria-hidden=true on, or wrapping, an element a keyboard can focus. Removed from the accessibility tree but left tabbable.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "markupHiddenFocusableOne": {
+    "message": "aria-hidden なのにタブ順に残っている要素が 1 個あります。何も読み上げられないものにフォーカスが当たります",
+    "description": "Used when exactly one aria-hidden element is still focusable."
+  },
+  "markupSectionHiddenFocus": {
+    "message": "隠れたフォーカスの罠",
+    "description": "Heading of the section listing aria-hidden elements that are still focusable."
+  },
+  "markupHiddenFocusListLabel": {
+    "message": "aria-hidden なのにフォーカス可能",
+    "description": "Label above the list of aria-hidden elements left in the tab order."
+  },
+  "markupTabindexPositive": {
+    "message": "0 より大きい tabindex を持つ要素が $count$ 個あります。文書全体のタブ順を組み替えます",
+    "description": "A positive tabindex pulls the element to the front of the document tab order rather than the local place it looks like it sits in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupTabindexPositiveOne": {
+    "message": "0 より大きい tabindex を持つ要素が 1 個あります。文書全体のタブ順を組み替えます",
+    "description": "Used when exactly one element has a positive tabindex."
+  },
+  "markupSectionTabindex": {
+    "message": "正の tabindex",
+    "description": "Heading of the section listing elements with a tabindex above zero."
+  },
+  "markupTabindexListLabel": {
+    "message": "タブ順を飛び越えます",
+    "description": "Label above the list of elements with a positive tabindex. Each row shows the value."
+  },
   "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."

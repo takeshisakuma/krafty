@@ -565,6 +565,57 @@ test("markup checker", async (t) => {
     assert.ok(result.rows.some((text) => text.includes("こちら")));
   });
 
+  await t.test("reports an interactive role that cannot take focus", async () => {
+    /* The role promises a control and the element cannot be reached to use
+       it: no tabindex, not natively focusable. */
+    const result = await check(`<div role="button">Go</div>`);
+
+    assert.strictEqual(matchingFindings(result, /cannot take focus/).length, 1);
+  });
+
+  await t.test("accepts an interactive role that can be reached", async () => {
+    /* A tabindex, a native element under the role, or a resting item of a
+       roving-tabindex widget (tabindex=-1, or a composite role) are all
+       correct and must not be flagged. */
+    const result = await check(
+      `<div role="button" tabindex="0">Go</div>
+       <a href="/x" role="button">Home</a>
+       <button role="switch">On</button>
+       <div role="checkbox" tabindex="-1">Roving</div>
+       <span role="option">One</span>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /cannot take focus/).length, 0);
+  });
+
+  await t.test("reports aria-hidden left in the tab order", async () => {
+    /* Removed from the accessibility tree but still tabbable, so focus lands
+       on it and it is announced as nothing. */
+    const result = await check(
+      `<div aria-hidden="true"><a href="/x">Home</a></div>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab order/).length, 1);
+  });
+
+  await t.test("accepts aria-hidden with nothing focusable inside", async () => {
+    const result = await check(
+      `<div aria-hidden="true"><svg></svg><span>decoration</span></div>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab order/).length, 0);
+  });
+
+  await t.test("reports a tabindex above zero", async () => {
+    /* It reorders the whole document, not the local run it looks like it
+       sits in. Zero and negative are left alone. */
+    const result = await check(
+      `<div tabindex="5">x</div><a href="/y" tabindex="0">ok</a>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab sequence/).length, 1);
+  });
+
   await t.test("checks again on demand, without being re-injected", async () => {
     /* The panels report the document as it stood when they ran, which is
        what the scanned-at line is about. The button is the cheap half of

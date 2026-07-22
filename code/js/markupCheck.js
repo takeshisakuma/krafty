@@ -28,6 +28,20 @@
    reading - which cannot be predicted from the markup, so it cannot be
    checked by looking at the page either.
 
+   The link checks are the same family from the reader's side: a link or
+   button with no accessible name is announced as its bare role and no more,
+   a link whose href is empty or a bare `#` goes nowhere, and one name
+   pointing at several places reads as the same word twice in a link list.
+   The vague ones - "こちら", "read more" - are listed rather than judged,
+   because whether a phrase is too vague is per-language and a matter of
+   opinion.
+
+   The ARIA checks are contradictions in what is already there: an
+   interactive role on an element that cannot take focus, aria-hidden on
+   something still in the tab order, a tabindex above zero. Each is a
+   statement the page makes twice and disagrees with itself - decidable
+   without a table of what should have been there.
+
    And none of it shows. That is why it belongs in a tool used to review a
    page that looks finished, rather than being left to a validator nobody
    opens once the layout is right. */
@@ -600,6 +614,121 @@
 
     const vagueTexts = [...vague.values()].sort((a, b) => b.count - a.count);
 
+    /* Contradictions in the ARIA already on the page - a statement the
+       markup makes twice, differently. No table of what should have been
+       there, no guess at intent; each is decided from the attributes present.
+
+       What counts as reachable by keyboard: a natively focusable element, or
+       one given a tabindex of zero or more. A negative tabindex is
+       deliberately not treated as reachable - it takes the element out of the
+       tab order - but its presence is treated as the author having addressed
+       focus, which is why the role check below wants no tabindex at all
+       rather than a non-negative one: a roving-tabindex widget sets -1 on its
+       resting items on purpose, and flagging those would be noise. */
+    const FOCUSABLE =
+      'a[href], area[href], button, input:not([type="hidden"]), select, ' +
+      'textarea, iframe, audio[controls], video[controls], summary, ' +
+      '[contenteditable=""], [contenteditable="true"]';
+
+    /** @param {Element} element */
+    const keyboardFocusable = (element) => {
+      if (element.matches(":disabled")) {
+        return false;
+      }
+
+      const tabindex = element.getAttribute("tabindex");
+
+      if (tabindex !== null) {
+        const value = Number(tabindex);
+        return Number.isInteger(value) && value >= 0;
+      }
+
+      return element.matches(FOCUSABLE);
+    };
+
+    /* The widget roles that name a control which must be focusable in its own
+       right. The composite ones - radio, tab, option, menuitem, treeitem -
+       are left out on purpose: their focus is managed by the container with a
+       roving tabindex, so a resting child with no tabindex is correct, not a
+       defect. */
+    const WIDGET_ROLES = new Set([
+      "button",
+      "link",
+      "checkbox",
+      "switch",
+      "textbox",
+      "searchbox",
+      "combobox",
+      "slider",
+      "spinbutton",
+    ]);
+
+    /** @param {Element} element */
+    const interactiveRole = (element) => {
+      const role = (element.getAttribute("role") ?? "").trim().toLowerCase();
+      return WIDGET_ROLES.has(role.split(/\s+/)[0]);
+    };
+
+    /* A role that promises a control on an element that cannot be reached to
+       use it: no tabindex, and not natively focusable. aria-hidden ones are
+       skipped - a hidden control is the next finding's business, not a
+       promise anyone can act on. */
+    const roleNotFocusable = [...document.querySelectorAll("[role]")].filter(
+      (element) => {
+        if (element.closest(".kraftyPanel")) {
+          return false;
+        }
+
+        if (element.closest('[aria-hidden="true"]')) {
+          return false;
+        }
+
+        return (
+          interactiveRole(element) &&
+          !element.matches(FOCUSABLE) &&
+          !element.hasAttribute("tabindex")
+        );
+      }
+    );
+
+    /* aria-hidden on something a keyboard can still land on. The element is
+       removed from the accessibility tree and left in the tab order, so it
+       takes focus and is announced as nothing. Only the outermost is
+       reported - a hidden subtree's focusables are all the one finding. */
+    const hiddenFocusable = [
+      ...document.querySelectorAll('[aria-hidden="true"]'),
+    ].filter((element) => {
+      if (element.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      if (element.parentElement?.closest('[aria-hidden="true"]')) {
+        return false;
+      }
+
+      if (keyboardFocusable(element)) {
+        return true;
+      }
+
+      return [
+        ...element.querySelectorAll(`${FOCUSABLE}, [tabindex]`),
+      ].some(keyboardFocusable);
+    });
+
+    /* A tabindex above zero, which pulls the element to the front of the
+       whole document's tab order rather than the local place it looks like it
+       sits in. */
+    const tabindexPositive = [
+      ...document.querySelectorAll("[tabindex]"),
+    ].filter((element) => {
+      if (element.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      const value = Number(element.getAttribute("tabindex"));
+      return Number.isInteger(value) && value > 0;
+    });
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -653,6 +782,27 @@
 
     if (svgDecorative.length > 0) {
       reportText("note", kraftyCount("markupSvgNoName", svgDecorative.length));
+    }
+
+    if (roleNotFocusable.length > 0) {
+      reportText(
+        "alert",
+        kraftyCount("markupRoleNotFocusable", roleNotFocusable.length)
+      );
+    }
+
+    if (hiddenFocusable.length > 0) {
+      reportText(
+        "alert",
+        kraftyCount("markupHiddenFocusable", hiddenFocusable.length)
+      );
+    }
+
+    if (tabindexPositive.length > 0) {
+      reportText(
+        "note",
+        kraftyCount("markupTabindexPositive", tabindexPositive.length)
+      );
     }
 
     /** A titled section holding a list of rows, each a label and an optional
@@ -805,6 +955,38 @@
         })),
         ...svgDecorative.map((svg) => ({ label: locate(svg) })),
       ]);
+    }
+
+    if (roleNotFocusable.length > 0) {
+      listOf(
+        "markupSectionRoleFocus",
+        "markupRoleFocusListLabel",
+        roleNotFocusable.map((element) => ({
+          label: locate(element),
+          aside: (element.getAttribute("role") ?? "").trim(),
+          asideClass: "kraftyPanelHint",
+        }))
+      );
+    }
+
+    if (hiddenFocusable.length > 0) {
+      listOf(
+        "markupSectionHiddenFocus",
+        "markupHiddenFocusListLabel",
+        hiddenFocusable.map((element) => ({ label: locate(element) }))
+      );
+    }
+
+    if (tabindexPositive.length > 0) {
+      listOf(
+        "markupSectionTabindex",
+        "markupTabindexListLabel",
+        tabindexPositive.map((element) => ({
+          label: locate(element),
+          aside: `tabindex=${element.getAttribute("tabindex")}`,
+          asideClass: "kraftyPanelHint",
+        }))
+      );
     }
 
     const scanned = document.createElement("div");
