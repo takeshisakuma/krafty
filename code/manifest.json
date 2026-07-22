@@ -1,6 +1,6 @@
 {
   "name": "__MSG_extensionName__",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -35,6 +35,9 @@
     },
     "image-check": {
       "description": "__MSG_commandImageCheck__"
+    },
+    "leftovers-check": {
+      "description": "__MSG_commandLeftoversCheck__"
     },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"

@@ -271,14 +271,75 @@ test("markup checker", async (t) => {
   });
 
   await t.test("lists the svgs that were counted", async () => {
+    /* The button is named so this stays a test of the svg list; a nameless
+       one is item 11's business, covered on its own below. */
     const result = await check(
       `<svg class="icon-cart"></svg>
-       <button class="menu"><svg></svg></button>`
+       <button class="menu" aria-label="Menu"><svg></svg></button>`
     );
 
     assert.deepStrictEqual(result.rows, [
       "svg.icon-cart",
       "button.menu > svg",
+    ]);
+  });
+
+  await t.test("tells a row of identical icons apart", async () => {
+    /* Item 21's collapse, measured: a nameless svg inside a link with no
+       class of its own, eight of them, all `a > svg`. The href is the one
+       identifier such a link still carries, and it is what the copied report
+       needs to point at one row rather than at "eight". The links are named
+       here so this stays a test of the descriptor; the nameless case is item
+       11's, below. */
+    const result = await check(
+      `<a href="/twitter">Twitter <svg></svg></a>
+       <a href="/facebook">Facebook <svg></svg></a>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      'a[href="/twitter"] > svg',
+      'a[href="/facebook"] > svg',
+    ]);
+  });
+
+  await t.test("positions icons a shared class cannot separate", async () => {
+    /* The other half of the collapse: `i.icon-blank > svg` repeated, where
+       the class is real but identical down the row. A class is a weak
+       identifier when it is borrowed as an svg's context, so the sibling
+       position is added to keep the rows distinct. */
+    const result = await check(
+      `<span>
+         <i class="icon"><svg></svg></i>
+         <i class="icon"><svg></svg></i>
+         <i class="icon"><svg></svg></i>
+       </span>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "i.icon:nth-of-type(1) > svg",
+      "i.icon:nth-of-type(2) > svg",
+      "i.icon:nth-of-type(3) > svg",
+    ]);
+  });
+
+  await t.test("leaves a lone borrowed identity unpositioned", async () => {
+    /* A position tells one sibling from the next; with a single icon there
+       is nothing to tell it from, so the suffix would be noise. */
+    const result = await check(`<i class="icon"><svg></svg></i>`);
+
+    assert.deepStrictEqual(result.rows, ["i.icon > svg"]);
+  });
+
+  await t.test("positions icons whose link has nothing at all", async () => {
+    /* No class and no href either - a link built as a button. The bare tag
+       is as weak as a shared class, so it is positioned the same way. */
+    const result = await check(
+      `<nav><a><svg></svg></a><a><svg></svg></a></nav>`
+    );
+
+    assert.deepStrictEqual(result.rows, [
+      "a:nth-of-type(1) > svg",
+      "a:nth-of-type(2) > svg",
     ]);
   });
 
@@ -359,6 +420,262 @@ test("markup checker", async (t) => {
     );
 
     assert.strictEqual(matchingFindings(result, /SVG/).length, 1);
+  });
+
+  await t.test("reports a link with no accessible name", async () => {
+    /* An icon link - an svg and nothing else inside an `a href` - is silent
+       and looks finished. A screen reader announces "link" and stops. */
+    const result = await check(`<a href="/cart"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("reports a button that is only an icon", async () => {
+    const result = await check(`<button><svg></svg></button>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("accepts every route to a link or button's name", async () => {
+    /* Text, aria-label, an aria-labelledby that resolves, the alt of an
+       image inside, or title. One is enough. */
+    const result = await check(
+      `<a href="/a">Home</a>
+       <a href="/b" aria-label="Search"><svg></svg></a>
+       <span id="ln">Cart</span><a href="/c" aria-labelledby="ln"><svg></svg></a>
+       <a href="/d"><img src="i.png" alt="Basket"></a>
+       <button title="Menu"><svg></svg></button>
+       <button>Send</button>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+  });
+
+  await t.test("honours aria-label over text a link cannot read", async () => {
+    /* A labelled icon link is named, and its svg is decoration rather than
+       the reason the link is unnamed - so no alert on either end. */
+    const result = await check(`<a href="/x" aria-label="Home"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 0);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+  });
+
+  await t.test("leaves an aria-hidden link alone", async () => {
+    /* Removed from the accessibility tree, it is announced as nothing at
+       all, so a missing name on it reaches nobody. */
+    const result = await check(`<a href="/x" aria-hidden="true"><svg></svg></a>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+  });
+
+  await t.test("splits svgs by whether they leave a control unnamed", async () => {
+    /* Item 21's weight split. The svg inside a nameless link is the reason
+       it has no name - the heavier fault, an alert - while the one in a
+       plain `<i>` is undeclared decoration, a note. */
+    const result = await check(
+      `<a href="/x"><svg></svg></a>
+       <i class="deco"><svg></svg></i>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 1);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+    /* And the link itself is reported from the other end. */
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 1);
+  });
+
+  await t.test("a named button's icon is decoration, not the reason", async () => {
+    const result = await check(`<button aria-label="Menu"><svg></svg></button>`);
+
+    assert.strictEqual(matchingFindings(result, /accessible name/).length, 0);
+    assert.strictEqual(matchingFindings(result, /leaving it unnamed/).length, 0);
+    assert.strictEqual(
+      matchingFindings(result, /neither named nor hidden/).length,
+      1
+    );
+  });
+
+  await t.test("lists a nameless link with its address", async () => {
+    /* The address is what a nameless link is otherwise mute about. */
+    const result = await check(`<a class="cart" href="/basket"><svg></svg></a>`);
+
+    const row = result.rows.find((text) => text.includes("/basket"));
+
+    assert.ok(row, "the link is listed with its address");
+    assert.match(row, /a\.cart/);
+  });
+
+  await t.test("reports a link that points nowhere", async () => {
+    /* An empty href or a bare # goes nowhere. A real fragment like #section
+       is an in-page jump and is left alone. */
+    const result = await check(
+      `<a href="">Empty</a>
+       <a href="#">Hash</a>
+       <a href="#section">Real jump</a>`
+    );
+
+    const dead = matchingFindings(result, /point nowhere/);
+
+    assert.strictEqual(dead.length, 1);
+    assert.match(dead[0], /\b2\b/, "the two dead ones, not the real jump");
+  });
+
+  await t.test("reports one name that leads to different places", async () => {
+    /* In a screen reader's link list the same word appears twice and goes
+       somewhere different, with nothing to tell them apart. */
+    const result = await check(
+      `<a href="/tokyo">Our office</a><a href="/osaka">Our office</a>`
+    );
+
+    assert.strictEqual(
+      matchingFindings(result, /more than one place/).length,
+      1
+    );
+  });
+
+  await t.test("accepts one name reused for the same destination", async () => {
+    /* Two links with the same text and the same href are one link written
+       twice, not a contradiction. */
+    const result = await check(
+      `<a href="/x">Home</a><a href="/x">Home</a>`
+    );
+
+    assert.strictEqual(
+      matchingFindings(result, /more than one place/).length,
+      0
+    );
+  });
+
+  await t.test("lists a vague link text without asserting it is wrong", async () => {
+    /* Whether a phrase is too vague is a judgement, so these are listed for
+       the reader rather than reported as a finding - the summary stays
+       clean. */
+    const result = await check(
+      `<a href="/a">詳細</a><a href="/b">こちら</a>`
+    );
+
+    assert.deepStrictEqual(result.findings, [], "a listing, not a finding");
+    assert.ok(result.rows.some((text) => text.includes("詳細")));
+    assert.ok(result.rows.some((text) => text.includes("こちら")));
+  });
+
+  await t.test("reports an interactive role that cannot take focus", async () => {
+    /* The role promises a control and the element cannot be reached to use
+       it: no tabindex, not natively focusable. */
+    const result = await check(`<div role="button">Go</div>`);
+
+    assert.strictEqual(matchingFindings(result, /cannot take focus/).length, 1);
+  });
+
+  await t.test("accepts an interactive role that can be reached", async () => {
+    /* A tabindex, a native element under the role, or a resting item of a
+       roving-tabindex widget (tabindex=-1, or a composite role) are all
+       correct and must not be flagged. */
+    const result = await check(
+      `<div role="button" tabindex="0">Go</div>
+       <a href="/x" role="button">Home</a>
+       <button role="switch">On</button>
+       <div role="checkbox" tabindex="-1">Roving</div>
+       <span role="option">One</span>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /cannot take focus/).length, 0);
+  });
+
+  await t.test("reports aria-hidden left in the tab order", async () => {
+    /* Removed from the accessibility tree but still tabbable, so focus lands
+       on it and it is announced as nothing. */
+    const result = await check(
+      `<div aria-hidden="true"><a href="/x">Home</a></div>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab order/).length, 1);
+  });
+
+  await t.test("accepts aria-hidden with nothing focusable inside", async () => {
+    const result = await check(
+      `<div aria-hidden="true"><svg></svg><span>decoration</span></div>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab order/).length, 0);
+  });
+
+  await t.test("reports a tabindex above zero", async () => {
+    /* It reorders the whole document, not the local run it looks like it
+       sits in. Zero and negative are left alone. */
+    const result = await check(
+      `<div tabindex="5">x</div><a href="/y" tabindex="0">ok</a>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /tab sequence/).length, 1);
+  });
+
+  await t.test("points at a flagged element on hover and click", async () => {
+    /* Item 23. The row's descriptor is weakest for exactly these elements,
+       so the box over the real element is the way to find it. It is drawn in
+       the page body, not the panel, so item 24's shadow roots cannot carry
+       it off. */
+    await withPage(
+      {
+        html: `<button style="width:40px;height:40px"><svg></svg></button>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) => {
+        const row = ".kraftyPanelList li.kraftyLocatable";
+
+        await page.hover(row);
+
+        const hover = await page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerHover");
+          return {
+            exists: box !== null,
+            inBody: box?.parentElement === document.body,
+            shown: box instanceof HTMLElement && box.hidden === false,
+          };
+        });
+
+        assert.ok(hover.exists, "a hover box is drawn");
+        assert.ok(hover.inBody, "in the page body, not inside a panel");
+        assert.ok(hover.shown, "and shown while the row is hovered");
+
+        await page.click(row);
+
+        const pinned = await page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerPin");
+          return {
+            exists: box !== null,
+            inBody: box?.parentElement === document.body,
+          };
+        });
+
+        assert.ok(pinned.exists && pinned.inBody, "clicking pins a box");
+      }
+    );
+  });
+
+  await t.test("does not offer to point at a row naming several elements", async () => {
+    /* A duplicated id names every element that carries it, so there is no
+       single thing to point at. The row stays inert. */
+    const locatable = await withPage(
+      {
+        html: `<div id="d"></div><div id="d"></div>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) =>
+        page.evaluate(() =>
+          [...document.querySelectorAll(".kraftyPanelList li")].map((li) =>
+            li.classList.contains("kraftyLocatable")
+          )
+        )
+    );
+
+    assert.deepStrictEqual(locatable, [false]);
   });
 
   await t.test("checks again on demand, without being re-injected", async () => {

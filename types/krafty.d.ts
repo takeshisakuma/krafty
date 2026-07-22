@@ -56,6 +56,14 @@ declare var kraftyCopyButton: (
   read: () => string
 ) => HTMLButtonElement;
 
+/* Wire a findings row to the element it names: hover previews a box over it,
+   click scrolls to it and pins the box (item 23). */
+declare var kraftyPointAt: (row: HTMLElement, target: Element) => void;
+
+/* Remove both pointer boxes, so a pinned one does not outlive the findings
+   it belonged to. Called when a panel is rebuilt or closed. */
+declare var kraftyClearPointer: () => void;
+
 /* Remembered panel positions, kept in the isolated world for the lifetime
    of the page. */
 declare var kraftyPanelPositions:

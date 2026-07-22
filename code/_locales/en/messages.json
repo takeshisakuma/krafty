@@ -255,6 +255,164 @@
     "message": "1 inline SVG is neither named nor hidden, so how it is announced depends on the screen reader",
     "description": "Used when exactly one SVG is neither named nor hidden."
   },
+  "markupSectionLinks": {
+    "message": "The links",
+    "description": "Heading of the section listing links and buttons with no accessible name."
+  },
+  "markupLinkListLabel": {
+    "message": "Nothing names them",
+    "description": "Label above the list of links and buttons with no accessible name. A link's address is shown beside it."
+  },
+  "markupLinkNoName": {
+    "message": "$count$ links or buttons have no accessible name, so a screen reader announces only their role",
+    "description": "No text, no aria-label, no aria-labelledby that resolves, no alt on an image inside, and no title. The icon-only button is the usual case.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupLinkNoNameOne": {
+    "message": "1 link or button has no accessible name, so a screen reader announces only its role",
+    "description": "Used when exactly one link or button has no accessible name."
+  },
+  "markupSvgUnnamedControl": {
+    "message": "$count$ inline SVGs are the only content of a link or button, leaving it unnamed",
+    "description": "The heavier half of the SVG finding: the svg is the reason its containing link or button has no accessible name.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupSvgUnnamedControlOne": {
+    "message": "1 inline SVG is the only content of a link or button, leaving it unnamed",
+    "description": "Used when exactly one SVG leaves its control unnamed."
+  },
+  "markupSvgControlTag": {
+    "message": "leaves a control unnamed",
+    "description": "Aside on an SVG row that is the reason its link or button has no accessible name."
+  },
+  "markupLinkDead": {
+    "message": "$count$ links point nowhere — their href is empty or a bare #",
+    "description": "A link whose href is empty or just # goes nowhere. A fragment like #main is a real in-page jump and is not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupLinkDeadOne": {
+    "message": "1 link points nowhere — its href is empty or a bare #",
+    "description": "Used when exactly one link points nowhere."
+  },
+  "markupSectionDeadLinks": {
+    "message": "The dead links",
+    "description": "Heading of the section listing links whose href is empty or a bare #."
+  },
+  "markupDeadLinkListLabel": {
+    "message": "They point nowhere",
+    "description": "Label above the list of dead links. Each row is the link, with its text beside it."
+  },
+  "markupLinkSameText": {
+    "message": "$count$ link texts each lead to more than one place, so a link list repeats a name that goes somewhere different",
+    "description": "One accessible name pointing at several distinct addresses. A screen reader user navigating by link cannot tell them apart.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupLinkSameTextOne": {
+    "message": "1 link text leads to more than one place, so a link list repeats a name that goes somewhere different",
+    "description": "Used when exactly one link text is reused for different destinations."
+  },
+  "markupSectionReused": {
+    "message": "The reused link texts",
+    "description": "Heading of the section listing link texts used for more than one destination."
+  },
+  "markupReusedListLabel": {
+    "message": "One name, several destinations",
+    "description": "Label above the list of reused link texts. Each row is the text, with how many destinations it has."
+  },
+  "markupSectionVague": {
+    "message": "Link texts to read",
+    "description": "Heading of the section listing link texts that are vague out of context. Listed, not asserted to be wrong."
+  },
+  "markupVagueListLabel": {
+    "message": "Vague on their own — you decide",
+    "description": "Label above the list of vague link texts. Whether a phrase is too vague is a judgement, so these are listed for the reader."
+  },
+  "markupRoleNotFocusable": {
+    "message": "$count$ elements have an interactive role but cannot take focus, so the control they promise cannot be reached",
+    "description": "role=button, link, checkbox and the like on an element that is neither natively focusable nor given a tabindex. Composite roles managed by a roving tabindex are not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupRoleNotFocusableOne": {
+    "message": "1 element has an interactive role but cannot take focus, so the control it promises cannot be reached",
+    "description": "Used when exactly one element has an interactive role it cannot be focused to use."
+  },
+  "markupSectionRoleFocus": {
+    "message": "The unreachable roles",
+    "description": "Heading of the section listing elements with an interactive role that cannot take focus."
+  },
+  "markupRoleFocusListLabel": {
+    "message": "A role, but no way to focus it",
+    "description": "Label above the list. Each row is the element, with its role beside it."
+  },
+  "markupHiddenFocusable": {
+    "message": "$count$ aria-hidden elements are still in the tab order, so focus lands on something announced as nothing",
+    "description": "aria-hidden=true on, or wrapping, an element a keyboard can focus. Removed from the accessibility tree but left tabbable.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "markupHiddenFocusableOne": {
+    "message": "1 aria-hidden element is still in the tab order, so focus lands on something announced as nothing",
+    "description": "Used when exactly one aria-hidden element is still focusable."
+  },
+  "markupSectionHiddenFocus": {
+    "message": "The hidden focus traps",
+    "description": "Heading of the section listing aria-hidden elements that are still focusable."
+  },
+  "markupHiddenFocusListLabel": {
+    "message": "aria-hidden, yet focusable",
+    "description": "Label above the list of aria-hidden elements left in the tab order."
+  },
+  "markupTabindexPositive": {
+    "message": "$count$ elements have a tabindex above zero, which reorders the whole document's tab sequence",
+    "description": "A positive tabindex pulls the element to the front of the document tab order rather than the local place it looks like it sits in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "markupTabindexPositiveOne": {
+    "message": "1 element has a tabindex above zero, which reorders the whole document's tab sequence",
+    "description": "Used when exactly one element has a positive tabindex."
+  },
+  "markupSectionTabindex": {
+    "message": "The positive tabindex",
+    "description": "Heading of the section listing elements with a tabindex above zero."
+  },
+  "markupTabindexListLabel": {
+    "message": "They jump the tab order",
+    "description": "Label above the list of elements with a positive tabindex. Each row shows the value."
+  },
   "checkerImage": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."
@@ -332,6 +490,76 @@
   "imageUnmeasuredOne": {
     "message": "1 image could not be measured, having not finished loading. Scroll it into view and run the check again.",
     "description": "Used when exactly one image was not measurable."
+  },
+  "checkerLeftovers": {
+    "message": "Leftovers Check",
+    "description": "Heading of the leftovers panel, and its menu label. Development leftovers a page shipped with."
+  },
+  "leftoversLocal": {
+    "message": "$count$ resources point at a local or private address no visitor can reach",
+    "description": "localhost, 127.x, a 192.168 or 10.x host, a .local name, in a src, href, srcset or action. The page's own host is not counted.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversLocalOne": {
+    "message": "1 resource points at a local or private address no visitor can reach",
+    "description": "Used when exactly one resource points at a local or private address."
+  },
+  "leftoversMixed": {
+    "message": "$count$ resources load over http on an https page, so the browser blocks them",
+    "description": "Mixed content: an http resource on an https page. Fully decidable and already broken.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "leftoversMixedOne": {
+    "message": "1 resource loads over http on an https page, so the browser blocks it",
+    "description": "Used when exactly one resource is mixed content."
+  },
+  "leftoversPlaceholder": {
+    "message": "$count$ images still come from a placeholder service",
+    "description": "placehold.co, dummyimage.com and the like: an image nobody swapped for the real one. A closed list.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "leftoversPlaceholderOne": {
+    "message": "1 image still comes from a placeholder service",
+    "description": "Used when exactly one image is from a placeholder service."
+  },
+  "leftoversSectionLocal": {
+    "message": "Local and private addresses",
+    "description": "Heading of the section listing resources on a local or private host."
+  },
+  "leftoversLocalListLabel": {
+    "message": "No visitor can reach these",
+    "description": "Label above the list of local and private addresses. Each row is the address, with the element's tag."
+  },
+  "leftoversSectionMixed": {
+    "message": "Mixed content",
+    "description": "Heading of the section listing http resources on an https page."
+  },
+  "leftoversMixedListLabel": {
+    "message": "Blocked on an https page",
+    "description": "Label above the list of mixed-content resources."
+  },
+  "leftoversSectionPlaceholder": {
+    "message": "Placeholder images",
+    "description": "Heading of the section listing images from a placeholder service."
+  },
+  "leftoversPlaceholderListLabel": {
+    "message": "Still from a placeholder service",
+    "description": "Label above the list of placeholder images."
   },
   "checkerHeading": {
     "message": "Heading Check",
@@ -605,6 +833,10 @@
     "message": "Toggle Image Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandLeftoversCheck": {
+    "message": "Toggle Leftovers Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "commandOutlineCheck": {
     "message": "Toggle Outline Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
@@ -650,7 +882,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields with nothing naming them, and inline SVGs that are neither named nor hidden.",
+    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Hover a finding to box the element on the page and click to scroll to it.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
@@ -659,6 +891,14 @@
   },
   "manualImageBody": {
     "message": "Find images served much larger than the space they are shown in, and images with no width and height attributes. Allows for high-density displays, so a correctly built retina image is not reported.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversTitle": {
+    "message": "Leftovers Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLeftoversBody": {
+    "message": "Find development leftovers a page shipped with: resources pointing at a local or private address no visitor can reach, http resources on an https page that the browser blocks, and images still coming from a placeholder service.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

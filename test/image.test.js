@@ -84,6 +84,48 @@ test("image checker", async (t) => {
     assert.match(result.rows[0], /300×200/);
   });
 
+  await t.test("points at the oversized image on hover and click", async () => {
+    /* Item 23, the image side of the same shared pointer. */
+    await withPage(
+      {
+        html: `<img src="${source(3000, 2000)}" width="300" height="200" style="width:300px;height:200px">`,
+        checkers: [],
+        width: 1280,
+        height: 900,
+      },
+      async (page) => {
+        await page.waitForFunction(() =>
+          [...document.images].every((image) => image.complete)
+        );
+
+        await page.evaluate(SCRIPTS.imageCheck);
+
+        const row = ".kraftyImageList li.kraftyLocatable";
+
+        await page.hover(row);
+
+        const shown = await page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerHover");
+          return (
+            box instanceof HTMLElement &&
+            box.parentElement === document.body &&
+            box.hidden === false
+          );
+        });
+
+        assert.ok(shown, "hovering the row draws a box over the image");
+
+        await page.click(row);
+
+        const pinned = await page.evaluate(
+          () => document.getElementById("js-kraftyPointerPin") !== null
+        );
+
+        assert.ok(pinned, "clicking pins a box");
+      }
+    );
+  });
+
   await t.test("leaves a correctly built retina image alone", async () => {
     /* Twice the CSS size is what a 2x display needs. Reporting this would
        fire on every page that does the right thing. */

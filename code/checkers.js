@@ -66,6 +66,17 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-leftoversCheckButton",
+    panelId: "js-kraftyLeftoversInformation",
+    command: "leftovers-check",
+    file: "js/leftoversCheck.js",
+    bodyClass: "kraftyLeftoversChecker",
+    /* Resource addresses in the top document. A subframe's leftovers are its
+       own document's, and reporting them here would put a different page's
+       findings in this page's panel. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",
