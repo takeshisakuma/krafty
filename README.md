@@ -42,9 +42,15 @@ And tables with no header cells, where a screen reader announces every cell bare
 
 Then form fields with nothing naming them — no label, wrapping or by `for`, no `aria-label`, no `aria-labelledby` that resolves to anything, and no `title`. The placeholder inside a field says what it is to anyone looking at it and to nobody else. Hidden fields and the button types are not counted; those take no label.
 
-And inline SVGs that are neither named nor hidden. Named, an icon is announced; marked `aria-hidden`, it is skipped; neither, and what a screen reader does with it varies by screen reader. An `aria-hidden` on any element above the icon counts, since wrapping one is the ordinary way to hide it.
+And inline SVGs that are neither named nor hidden. Named, an icon is announced; marked `aria-hidden`, it is skipped; neither, and what a screen reader does with it varies by screen reader. An `aria-hidden` on any element above the icon counts, since wrapping one is the ordinary way to hide it. Where such an icon is the whole of a link or button, that link is flagged as heavier — it is the reason the control has no name.
 
-Each of the three is listed underneath as well as counted, and each list copies in one go. The fields and the icons have nothing to be called — that is the defect — so each row is built from whatever the element does carry: its id, its name, its class, or the parent's where it has none of its own. An unlabelled field shows its placeholder beside it, which is both the quickest way to find it on the page and, usually, the reason the label was left off.
+And links or buttons with no accessible name at all: an icon `<button>` or an `<a>` with only an svg inside is announced as just its role — "button", "link" — and nothing else. Beside them, a link whose `href` is empty or a bare `#` goes nowhere; the same text used for more than one destination, which reads as one word repeated in a screen reader's link list; and the vague texts — "こちら", "read more" — listed for you to weigh rather than asserted, since whether a phrase is too vague is a judgement and depends on the language.
+
+And contradictions in the ARIA already on the page: an interactive `role` on an element that cannot take focus, so the control it promises cannot be reached; `aria-hidden` on something still in the tab order, which takes focus and is then announced as nothing; a `tabindex` above zero, which reorders the whole document's tab sequence. Each is a statement the markup makes twice and disagrees with itself.
+
+Each finding is listed underneath as well as counted, and each list copies in one go. The fields, the icons and the nameless links have nothing to be called — that is the defect — so each row is built from whatever the element does carry: its id, its name, a link's address, its class, or the parent's where it has none of its own. An unlabelled field shows its placeholder beside it, which is both the quickest way to find it on the page and, usually, the reason the label was left off.
+
+Hover a listed row to draw a box over the element on the page, and click it to scroll there and leave the box behind. The short descriptor a row shows is weakest for exactly the elements these checks flag, so the box is the surer way to find them.
 
 Every panel has a check-again button. A check reads the page as it stands when it runs, so press it after opening an accordion or scrolling a list in.
 
@@ -58,7 +64,13 @@ There is no total, on purpose. A single number would be a verdict on the whole p
 
 Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — and lists them worst first, with the file name and the address ready to copy. Also counts the images with no width and height attributes, which is what makes a layout jump while it loads.
 
-High-density displays are allowed for, so an image correctly built at twice the displayed size is never reported, and the allowance does not depend on the monitor you happen to be checking on. The panel states the basis it judged against, and each row carries its own ratio.
+High-density displays are allowed for, so an image correctly built at twice the displayed size is never reported, and the allowance does not depend on the monitor you happen to be checking on. The panel states the basis it judged against, and each row carries its own ratio. Hover a row to box the image on the page, and click to scroll to it.
+
+### Leftovers Checker
+
+Finds development leftovers a page shipped with. A `src`, `href`, `srcset` or `action` pointing at a local or private address — `localhost`, a `192.168` or `10.x` host, a `.local` name — that no visitor can reach: the production page still loading its hero image from the machine it was built on. Resources loaded over `http` on an `https` page, which the browser blocks outright. And images still coming from a placeholder service like placehold.co or dummyimage.com, that nobody swapped for the real picture.
+
+The page's own host is left alone, so a site served from localhost is not flagged for its own relative URLs. Each finding is listed with its address, and points at the element on the page where it has one to show.
 
 ### Outline Checker
 
@@ -112,9 +124,15 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 続いて、名前を持たない入力欄。for による label も、囲んでいる label も、`aria-label` も、参照先が存在する `aria-labelledby` も、`title` も無いものです。中に書かれたプレースホルダは、見えている人にだけ何の欄かを伝えます。type が hidden とボタン系のものは、そもそも label を取らないので数えません。
 
-そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかはスクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が付いている場合も対象外です。実際にはその書き方が最も一般的だからです。
+そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかはスクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が付いている場合も対象外です。実際にはその書き方が最も一般的だからです。そのアイコンがリンクやボタンの中身のすべてである場合は、より重い指摘として扱います。そのリンクを無名にしている当の原因だからです。
 
-3種類とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピーできます。入力欄とアイコンは「呼び名が無いこと」自体が問題なので、各行はその要素が持っているもの——id、name、class、いずれも無ければ親のもの——から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもあるからです。
+そして、アクセシブルな名前をまったく持たないリンクやボタン。中身が svg だけのアイコン `<button>` や `<a>` は、役割——「ボタン」「リンク」——としか読み上げられません。あわせて、`href` が空か `#` だけでどこにも遷移しないリンク、同じテキストで複数の遷移先を持つリンク（スクリーンリーダーのリンク一覧で同じ名前が繰り返されます）、そして「こちら」「read more」のような曖昧なテキスト——曖昧かどうかは言語にもよる判断なので、断定せず一覧にして委ねます。
+
+そして、すでに付いている ARIA の中の矛盾。フォーカスできない要素に付いた操作用の `role`（約束した操作に到達できません）、タブ順に残ったままの `aria-hidden`（フォーカスが当たるのに何も読み上げられません）、0 より大きい `tabindex`（文書全体のタブ順を組み替えます）。いずれもマークアップが二重に、食い違う主張をしているものです。
+
+各項目とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピーできます。入力欄・アイコン・無名のリンクは「呼び名が無いこと」自体が問題なので、各行はその要素が持っているもの——id、name、リンクなら遷移先、class、いずれも無ければ親のもの——から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもあるからです。
+
+一覧の行にカーソルを合わせると、ページ上の該当要素に枠が描かれます。クリックするとそこまでスクロールし、枠を残します。行に出る短い記述子は、これらのチェックが指摘する要素——自前の識別子を持たない要素——ではとりわけ弱いので、枠の方が確実に見つけられます。
 
 各パネルには再チェックのボタンがあります。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
 
@@ -128,7 +146,13 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と height 属性の無い画像の数も出ます。読み込み中にレイアウトがずれる原因です。
 
-高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意された画像は指摘しません。判定基準はお使いのモニタに左右されません。どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。
+高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意された画像は指摘しません。判定基準はお使いのモニタに左右されません。どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。行にカーソルを合わせるとページ上の画像に枠が描かれ、クリックするとそこまでスクロールします。
+
+### 残骸チェッカー
+
+ページが公開時に残してしまった開発時の痕跡を見つけます。`src`・`href`・`srcset`・`action` が、訪問者の誰も到達できないローカル・プライベートアドレス——`localhost`、`192.168` や `10.x` のホスト、`.local` の名前——を指しているもの。たとえば、本番ページがヒーロー画像を制作環境のマシンから読み込んだままになっている場合です。https ページ上で `http` で読み込まれ、ブラウザにブロックされるリソース。そして、placehold.co や dummyimage.com のようなプレースホルダサービスのままで、本物に差し替えられていない画像です。
+
+ページ自身のホストは対象外なので、localhost で配信しているサイトが自分の相対 URL で指摘されることはありません。各項目はアドレス付きで一覧にし、ページ上に表示できる要素であればそこを指し示します。
 
 ### アウトラインチェッカー
 

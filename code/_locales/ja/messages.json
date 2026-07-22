@@ -882,7 +882,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "見た目には現れない形で誤っているマークアップを報告します。複数回使われている id、見出しセルの無いテーブル、名前を持たない入力欄、そして名前も aria-hidden も無いインライン SVG。",
+    "message": "見た目には現れない形で誤っているマークアップを報告します。複数回使われている id、見出しセルの無いテーブル、名前を持たない入力欄・リンク・ボタン、名前も aria-hidden も無いインライン SVG、そしてページの ARIA の矛盾。指摘にカーソルを合わせるとページ上の要素に枠が描かれ、クリックでそこまでスクロールします。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {

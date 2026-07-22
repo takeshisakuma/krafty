@@ -882,7 +882,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields with nothing naming them, and inline SVGs that are neither named nor hidden.",
+    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Hover a finding to box the element on the page and click to scroll to it.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
