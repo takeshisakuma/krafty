@@ -415,7 +415,7 @@ ready.
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
 | 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
 | 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — built |
-| 0.13.0 | 12 the rest — the staging/dummy listings, and inline console.log if ever |
+| 0.13.0 | 12 the rest — the dummy-text listing, and inline console.log if ever |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -1280,6 +1280,48 @@ measured. Suppressing it would mean building a settings system this
 extension does not otherwise have, which would cost more than it saves. If
 it turns out to be noisy in practice, the fix is one entry in
 the `MODELS` table in `js/nestCheck.js`, not a preferences screen.
+
+## Worth doing besides features and fixes
+
+Set 2026-07-23, once 0.12.0 left the Wanted list all but built. The work
+that keeps this tool worth trusting is no longer mostly new checkers, so it
+is worth naming what it is, in rough order of what it buys.
+
+**Real use, read deliberately — the highest, and the one already paying.**
+Every fix in the last few releases — the bare `#` link, the Amazon
+canonical, the localhost resource — came from running the checkers over a
+real site and watching what they said, not from this file. Item 8 above is
+the same idea named once; this is it as a habit. A pass over a spread of
+real, busy, varied sites — Japanese and not, static and single-page —
+logging each false positive and each miss per checker, is the surest
+defence of the one thing the project cannot afford to lose: being believed
+on the day a finding is right.
+
+**The two paths no test covers.** The mixed-content positive and the staging
+check's own-host exclusion are code and reasoning with no browser fixture,
+because the http test harness cannot serve https — noted in
+`test/leftovers.test.js`, where they live. A harness serving https with a
+self-signed certificate and Puppeteer set to accept it would close them. A
+bounded piece of work against a risk this project names elsewhere: a check
+that quietly measures nothing looks exactly like one that found nothing
+wrong.
+
+**The panels' own accessibility — deliberately low.** It is tempting to rank
+this high, on the grounds that an accessibility tool should keep its own
+house and that a reviewer auditing Krafty's own panel and finding it wanting
+would cost real credibility. But the honest placement is below the two above
+and beside the limitations below, not over them. The baseline is not broken:
+close, rescan and copy are real focusable buttons with labels, so a keyboard
+reaches all of them. What is missing is polish — no Escape to close, no focus
+moved into a panel when it opens or back when it closes, no keyboard way to
+reposition a panel that drags by pointer. None of it touches a check's
+accuracy, which is where the tool is believed or not, and the audience is a
+director at a desktop with a mouse. Worth a few minutes to confirm nothing is
+egregiously broken; not worth a focus-management project.
+
+The limitations below sit at the same tier as the last of these: real,
+costed, and waiting for a reason to be worth their price rather than for
+time.
 
 ## Known limitations
 
