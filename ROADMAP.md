@@ -414,7 +414,7 @@ ready.
 |---|---|
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
 | 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
-| 0.12.0 | 20 landmarks — built |
+| 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — built |
 | 0.13.0 | 12 the rest — the staging/dummy listings, and inline console.log if ever |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted

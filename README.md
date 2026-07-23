@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Eight checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
+Ten checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
@@ -44,7 +44,7 @@ Then form fields with nothing naming them — no label, wrapping or by `for`, no
 
 And inline SVGs that are neither named nor hidden. Named, an icon is announced; marked `aria-hidden`, it is skipped; neither, and what a screen reader does with it varies by screen reader. An `aria-hidden` on any element above the icon counts, since wrapping one is the ordinary way to hide it. Where such an icon is the whole of a link or button, that link is flagged as heavier — it is the reason the control has no name.
 
-And links or buttons with no accessible name at all: an icon `<button>` or an `<a>` with only an svg inside is announced as just its role — "button", "link" — and nothing else. Beside them, a link whose `href` is empty or a bare `#` goes nowhere; the same text used for more than one destination, which reads as one word repeated in a screen reader's link list; and the vague texts — "こちら", "read more" — listed for you to weigh rather than asserted, since whether a phrase is too vague is a judgement and depends on the language.
+And links or buttons with no accessible name at all: an icon `<button>` or an `<a>` with only an svg inside is announced as just its role — "button", "link" — and nothing else. Beside them, a link whose `href` is empty, which reloads the page it sits on rather than going anywhere; the same text used for more than one destination, which reads as one word repeated in a screen reader's link list; and the vague texts — "こちら", "read more" — listed for you to weigh rather than asserted, since whether a phrase is too vague is a judgement and depends on the language.
 
 And contradictions in the ARIA already on the page: an interactive `role` on an element that cannot take focus, so the control it promises cannot be reached; `aria-hidden` on something still in the tab order, which takes focus and is then announced as nothing; a `tabindex` above zero, which reorders the whole document's tab sequence. Each is a statement the markup makes twice and disagrees with itself.
 
@@ -70,7 +70,15 @@ High-density displays are allowed for, so an image correctly built at twice the 
 
 Finds development leftovers a page shipped with. A `src`, `href`, `srcset` or `action` pointing at a local or private address — `localhost`, a `192.168` or `10.x` host, a `.local` name — that no visitor can reach: the production page still loading its hero image from the machine it was built on. Resources loaded over `http` on an `https` page, which the browser blocks outright. And images still coming from a placeholder service like placehold.co or dummyimage.com, that nobody swapped for the real picture.
 
+Two more are listed rather than asserted, because each can be innocent: a resource whose host reads like a staging environment — `dev.`, `staging.`, `test.` — which may be a link to the test site left in the page or may just be a product's name; and a developer marker left in an HTML comment — TODO, FIXME, 仮 — which may or may not still matter.
+
 The page's own host is left alone, so a site served from localhost is not flagged for its own relative URLs. Each finding is listed with its address, and points at the element on the page where it has one to show.
+
+### Landmark Checker
+
+Reports what can be decided about a page's landmark regions: no `main` for a reader to skip to, or more than one where only one may be exposed; and two landmarks of the same role that a screen reader announces identically, because they share a name or because neither has one — two unlabelled `nav`s read as the same word twice in the list a reader jumps between regions with.
+
+Whether the page marks up the regions it ought to is not something software can answer — one `main` and nothing else may be right, or may be a header and footer built from unmarked divs — so the landmarks are drawn in document order, nested, each with its role and accessible name, for you to read as a map of the page. Regions hidden from everyone are left out, and the whole map copies as one indented block.
 
 ### Outline Checker
 
@@ -90,7 +98,7 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。8つのチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。10のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
@@ -126,7 +134,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかはスクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が付いている場合も対象外です。実際にはその書き方が最も一般的だからです。そのアイコンがリンクやボタンの中身のすべてである場合は、より重い指摘として扱います。そのリンクを無名にしている当の原因だからです。
 
-そして、アクセシブルな名前をまったく持たないリンクやボタン。中身が svg だけのアイコン `<button>` や `<a>` は、役割——「ボタン」「リンク」——としか読み上げられません。あわせて、`href` が空か `#` だけでどこにも遷移しないリンク、同じテキストで複数の遷移先を持つリンク（スクリーンリーダーのリンク一覧で同じ名前が繰り返されます）、そして「こちら」「read more」のような曖昧なテキスト——曖昧かどうかは言語にもよる判断なので、断定せず一覧にして委ねます。
+そして、アクセシブルな名前をまったく持たないリンクやボタン。中身が svg だけのアイコン `<button>` や `<a>` は、役割——「ボタン」「リンク」——としか読み上げられません。あわせて、`href` が空で、どこにも遷移せず今のページを再読み込みするだけのリンク、同じテキストで複数の遷移先を持つリンク（スクリーンリーダーのリンク一覧で同じ名前が繰り返されます）、そして「こちら」「read more」のような曖昧なテキスト——曖昧かどうかは言語にもよる判断なので、断定せず一覧にして委ねます。
 
 そして、すでに付いている ARIA の中の矛盾。フォーカスできない要素に付いた操作用の `role`（約束した操作に到達できません）、タブ順に残ったままの `aria-hidden`（フォーカスが当たるのに何も読み上げられません）、0 より大きい `tabindex`（文書全体のタブ順を組み替えます）。いずれもマークアップが二重に、食い違う主張をしているものです。
 
@@ -152,7 +160,15 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ページが公開時に残してしまった開発時の痕跡を見つけます。`src`・`href`・`srcset`・`action` が、訪問者の誰も到達できないローカル・プライベートアドレス——`localhost`、`192.168` や `10.x` のホスト、`.local` の名前——を指しているもの。たとえば、本番ページがヒーロー画像を制作環境のマシンから読み込んだままになっている場合です。https ページ上で `http` で読み込まれ、ブラウザにブロックされるリソース。そして、placehold.co や dummyimage.com のようなプレースホルダサービスのままで、本物に差し替えられていない画像です。
 
+さらに2つは、断定せず一覧で示します。どちらも問題ないこともあるからです。ホスト名の先頭がステージング環境らしく読めるリソース——`dev.`、`staging.`、`test.`——は、テスト環境へのリンクが残ったものかもしれませんし、単に製品名かもしれません。そして HTML コメントに残った開発マーカー——TODO、FIXME、仮——も、まだ意味があるとは限りません。
+
 ページ自身のホストは対象外なので、localhost で配信しているサイトが自分の相対 URL で指摘されることはありません。各項目はアドレス付きで一覧にし、ページ上に表示できる要素であればそこを指し示します。
+
+### ランドマークチェッカー
+
+ページのランドマーク領域について機械が判断できることを報告します。読み手が飛べる `main` が無い、あるいは1つしか許されないのに複数ある、といったもの。そして、同じ役割のランドマークがスクリーンリーダーに同一に読み上げられる場合——名前が同じか、どちらも名前が無いか——です。名前の無い `nav` が2つあると、領域を飛び渡る一覧で同じ語が二度読まれます。
+
+ページが本来マークアップすべき領域を備えているかは、ソフトウェアには答えられません。`main` が1つだけで他に何も無いページは、正しいのかもしれませんし、ヘッダーやフッターがマークアップされていない div でできているのかもしれません。そこでランドマークを出現順に、入れ子にして、役割とアクセシブルな名前を添えて並べます。ページの地図として読んでご判断ください。誰にも見えない領域は集計から外します。地図全体はそのままの字下げでコピーできます。
 
 ### アウトラインチェッカー
 

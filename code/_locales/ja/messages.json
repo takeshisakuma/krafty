@@ -1016,7 +1016,15 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversBody": {
-    "message": "ページが公開時に残してしまった開発時の痕跡を見つけます。訪問者が到達できないローカル・プライベートアドレスを指すリソース、https ページ上でブラウザにブロックされる http リソース、プレースホルダ画像サービスのままの画像です。",
+    "message": "ページが公開時に残してしまった開発時の痕跡を見つけます。訪問者が到達できないローカル・プライベートアドレスを指すリソース、https ページ上でブラウザにブロックされる http リソース、プレースホルダ画像サービスのままの画像、そして——断定せず一覧で——ステージング環境らしきホストと、HTML コメントに残った開発マーカーです。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLandmarkTitle": {
+    "message": "ランドマークチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualLandmarkBody": {
+    "message": "ページのランドマーク領域について機械が判断できること——main の欠落や重複、同じ役割で区別できないランドマーク——を報告し、ランドマークを入れ子で、役割と名前を添えて並べます。ページの地図として読めます。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
