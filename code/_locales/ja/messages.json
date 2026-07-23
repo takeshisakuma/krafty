@@ -629,6 +629,80 @@
       }
     }
   },
+  "checkerLandmark": {
+    "message": "ランドマークチェック",
+    "description": "Heading of the landmark regions panel."
+  },
+  "landmarkReviewNote": {
+    "message": "ページが必要な領域をマークアップできているかは自動では判断できません。ページの地図として順に読んで確認してください。",
+    "description": "Explains why the landmarks are drawn rather than judged."
+  },
+  "landmarkOutlineLabel": {
+    "message": "ランドマークの構造",
+    "description": "Label above the nested list of landmark regions."
+  },
+  "landmarkNoName": {
+    "message": "（名前なし）",
+    "description": "Shown for a landmark that carries no accessible name."
+  },
+  "landmarkNoneFound": {
+    "message": "ランドマーク領域がありません。ヘッダー・ナビゲーション・メイン・フッターがマークアップされていません",
+    "description": "Neither a landmark element nor a landmark role was found."
+  },
+  "landmarkNoMain": {
+    "message": "main ランドマークがありません。ページ本文の始まりを示すものがありません",
+    "description": "A page should have exactly one main region to skip to."
+  },
+  "landmarkMultipleMain": {
+    "message": "main ランドマークが $count$ 個あります。ページ内で見えてよい main は 1 つだけです",
+    "description": "More than one main breaks a hard rule; only one main is allowed.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "landmarkSameNameless": {
+    "message": "名前のない $role$ ランドマークが $count$ 個あります。スクリーンリーダーには同じものとして読み上げられます",
+    "description": "Landmarks of one role, none named, cannot be told apart when jumping between them.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "role": {
+        "content": "$2",
+        "example": "navigation"
+      }
+    }
+  },
+  "landmarkSameName": {
+    "message": "同じ名前「$name$」の $role$ ランドマークが $count$ 個あります。互いを区別できません",
+    "description": "Landmarks of one role with the same accessible name are announced identically.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "role": {
+        "content": "$2",
+        "example": "navigation"
+      },
+      "name": {
+        "content": "$3",
+        "example": "Footer"
+      }
+    }
+  },
+  "commandLandmarkCheck": {
+    "message": "ランドマークチェックの切り替え",
+    "description": "Keyboard shortcut description for the landmark checker."
+  },
+  "copyLandmarks": {
+    "message": "ランドマークをコピー",
+    "description": "Copy button label for the nested landmark list."
+  },
   "checkNoindex": {
     "message": "robots に noindex が指定されています。このページは検索結果に載らないよう要求しています",
     "description": "The most consequential thing to find on a production page."

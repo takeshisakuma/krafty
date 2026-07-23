@@ -126,6 +126,15 @@ body {
   color: #c2410c;
 }
 
+.landmarkCheckButton {
+  border-left-color: #0e7490;
+}
+
+.landmarkCheckButton:hover:not(:disabled),
+.landmarkCheckButton.active {
+  color: #0e7490;
+}
+
 .outlineCheckButton {
   border-left-color: #70d549;
 }

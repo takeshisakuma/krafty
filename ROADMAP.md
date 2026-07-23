@@ -414,7 +414,7 @@ ready.
 |---|---|
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
 | 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
-| 0.12.0 | 20 landmarks |
+| 0.12.0 | 20 landmarks — built |
 | 0.13.0 | 12 the rest — the staging/dummy listings, and inline console.log if ever |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
@@ -894,7 +894,7 @@ draft restarts the queue, and a feature addition is not worth a second
 cancelled review when the withdrawal of 0.8.0 has already paid that cost
 once.
 
-### 20. Landmarks
+### 20. Landmarks — done
 
 Asked 2026-07-21. The best fit of the eight, and it takes the shape of the
 heading outline rather than of an alert list, for the same reason.
@@ -919,6 +919,28 @@ name, `form` with a name, plus `role="main"` and the rest. `header` and
 `footer` are only landmarks when they are not inside a sectioning element,
 which is a rule to implement rather than a judgement, and getting it wrong
 in the lenient direction would report a card's footer as a page footer.
+
+Built 2026-07-23, in 0.12.0, as the Landmark Checker — its own panel, shaped
+like the heading checker's, because the two are the same idea: findings a
+machine can decide above, a structure only a person can judge below. The
+findings are the missing or duplicated `main`, and landmarks of one role a
+screen reader announces identically — the nameless of a role falling
+together under one empty key, so two unlabelled `nav`s and two `nav`s both
+named "Menu" are the same collision found the same way. `main` is left out
+of that grouping: more than one is already its own finding, and reporting
+the pair again as indistinguishable would be the same fault said twice.
+
+Three decisions came out of building it, all about not drawing a region that
+is not there. An explicit `role` wins outright, so a `role="presentation"`
+on a `header` takes it out rather than falling through to the banner mapping.
+`region` and `form` are landmarks only with a name, matching the platform,
+so a bare `<section>` wrapper is not reported as a region. And a landmark
+hidden from everyone — `display:none`, `visibility:hidden`, `aria-hidden` —
+is left out, which is not only correct but stops a `display:none` mobile nav
+beside the desktop one from being reported as two navs that cannot be told
+apart. No `main` is a note and more than one is an alert, splitting a common
+best-practice gap from a hard rule broken, the same call the heading checker
+makes for the `h1`.
 
 ### 21. SVG with no accessible name and no `aria-hidden` — done
 

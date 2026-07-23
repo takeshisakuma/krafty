@@ -77,6 +77,17 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-landmarkCheckButton",
+    panelId: "js-kraftyLandmarkInformation",
+    command: "landmark-check",
+    file: "js/landmarkCheck.js",
+    bodyClass: "kraftyLandmarkChecker",
+    /* Landmark regions belong to one document; a subframe's are its own
+       page's, and folding them in would draw a structure that does not
+       exist - the same reason the heading outline stays in its own frame. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",

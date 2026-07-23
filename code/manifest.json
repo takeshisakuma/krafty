@@ -39,6 +39,9 @@
     "leftovers-check": {
       "description": "__MSG_commandLeftoversCheck__"
     },
+    "landmark-check": {
+      "description": "__MSG_commandLandmarkCheck__"
+    },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"
     },

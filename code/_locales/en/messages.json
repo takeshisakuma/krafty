@@ -629,6 +629,80 @@
       }
     }
   },
+  "checkerLandmark": {
+    "message": "Landmark Check",
+    "description": "Heading of the landmark regions panel."
+  },
+  "landmarkReviewNote": {
+    "message": "Whether the page marks up the regions it ought to cannot be decided automatically. Read them in order, as a map of the page.",
+    "description": "Explains why the landmarks are drawn rather than judged."
+  },
+  "landmarkOutlineLabel": {
+    "message": "The landmarks",
+    "description": "Label above the nested list of landmark regions."
+  },
+  "landmarkNoName": {
+    "message": "(no name)",
+    "description": "Shown for a landmark that carries no accessible name."
+  },
+  "landmarkNoneFound": {
+    "message": "No landmark regions on this page: nothing marks the header, navigation, main or footer",
+    "description": "Neither a landmark element nor a landmark role was found."
+  },
+  "landmarkNoMain": {
+    "message": "No main landmark: nothing marks where the page's own content begins",
+    "description": "A page should have exactly one main region to skip to."
+  },
+  "landmarkMultipleMain": {
+    "message": "$count$ main landmarks: only one may be exposed on a page",
+    "description": "More than one main breaks a hard rule; only one main is allowed.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "landmarkSameNameless": {
+    "message": "$count$ $role$ landmarks with no name: a screen reader announces them identically",
+    "description": "Landmarks of one role, none named, cannot be told apart when jumping between them.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "role": {
+        "content": "$2",
+        "example": "navigation"
+      }
+    }
+  },
+  "landmarkSameName": {
+    "message": "$count$ $role$ landmarks share the name “$name$”: nothing tells them apart",
+    "description": "Landmarks of one role with the same accessible name are announced identically.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "role": {
+        "content": "$2",
+        "example": "navigation"
+      },
+      "name": {
+        "content": "$3",
+        "example": "Footer"
+      }
+    }
+  },
+  "commandLandmarkCheck": {
+    "message": "Toggle Landmark Check",
+    "description": "Keyboard shortcut description for the landmark checker."
+  },
+  "copyLandmarks": {
+    "message": "Copy the landmarks",
+    "description": "Copy button label for the nested landmark list."
+  },
   "checkNoindex": {
     "message": "robots contains noindex: this page asks not to be listed in search results",
     "description": "The most consequential thing to find on a production page."
