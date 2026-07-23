@@ -561,6 +561,50 @@
     "message": "プレースホルダサービスのまま",
     "description": "Label above the list of placeholder images."
   },
+  "leftoversStaging": {
+    "message": "ステージング環境らしきホストを指すリソースが $count$ 個あります。公開してよいか確認してください",
+    "description": "A resource address whose first label reads like dev/staging/test. Listed, not asserted: it can be a real product name.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversStagingOne": {
+    "message": "ステージング環境らしきホストを指すリソースが 1 個あります。公開してよいか確認してください",
+    "description": "Used when exactly one staging-looking address was found."
+  },
+  "leftoversComment": {
+    "message": "TODO や FIXME などの開発マーカーを含む HTML コメントが $count$ 個あります",
+    "description": "A marker in an HTML comment. Listed, not asserted: whether it still matters is a judgement.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "leftoversCommentOne": {
+    "message": "TODO や FIXME などの開発マーカーを含む HTML コメントが 1 個あります",
+    "description": "Used when exactly one marked comment was found."
+  },
+  "leftoversSectionStaging": {
+    "message": "ステージング環境らしきホスト",
+    "description": "Heading of the section listing staging-looking resource addresses."
+  },
+  "leftoversStagingListLabel": {
+    "message": "公開してよいか確認してください",
+    "description": "Label above the list of staging-looking addresses."
+  },
+  "leftoversSectionComment": {
+    "message": "コメント内の開発マーカー",
+    "description": "Heading of the section listing HTML comments that carry a developer marker."
+  },
+  "leftoversCommentListLabel": {
+    "message": "HTML コメントに残っています",
+    "description": "Label above the list of marked comments."
+  },
   "checkerHeading": {
     "message": "見出しチェック",
     "description": "Heading of the heading structure panel."

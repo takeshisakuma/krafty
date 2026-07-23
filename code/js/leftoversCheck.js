@@ -25,9 +25,21 @@
    A placeholder image service - placehold.co, dummyimage.com and the like -
    an image nobody swapped for the real one. A closed list, no guessing.
 
-   The staging hostnames and the dummy text from item 12's list are not here:
-   dev.example.com can be a product and "テストです" can be real copy, so those
-   are judgements to list rather than defects to assert, and they wait. */
+   Two more from item 12's list are here, but as listings rather than
+   assertions - notes, not alerts, because each is a guess a person has to
+   weigh. A hostname whose first label reads like an environment nobody meant
+   to ship - dev., staging. - which can equally be a real product. And a
+   developer marker left in an HTML comment - TODO, FIXME, 仮 - where that the
+   comment exists is decidable but whether it still matters is not. Both are
+   the same shape as item 11's vague link text: shown for the reader to judge,
+   never asserted to be wrong.
+
+   The dummy text and the inline console.log from item 12's list are still not
+   here. The first is per-language and open-ended. The second cannot be read
+   honestly - most of it lives in bundled cross-origin scripts a content
+   script cannot see, so a panel scanning the inline minority and reporting
+   nothing would claim "no debug output" while never having read the code -
+   and both wait. */
 
 (() => {
   const PANEL_ID = "js-kraftyLeftoversInformation";
@@ -60,6 +72,18 @@
     "baconmockup.com",
     "loremflickr.com",
   ]);
+
+  /* Hostnames whose first label reads like an environment that was never
+     meant to face the public - a link to the staging site left in the
+     production page. Only the first label, and only these words: dev. and
+     staging. lead the address when they lead at all, and matching the word
+     anywhere would catch latest.example.com and contest.example.com by their
+     letters. A guess even so - dev.example.com can be a real product - so it
+     is listed as a note, never asserted. */
+  const STAGING_LABELS = new Set(["stg", "dev", "staging", "test"]);
+
+  /** @param {string} host */
+  const isStagingHost = (host) => STAGING_LABELS.has(host.split(".")[0]);
 
   /** A host nobody on the public internet can reach: loopback, link-local,
      the RFC1918 private ranges, and the .local mDNS names.
@@ -113,8 +137,24 @@
       return { kind: "mixed", url: url.href };
     }
 
+    /* Checked last and lowest: a broken or unreachable address is worth
+       saying before a merely staging-looking one, and mixed content on a
+       staging host is the browser's problem before it is a guess. The page's
+       own host is left out for the same reason a local one is - a page served
+       from staging.example.com resolves its relative URLs there. */
+    if (isStagingHost(host) && host !== location.hostname.toLowerCase()) {
+      return { kind: "staging", url: url.href };
+    }
+
     return null;
   };
+
+  /* Developer markers left in an HTML comment. The Latin ones are matched
+     whole and case-insensitively; the Japanese ones have no word boundary to
+     lean on, so they are matched as they are. Kept to item 12's own list
+     rather than grown, because every addition is another word that might mean
+     something innocent in a comment nobody meant as a marker. */
+  const MARKER = /\b(?:TODO|FIXME|XXX)\b|仮|後で|後日差し替え/i;
 
   /** Every address an element carries. src, href and action are one each;
      srcset is a comma-separated list, each entry a URL and an optional
@@ -160,6 +200,8 @@
     const mixed = [];
     /** @type {{ element: Element, url: string }[]} */
     const placeholder = [];
+    /** @type {{ element: Element, url: string }[]} */
+    const staging = [];
 
     for (const element of document.querySelectorAll(
       "[src], [href], [srcset], [action]"
@@ -190,8 +232,36 @@
         local.push(row);
       } else if (found.kind === "mixed") {
         mixed.push(row);
-      } else {
+      } else if (found.kind === "placeholder") {
         placeholder.push(row);
+      } else {
+        staging.push(row);
+      }
+    }
+
+    /* Developer markers in HTML comments, read from the whole document so a
+       marker in the head is caught too. A comment is not an element with a
+       box on the page, so these are listed by their text rather than pointed
+       at, the way a script or link address already is. */
+    /** @type {string[]} */
+    const markers = [];
+
+    const walker = document.createTreeWalker(
+      document.documentElement,
+      NodeFilter.SHOW_COMMENT
+    );
+
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (node.parentElement?.closest(".kraftyPanel")) {
+        continue;
+      }
+
+      const text = (node.nodeValue ?? "").replace(/\s+/g, " ").trim();
+
+      if (text !== "" && MARKER.test(text)) {
+        /* Enough to recognise it, not the whole block: a commented-out
+           section can run long, and the panel is not where it is read. */
+        markers.push(text.length > 100 ? `${text.slice(0, 100)}…` : text);
       }
     }
 
@@ -223,6 +293,14 @@
 
     if (placeholder.length > 0) {
       reportText("note", kraftyCount("leftoversPlaceholder", placeholder.length));
+    }
+
+    if (staging.length > 0) {
+      reportText("note", kraftyCount("leftoversStaging", staging.length));
+    }
+
+    if (markers.length > 0) {
+      reportText("note", kraftyCount("leftoversComment", markers.length));
     }
 
     /** A titled section holding one row per offending address: the address
@@ -283,6 +361,39 @@
         "leftoversPlaceholderListLabel",
         placeholder
       );
+    }
+
+    if (staging.length > 0) {
+      listOf("leftoversSectionStaging", "leftoversStagingListLabel", staging);
+    }
+
+    if (markers.length > 0) {
+      const section = kraftySection(body, "leftoversSectionComment");
+
+      kraftyListHead(
+        section,
+        "leftoversCommentListLabel",
+        kraftyMessage("copyFindings"),
+        () =>
+          [location.href, ...markers.map((text) => `- ${text}`)].join("\n")
+      );
+
+      const list = document.createElement("ul");
+      list.className = "kraftyPanelList";
+
+      for (const text of markers) {
+        const item = document.createElement("li");
+
+        const code = document.createElement("code");
+        /* textContent, not insertAdjacentHTML: the comment is the page's own
+           text and must never be parsed as markup. */
+        code.textContent = text;
+        item.appendChild(code);
+
+        list.appendChild(item);
+      }
+
+      section.appendChild(list);
     }
 
     const scanned = document.createElement("div");

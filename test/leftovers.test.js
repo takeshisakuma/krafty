@@ -12,7 +12,10 @@
    Mixed content is checked in the code but not here: the positive case needs
    an https origin, which the http test harness cannot serve. The negative -
    that an http resource on an http page is not called mixed - rides the
-   clean-page test below. */
+   clean-page test below. The staging check's own-host exclusion is the same
+   blind spot: the harness serves from 127.0.0.1, not from a staging host, so
+   the code that spares a page served from staging.example.com its own
+   relative URLs is reasoning without a fixture, like the local one it copies. */
 
 const { test } = require("node:test");
 const assert = require("node:assert");
@@ -74,6 +77,46 @@ test("leftovers checker", async (t) => {
     const result = await check(`<img src="https://placehold.co/600x400">`);
 
     assert.strictEqual(matchingFindings(result, /placeholder service/).length, 1);
+  });
+
+  await t.test("reports a staging-looking host as a note", async () => {
+    const result = await check(
+      `<script src="https://staging.example.com/app.js"></script>`
+    );
+
+    const found = matchingFindings(result, /staging-looking/);
+    assert.strictEqual(found.length, 1);
+    assert.match(result.rows[0], /staging\.example\.com/);
+  });
+
+  await t.test("does not call an ordinary host staging by its letters", async () => {
+    /* Only the first label counts: latest. and contest. carry the letters of
+       test. but are not it. */
+    const result = await check(
+      `<img src="https://latest.example.com/a.png">
+       <a href="https://contest.example.com/b">b</a>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /staging-looking/).length, 0);
+  });
+
+  await t.test("reports a developer marker left in an HTML comment", async () => {
+    const result = await check(
+      `<!-- TODO: swap the placeholder copy --><p>Text</p><!-- 後日差し替え -->`
+    );
+
+    const found = matchingFindings(result, /developer marker/);
+    assert.strictEqual(found.length, 1);
+    assert.match(found[0], /\b2\b/);
+    assert.ok(
+      result.rows.some((row) => /TODO/.test(row)),
+      "the marked comment is listed by its text"
+    );
+  });
+
+  await t.test("leaves an ordinary comment alone", async () => {
+    const result = await check(`<!-- header starts here --><p>Text</p>`);
+    assert.strictEqual(matchingFindings(result, /developer marker/).length, 0);
   });
 
   await t.test("does not flag the page's own local host", async () => {

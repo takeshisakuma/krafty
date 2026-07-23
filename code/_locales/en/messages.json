@@ -561,6 +561,50 @@
     "message": "Still from a placeholder service",
     "description": "Label above the list of placeholder images."
   },
+  "leftoversStaging": {
+    "message": "$count$ resources point at a staging-looking host — check they are meant to be public",
+    "description": "A resource address whose first label reads like dev/staging/test. Listed, not asserted: it can be a real product name.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversStagingOne": {
+    "message": "1 resource points at a staging-looking host — check it is meant to be public",
+    "description": "Used when exactly one staging-looking address was found."
+  },
+  "leftoversComment": {
+    "message": "$count$ HTML comments carry a developer marker like TODO or FIXME",
+    "description": "A marker in an HTML comment. Listed, not asserted: whether it still matters is a judgement.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "leftoversCommentOne": {
+    "message": "1 HTML comment carries a developer marker like TODO or FIXME",
+    "description": "Used when exactly one marked comment was found."
+  },
+  "leftoversSectionStaging": {
+    "message": "Staging-looking hosts",
+    "description": "Heading of the section listing staging-looking resource addresses."
+  },
+  "leftoversStagingListLabel": {
+    "message": "Check these are meant to be public",
+    "description": "Label above the list of staging-looking addresses."
+  },
+  "leftoversSectionComment": {
+    "message": "Developer markers in comments",
+    "description": "Heading of the section listing HTML comments that carry a developer marker."
+  },
+  "leftoversCommentListLabel": {
+    "message": "Left in an HTML comment",
+    "description": "Label above the list of marked comments."
+  },
   "checkerHeading": {
     "message": "Heading Check",
     "description": "Heading of the heading structure panel."

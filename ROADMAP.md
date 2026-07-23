@@ -564,7 +564,7 @@ over a page whose only fault is a soft one.
 The double-reporting question settled as the note said it should: the button
 and its svg both report, from the two ends, neither suppressed.
 
-### 12. Development leftovers — resource subset built
+### 12. Development leftovers — decidable parts built
 
 Asked for 2026-07-20: find the things that were only ever meant to be there
 during the build — `console.log` was the example given. The instinct is
@@ -582,10 +582,22 @@ item 11's" settled here, once item 11 was built, on the side of its own: a
 localhost URL is a deployment leftover, not markup wrong in a way the page
 hides. The mixed-content positive case has no browser test — the http harness
 cannot serve https — so it is code and reasoning without a fixture, noted
-rather than hidden. What the sections below mark **decidable** but is not yet
-built — the developer markers in HTML comments, and inline
-`console.log`/`debugger`/`alert` behind the honesty note — and everything
-marked a **listing** stay for later; the rest of this entry is why.
+rather than hidden.
+
+Extended 2026-07-23, in 0.12.0, with two more from the list below — the
+developer markers in HTML comments, and the staging-looking hostnames — both
+as notes rather than alerts, because each is a guess a person weighs rather
+than a defect to assert, the same treatment item 11 gives its vague link
+text. The comment markers are item 12's own list (TODO, FIXME, XXX, 仮, 後で,
+後日差し替え), read from the whole document and listed by their text, since a
+comment is not an element with a box to point at. The staging hosts are
+matched on the first label only — dev. and staging. lead the address when
+they lead at all, and matching the word anywhere would catch latest. and
+contest. by their letters — and the page's own host is spared, the same way a
+local one is. Two of the list stay unbuilt: the dummy text, per-language and
+open-ended, and the inline `console.log`/`debugger`/`alert`, which cannot be
+reported honestly while the bundles it mostly lives in are unreadable; the
+rest of this entry is why.
 
 **Why `console.log` itself is close to unreachable.** Two walls, and the
 second decides it.
