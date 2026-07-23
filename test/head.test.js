@@ -212,6 +212,24 @@ test("head checker", async (t) => {
     );
   });
 
+  await t.test("accepts a canonical that only prepends an SEO slug", async () => {
+    /* Found on Amazon: a product opened by its bare ASIN at
+       /dp/B0D7VQ38KL/, canonical /Aespa-.../dp/B0D7VQ38KL. The tag names a
+       prettier spelling of the same address, the product's title prepended
+       - one path the tail of the other - and it was reported as the page
+       disowning itself on every product opened that way. */
+    const { findings } = await check(
+      `<title>t</title><link rel="canonical" href="/Aespa-poster/dp/B0D7VQ38KL">`,
+      { serve: "/dp/B0D7VQ38KL/?coliid=I343E9UO5KYAT5&th=1" }
+    );
+
+    assert.strictEqual(
+      matching(findings, /canonical points at another/).length,
+      0,
+      "a prepended slug is the same page said with more words"
+    );
+  });
+
   await t.test("still reports a canonical on a genuinely different page", async () => {
     /* The normalising must not have swallowed the check. */
     const { findings } = await check(

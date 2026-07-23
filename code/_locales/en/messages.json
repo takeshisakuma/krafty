@@ -296,8 +296,8 @@
     "description": "Aside on an SVG row that is the reason its link or button has no accessible name."
   },
   "markupLinkDead": {
-    "message": "$count$ links point nowhere — their href is empty or a bare #",
-    "description": "A link whose href is empty or just # goes nowhere. A fragment like #main is a real in-page jump and is not counted.",
+    "message": "$count$ links point nowhere — their href is empty",
+    "description": "A link whose href is empty reloads the page it is on. A bare # is left alone: it cannot be told from a script-driven control in static markup. A fragment like #main is a real in-page jump and is not counted.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -306,7 +306,7 @@
     }
   },
   "markupLinkDeadOne": {
-    "message": "1 link points nowhere — its href is empty or a bare #",
+    "message": "1 link points nowhere — its href is empty",
     "description": "Used when exactly one link points nowhere."
   },
   "markupSectionDeadLinks": {

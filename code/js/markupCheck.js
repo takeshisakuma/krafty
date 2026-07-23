@@ -30,7 +30,7 @@
 
    The link checks are the same family from the reader's side: a link or
    button with no accessible name is announced as its bare role and no more,
-   a link whose href is empty or a bare `#` goes nowhere, and one name
+   a link whose href is empty reloads the page it is on, and one name
    pointing at several places reads as the same word twice in a link list.
    The vague ones - "こちら", "read more" - are listed rather than judged,
    because whether a phrase is too vague is per-language and a matter of
@@ -510,20 +510,27 @@
       (svg) => !leavesControlUnnamed(svg)
     );
 
-    /* A link that goes nowhere: an empty href, or a bare `#`. A fragment
-       like `#main` is a real in-page jump and is left alone; only `#` on its
-       own is the placeholder a build leaves behind. This is a defect for
-       everyone, not only a screen reader, so aria-hidden is not a reason to
-       skip it. */
+    /* A link that goes nowhere: an empty href, which resolves to the very
+       page it sits on and reloads it on click. A defect for everyone, not
+       only a screen reader, so aria-hidden is not a reason to skip it.
+
+       A bare `#` used to be reported here too, and is deliberately not any
+       more. Read from static markup it cannot be told apart from a control
+       wired up by script - `<a href="#" class="filterBtn">` with its click
+       handler added by addEventListener, the pattern a large part of the
+       web uses for a filter, a tab or a toggle. There is no attribute left
+       on the element to distinguish the two, so calling every one of them
+       dead was a false positive on ordinary working pages - beauty.hotpepper
+       .jp's coupon filters among them - and the cost of that noise is the
+       whole checker being tuned out. A real fragment like `#main` was never
+       in scope. */
     const deadLinks = [...document.querySelectorAll("a[href]")].filter(
       (link) => {
         if (link.closest(".kraftyPanel")) {
           return false;
         }
 
-        const href = (link.getAttribute("href") ?? "").trim();
-
-        return href === "" || href === "#";
+        return (link.getAttribute("href") ?? "").trim() === "";
       }
     );
 

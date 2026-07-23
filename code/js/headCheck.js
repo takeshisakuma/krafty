@@ -107,6 +107,17 @@
      * an SEO tool that cries wolf on an ad landing page will be ignored on
      * the day it is right.
      *
+     * The path is matched the same way. Equal is the plain case; a segment
+     * suffix is the SEO-slug canonical, where the tag names a prettier
+     * spelling of this same address with the page's title prepended.
+     * Amazon reads a product at /dp/B0D7VQ38KL/ and canonicalises to
+     * /Aespa-.../dp/B0D7VQ38KL - one path is the tail of the other, the
+     * shorter saying the same thing with fewer words, which is what the
+     * tag is for. Reported as a contradiction it fired on every Amazon
+     * product opened by its bare ASIN. The shorter path has to carry a
+     * segment of its own: a bare "/" is the tail of every address, and
+     * accepting it would call the whole site one page.
+     *
      * A different host or scheme is still reported. Those are also ordinary
      * canonicalisation, but they are worth a person's glance in a way that a
      * directory index is not, and the finding is a note rather than an alert.
@@ -119,6 +130,27 @@
       const path = (url) => {
         const withoutIndex = url.pathname.replace(/\/index\.(html?|php)$/i, "/");
         return withoutIndex.endsWith("/") ? withoutIndex : `${withoutIndex}/`;
+      };
+
+      /** Whether two normalised paths name the same page: equal, or one's
+         segments are the tail of the other's.
+         @param {string} first @param {string} second */
+      const samePath = (first, second) => {
+        if (first === second) {
+          return true;
+        }
+
+        const one = first.split("/").filter(Boolean);
+        const two = second.split("/").filter(Boolean);
+        const [longer, shorter] =
+          one.length >= two.length ? [one, two] : [two, one];
+
+        if (shorter.length === 0) {
+          return false;
+        }
+
+        const offset = longer.length - shorter.length;
+        return shorter.every((part, index) => part === longer[offset + index]);
       };
 
       /** @type {URL} */
@@ -134,7 +166,7 @@
       }
 
       /* origin covers scheme, host and port together. */
-      if (target.origin !== here.origin || path(target) !== path(here)) {
+      if (target.origin !== here.origin || !samePath(path(target), path(here))) {
         return false;
       }
 

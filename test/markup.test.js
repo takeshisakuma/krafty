@@ -511,19 +511,22 @@ test("markup checker", async (t) => {
     assert.match(row, /a\.cart/);
   });
 
-  await t.test("reports a link that points nowhere", async () => {
-    /* An empty href or a bare # goes nowhere. A real fragment like #section
-       is an in-page jump and is left alone. */
+  await t.test("reports a link whose href is empty", async () => {
+    /* An empty href resolves to the page itself and reloads it on click.
+       A bare # is deliberately left alone: in static markup it cannot be
+       told from a control wired up by script, the pattern much of the web
+       uses for a filter or a toggle. A real fragment like #section is an
+       in-page jump and is left alone too. */
     const result = await check(
       `<a href="">Empty</a>
        <a href="#">Hash</a>
        <a href="#section">Real jump</a>`
     );
 
-    const dead = matchingFindings(result, /point nowhere/);
+    const dead = matchingFindings(result, /points? nowhere/);
 
     assert.strictEqual(dead.length, 1);
-    assert.match(dead[0], /\b2\b/, "the two dead ones, not the real jump");
+    assert.match(dead[0], /\b1\b/, "only the empty href, not the # or the jump");
   });
 
   await t.test("reports one name that leads to different places", async () => {
