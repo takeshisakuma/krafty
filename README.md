@@ -70,7 +70,7 @@ High-density displays are allowed for, so an image correctly built at twice the 
 
 Finds development leftovers a page shipped with. A `src`, `href`, `srcset` or `action` pointing at a local or private address — `localhost`, a `192.168` or `10.x` host, a `.local` name — that no visitor can reach: the production page still loading its hero image from the machine it was built on. Resources loaded over `http` on an `https` page, which the browser blocks outright. And images still coming from a placeholder service like placehold.co or dummyimage.com, that nobody swapped for the real picture.
 
-Two more are listed rather than asserted, because each can be innocent: a resource whose host reads like a staging environment — `dev.`, `staging.`, `test.` — which may be a link to the test site left in the page or may just be a product's name; and a developer marker left in an HTML comment — TODO, FIXME, 仮 — which may or may not still matter.
+Three more are listed rather than asserted, because each can be innocent: a resource whose host reads like a staging environment — `dev.`, `staging.`, `test.` — which may be a link to the test site left in the page or may just be a product's name; a developer marker left in an HTML comment — TODO, FIXME, 仮 — which may or may not still matter; and dummy text left in the visible copy — Lorem ipsum, a repeated あああ, テストです — where a word like "テスト" is real content as often as it is filler, so only you can tell which this one is.
 
 The page's own host is left alone, so a site served from localhost is not flagged for its own relative URLs. Each finding is listed with its address, and points at the element on the page where it has one to show.
 
@@ -160,7 +160,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ページが公開時に残してしまった開発時の痕跡を見つけます。`src`・`href`・`srcset`・`action` が、訪問者の誰も到達できないローカル・プライベートアドレス——`localhost`、`192.168` や `10.x` のホスト、`.local` の名前——を指しているもの。たとえば、本番ページがヒーロー画像を制作環境のマシンから読み込んだままになっている場合です。https ページ上で `http` で読み込まれ、ブラウザにブロックされるリソース。そして、placehold.co や dummyimage.com のようなプレースホルダサービスのままで、本物に差し替えられていない画像です。
 
-さらに2つは、断定せず一覧で示します。どちらも問題ないこともあるからです。ホスト名の先頭がステージング環境らしく読めるリソース——`dev.`、`staging.`、`test.`——は、テスト環境へのリンクが残ったものかもしれませんし、単に製品名かもしれません。そして HTML コメントに残った開発マーカー——TODO、FIXME、仮——も、まだ意味があるとは限りません。
+さらに3つは、断定せず一覧で示します。どれも問題ないこともあるからです。ホスト名の先頭がステージング環境らしく読めるリソース——`dev.`、`staging.`、`test.`——は、テスト環境へのリンクが残ったものかもしれませんし、単に製品名かもしれません。HTML コメントに残った開発マーカー——TODO、FIXME、仮——も、まだ意味があるとは限りません。そして本文に残ったダミーテキスト——Lorem ipsum、あああ、テストです——は、「テスト」のような語が本物の原稿であることもフィラーであることも同じくらいあり、どちらなのかはご自身にしか判断できません。
 
 ページ自身のホストは対象外なので、localhost で配信しているサイトが自分の相対 URL で指摘されることはありません。各項目はアドレス付きで一覧にし、ページ上に表示できる要素であればそこを指し示します。
 
