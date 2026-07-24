@@ -135,6 +135,15 @@ body {
   color: #0e7490;
 }
 
+.tokenCheckButton {
+  border-left-color: #5b6abf;
+}
+
+.tokenCheckButton:hover:not(:disabled),
+.tokenCheckButton.active {
+  color: #5b6abf;
+}
+
 .outlineCheckButton {
   border-left-color: #70d549;
 }

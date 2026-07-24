@@ -88,6 +88,15 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-tokenCheckButton",
+    panelId: "js-kraftyTokenInformation",
+    command: "token-check",
+    file: "js/tokenCheck.js",
+    bodyClass: "kraftyTokenChecker",
+    /* Computed colours and fonts belong to one document's layout. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",

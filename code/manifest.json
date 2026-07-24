@@ -1,6 +1,6 @@
 {
   "name": "__MSG_extensionName__",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -41,6 +41,9 @@
     },
     "landmark-check": {
       "description": "__MSG_commandLandmarkCheck__"
+    },
+    "token-check": {
+      "description": "__MSG_commandTokenCheck__"
     },
     "outline-check": {
       "description": "__MSG_commandOutlineCheck__"

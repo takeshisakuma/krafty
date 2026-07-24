@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Ten checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
+Eleven checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
@@ -82,6 +82,10 @@ Reports what can be decided about a page's landmark regions: no `main` for a rea
 
 Whether the page marks up the regions it ought to is not something software can answer — one `main` and nothing else may be right, or may be a header and footer built from unmarked divs — so the landmarks are drawn in document order, nested, each with its role and accessible name, for you to read as a map of the page. Regions hidden from everyone are left out, and the whole map copies as one indented block.
 
+### Token Check
+
+Lists the colours, fonts, border radii and box shadows the page actually renders with, led by the counts that say whether the tokens look disciplined. Near-identical values and a typeface whose first named face never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert that anything is off-system.
+
 ### Outline Checker
 
 Draws an outline around every element, so the structure and spacing of a layout can be seen at a glance.
@@ -104,7 +108,7 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。10のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。11のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
@@ -175,6 +179,10 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 ページのランドマーク領域について機械が判断できることを報告します。読み手が飛べる `main` が無い、あるいは1つしか許されないのに複数ある、といったもの。そして、同じ役割のランドマークがスクリーンリーダーに同一に読み上げられる場合——名前が同じか、どちらも名前が無いか——です。名前の無い `nav` が2つあると、領域を飛び渡る一覧で同じ語が二度読まれます。
 
 ページが本来マークアップすべき領域を備えているかは、ソフトウェアには答えられません。`main` が1つだけで他に何も無いページは、正しいのかもしれませんし、ヘッダーやフッターがマークアップされていない div でできているのかもしれません。そこでランドマークを出現順に、入れ子にして、役割とアクセシブルな名前を添えて並べます。ページの地図として読んでご判断ください。誰にも見えない領域は集計から外します。地図全体はそのままの字下げでコピーできます。
+
+### トークンチェック
+
+ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ値や、先頭の書体が読み込まれていないスタックは断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。
 
 ### アウトラインチェッカー
 

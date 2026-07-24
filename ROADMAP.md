@@ -419,7 +419,7 @@ ready.
 | 0.13.1 | Pointing fix: skip opacity:0 / zero-size targets so the red box does not light empty space |
 | 0.14.0 | 24 panels isolated from the page's CSS — shipped; host/pointer hardening, Escape to close, panelCss drift check folded in |
 | 0.15.0 | 25 QR of the current URL, for device testing — shipped (popup) |
-| 0.16.0 | 26 design-token audit |
+| 0.16.0 | 26 design-token audit — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -478,7 +478,8 @@ dummy text closes item 12 and item 24 isolates the panels. Neither competes
 for the accessible-name work the
 checks share, so both slot in wherever a release has room, the way 23 and 24
 do. Item 25 shipped 2026-07-25 in the popup (settled there rather than as a
-page panel).
+page panel). Item 26 shipped 2026-07-25 as the Token Check panel: it has to
+read computed styles, so it could not follow the QR into the popup.
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
@@ -1215,7 +1216,7 @@ The code still draws when the checkers cannot inject (for example
 `chrome://` pages), because the address alone is enough. It is not a
 checker, has no keyboard command, and does not touch `kraftyCheckers`.
 
-### 26. A design-token audit
+### 26. A design-token audit — done
 
 Asked 2026-07-24. What a designer reviewing a build wants to see: the colours
 and fonts the page actually renders with, to check them against the design
@@ -1240,6 +1241,15 @@ vague link text this stays a listing a person judges, not a pass/fail.
 
 The larger of the two new utilities, and the one whose framing is least
 settled, which is why it follows the QR code rather than leading.
+
+Built 2026-07-25, in 0.16.0, as the Token Check — its own panel. Visible
+elements contribute `color` and `background-color`, `font-family` stacks,
+`border-radius` and `box-shadow` (each deduped); the panel leads with those
+counts, notes near-identical clusters and primary faces that fail a canvas
+metrics check against the stack's fallback, and lists the tokens for
+judgement. Soft-capped at 4000 visible elements so a huge DOM cannot freeze
+the tab. Not a popup utility: it has to read the page's computed styles, so
+it is a checker with a command like the others.
 
 ## Deferred, with reasons
 

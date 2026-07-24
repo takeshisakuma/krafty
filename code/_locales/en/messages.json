@@ -777,6 +777,138 @@
     "message": "Toggle Landmark Check",
     "description": "Keyboard shortcut description for the landmark checker."
   },
+  "checkerToken": {
+    "message": "Token Check",
+    "description": "Heading of the design-token audit panel (item 26)."
+  },
+  "commandTokenCheck": {
+    "message": "Toggle Token Check",
+    "description": "Keyboard shortcut description for the design-token audit."
+  },
+  "tokenSummary": {
+    "message": "$colours$ colours · $fonts$ fonts · $radii$ radii · $shadows$ shadows",
+    "description": "Lead counts for the token audit.",
+    "placeholders": {
+      "colours": {
+        "content": "$1",
+        "example": "12"
+      },
+      "fonts": {
+        "content": "$2",
+        "example": "3"
+      },
+      "radii": {
+        "content": "$3",
+        "example": "4"
+      },
+      "shadows": {
+        "content": "$4",
+        "example": "2"
+      }
+    }
+  },
+  "tokenPaletteSprawl": {
+    "message": "$colours$ near-identical colours sit in $clusters$ clusters — weigh whether the palette meant fewer tokens",
+    "description": "Listed rather than asserted: Krafty does not know the design system.",
+    "placeholders": {
+      "colours": {
+        "content": "$1",
+        "example": "9"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "2"
+      }
+    }
+  },
+  "tokenRadiusSprawl": {
+    "message": "$radii$ near-identical radii sit in $clusters$ clusters — weigh whether corners meant fewer tokens",
+    "description": "Listed rather than asserted.",
+    "placeholders": {
+      "radii": {
+        "content": "$1",
+        "example": "5"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "1"
+      }
+    }
+  },
+  "tokenShadowSprawl": {
+    "message": "$shadows$ near-identical shadows sit in $clusters$ clusters — weigh whether elevation meant fewer tokens",
+    "description": "Listed rather than asserted.",
+    "placeholders": {
+      "shadows": {
+        "content": "$1",
+        "example": "4"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "1"
+      }
+    }
+  },
+  "tokenFontFallback": {
+    "message": "$count$ font stacks may be falling back: the first named face does not appear loaded",
+    "description": "Canvas metrics matched the fallback alone; listed for judgement.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "tokenFontFallbackOne": {
+    "message": "1 font stack may be falling back: the first named face does not appear loaded",
+    "description": "Singular form of tokenFontFallback."
+  },
+  "tokenFontFallbackHint": {
+    "message": "fallback?",
+    "description": "Short hint beside a font stack whose primary face did not load."
+  },
+  "tokenSampled": {
+    "message": "Stopped after $count$ visible elements so a huge DOM cannot freeze the tab",
+    "description": "Shown when the soft element cap is hit.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4000"
+      }
+    }
+  },
+  "tokenSectionColours": {
+    "message": "Colours",
+    "description": "Section heading listing distinct colours used on the page."
+  },
+  "tokenColoursListLabel": {
+    "message": "Colours in use",
+    "description": "Label above the colour list, with a copy-all button."
+  },
+  "tokenSectionFonts": {
+    "message": "Fonts",
+    "description": "Section heading listing font stacks used on the page."
+  },
+  "tokenFontsListLabel": {
+    "message": "Font stacks in use",
+    "description": "Label above the font stack list, with a copy-all button."
+  },
+  "tokenSectionRadii": {
+    "message": "Radii",
+    "description": "Section heading listing border-radius values used on the page."
+  },
+  "tokenRadiiListLabel": {
+    "message": "Border radii in use",
+    "description": "Label above the border-radius list."
+  },
+  "tokenSectionShadows": {
+    "message": "Shadows",
+    "description": "Section heading listing box-shadow values used on the page."
+  },
+  "tokenShadowsListLabel": {
+    "message": "Box shadows in use",
+    "description": "Label above the box-shadow list."
+  },
   "copyLandmarks": {
     "message": "Copy the landmarks",
     "description": "Copy button label for the nested landmark list."
@@ -1059,6 +1191,14 @@
   },
   "manualLandmarkBody": {
     "message": "Report what can be decided about a page's landmark regions — a missing or duplicated main, and landmarks of one role a screen reader cannot tell apart — and draw the landmarks nested, each with its role and name, for you to read as a map of the page.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTokenTitle": {
+    "message": "Token Check",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTokenBody": {
+    "message": "List the colours, fonts, border radii and box shadows the page actually renders with, led by counts that show whether the tokens look disciplined. Near-identical values and a typeface that never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert off-system.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

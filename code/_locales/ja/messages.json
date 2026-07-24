@@ -777,6 +777,138 @@
     "message": "ランドマークチェックの切り替え",
     "description": "Keyboard shortcut description for the landmark checker."
   },
+  "checkerToken": {
+    "message": "トークンチェック",
+    "description": "Heading of the design-token audit panel (item 26)."
+  },
+  "commandTokenCheck": {
+    "message": "トークンチェックの切り替え",
+    "description": "Keyboard shortcut description for the design-token audit."
+  },
+  "tokenSummary": {
+    "message": "色 $colours$ · フォント $fonts$ · 角丸 $radii$ · 影 $shadows$",
+    "description": "Lead counts for the token audit.",
+    "placeholders": {
+      "colours": {
+        "content": "$1",
+        "example": "12"
+      },
+      "fonts": {
+        "content": "$2",
+        "example": "3"
+      },
+      "radii": {
+        "content": "$3",
+        "example": "4"
+      },
+      "shadows": {
+        "content": "$4",
+        "example": "2"
+      }
+    }
+  },
+  "tokenPaletteSprawl": {
+    "message": "ほぼ同じ色が $colours$ 個、$clusters$ グループにまとまっています。パレットがより少ないトークンを想定していたか、ご自身で判断してください",
+    "description": "Listed rather than asserted: Krafty does not know the design system.",
+    "placeholders": {
+      "colours": {
+        "content": "$1",
+        "example": "9"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "2"
+      }
+    }
+  },
+  "tokenRadiusSprawl": {
+    "message": "ほぼ同じ角丸が $radii$ 個、$clusters$ グループにまとまっています。より少ないトークンを想定していたか、ご自身で判断してください",
+    "description": "Listed rather than asserted.",
+    "placeholders": {
+      "radii": {
+        "content": "$1",
+        "example": "5"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "1"
+      }
+    }
+  },
+  "tokenShadowSprawl": {
+    "message": "ほぼ同じ影が $shadows$ 個、$clusters$ グループにまとまっています。より少ないトークンを想定していたか、ご自身で判断してください",
+    "description": "Listed rather than asserted.",
+    "placeholders": {
+      "shadows": {
+        "content": "$1",
+        "example": "4"
+      },
+      "clusters": {
+        "content": "$2",
+        "example": "1"
+      }
+    }
+  },
+  "tokenFontFallback": {
+    "message": "フォントスタック $count$ 件で、先頭の書体が読み込まれていない可能性があります",
+    "description": "Canvas metrics matched the fallback alone; listed for judgement.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "tokenFontFallbackOne": {
+    "message": "フォントスタック 1 件で、先頭の書体が読み込まれていない可能性があります",
+    "description": "Singular form of tokenFontFallback."
+  },
+  "tokenFontFallbackHint": {
+    "message": "フォールバック？",
+    "description": "Short hint beside a font stack whose primary face did not load."
+  },
+  "tokenSampled": {
+    "message": "巨大な DOM でタブが固まらないよう、表示中の要素 $count$ 個で打ち切りました",
+    "description": "Shown when the soft element cap is hit.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4000"
+      }
+    }
+  },
+  "tokenSectionColours": {
+    "message": "色",
+    "description": "Section heading listing distinct colours used on the page."
+  },
+  "tokenColoursListLabel": {
+    "message": "使われている色",
+    "description": "Label above the colour list, with a copy-all button."
+  },
+  "tokenSectionFonts": {
+    "message": "フォント",
+    "description": "Section heading listing font stacks used on the page."
+  },
+  "tokenFontsListLabel": {
+    "message": "使われているフォントスタック",
+    "description": "Label above the font stack list, with a copy-all button."
+  },
+  "tokenSectionRadii": {
+    "message": "角丸",
+    "description": "Section heading listing border-radius values used on the page."
+  },
+  "tokenRadiiListLabel": {
+    "message": "使われている角丸",
+    "description": "Label above the border-radius list."
+  },
+  "tokenSectionShadows": {
+    "message": "影",
+    "description": "Section heading listing box-shadow values used on the page."
+  },
+  "tokenShadowsListLabel": {
+    "message": "使われている影",
+    "description": "Label above the box-shadow list."
+  },
   "copyLandmarks": {
     "message": "ランドマークをコピー",
     "description": "Copy button label for the nested landmark list."
@@ -1059,6 +1191,14 @@
   },
   "manualLandmarkBody": {
     "message": "ページのランドマーク領域について機械が判断できること——main の欠落や重複、同じ役割で区別できないランドマーク——を報告し、ランドマークを入れ子で、役割と名前を添えて並べます。ページの地図として読めます。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTokenTitle": {
+    "message": "トークンチェック",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTokenBody": {
+    "message": "ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ値や、読み込まれていない書体は断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {

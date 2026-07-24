@@ -444,6 +444,51 @@ hr {
   @include panel-place(bottom-right, 1);
 }
 
+:host(.kraftyTokenInformation) {
+  /* Utility rather than a defect finder; start near the heading outline,
+     which is the other reading-heavy panel a designer may open beside it. */
+  @include panel-place(top-right, 1);
+
+  .kraftyTokenColourList li {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: center;
+    column-gap: 8px;
+  }
+
+  .kraftyTokenSwatch {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #bbb;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .kraftyTokenFontList li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 8px;
+  }
+
+  .kraftyTokenFontList .kraftyPanelHint {
+    grid-column: 1;
+    margin-top: 2px;
+  }
+
+  .kraftyTokenFontList .kraftyPanelCount {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .kraftyTokenValueList li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 8px;
+  }
+}
+
 :host(.kraftyHeadInformation) {
   @include panel-place(bottom-left);
 
