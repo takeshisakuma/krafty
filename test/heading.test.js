@@ -17,9 +17,10 @@ async function check(html) {
   return withPage({ html, checkers: ["headingCheck"] }, async (page) => {
     const state = await page.evaluate(() => {
       const panel = document.getElementById("js-kraftyHeadingInformation");
+      const root = kraftyPanelRoot(panel);
 
       return {
-        findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+        findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
           (item) => ({
             level: item.classList.contains("kraftyCheck-alert")
               ? "alert"
@@ -28,19 +29,19 @@ async function check(html) {
           })
         ),
         summary:
-          panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+          root?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
         outline: [
-          ...(panel?.querySelectorAll(".kraftyOutlineItem") ?? []),
+          ...(root?.querySelectorAll(".kraftyOutlineItem") ?? []),
         ].map((item) => ({
           tag: item.querySelector(".kraftyOutlineLevel")?.textContent ?? "",
           text: item.textContent ?? "",
           indent: /** @type {HTMLElement} */ (item).style.paddingLeft,
           skipped: item.classList.contains("kraftyOutlineSkip"),
         })),
-        notes: [...(panel?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
+        notes: [...(root?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
           (note) => note.textContent ?? ""
         ),
-        hasReview: panel?.querySelector(".kraftyOutline") !== null,
+        hasReview: root?.querySelector(".kraftyOutline") !== null,
       };
     });
 
@@ -48,8 +49,11 @@ async function check(html) {
        expected text from the DOM - that would pass even if the button
        assembled something else entirely. */
     const copied = await page.evaluate(async () => {
-      const button = document.querySelector(".kraftyOutline")
-        ? [...document.querySelectorAll(".kraftyCopyAll")].at(-1)
+      const root = kraftyPanelRoot(
+        document.getElementById("js-kraftyHeadingInformation")
+      );
+      const button = root?.querySelector(".kraftyOutline")
+        ? [...(root.querySelectorAll(".kraftyCopyAll") ?? [])].at(-1)
         : null;
 
       if (!(button instanceof HTMLElement)) {
@@ -263,9 +267,11 @@ test("heading checker", async (t) => {
       { html: "<h1>Page</h1>", checkers: ["headCheck", "headingCheck"] },
       async (page) =>
         page.evaluate(() => {
-          const panel = document.getElementById("js-kraftyHeadingInformation");
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyHeadingInformation")
+          );
           return [
-            ...(panel?.querySelectorAll(".kraftyOutlineItem") ?? []),
+            ...(root?.querySelectorAll(".kraftyOutlineItem") ?? []),
           ].length;
         })
     );

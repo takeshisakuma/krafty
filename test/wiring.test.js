@@ -194,6 +194,7 @@ test("wiring", async (t) => {
     assert.strictEqual(injected[0].tabId, 7);
     assert.deepStrictEqual(injected[0].files, [
       "js/i18n.js",
+      "js/panelCss.js",
       "js/panel.js",
       "js/altCheck.js",
     ]);

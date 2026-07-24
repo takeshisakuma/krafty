@@ -10,7 +10,7 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { withPage, SCRIPTS } = require("./support.js");
+const { withPage, SCRIPTS, hoverShadow, clickShadow } = require("./support.js");
 
 /**
  * An SVG data URL carries its own intrinsic size, so naturalWidth is known
@@ -23,6 +23,8 @@ const source = (width, height) =>
   `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#ccc"/></svg>`
   )}`;
+
+const PANEL = "#js-kraftyImageInformation";
 
 /**
  * @param {string} html
@@ -42,23 +44,24 @@ async function check(html, deviceScaleFactor = 1) {
 
       return page.evaluate(() => {
         const panel = document.getElementById("js-kraftyImageInformation");
+        const root = kraftyPanelRoot(panel);
 
         return {
-          findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+          findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
             (item) => item.textContent ?? ""
           ),
-          rows: [...(panel?.querySelectorAll(".kraftyImageList li") ?? [])].map(
+          rows: [...(root?.querySelectorAll(".kraftyImageList li") ?? [])].map(
             (item) => item.textContent ?? ""
           ),
-          notes: [...(panel?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
+          notes: [...(root?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
             (note) => note.textContent ?? ""
           ),
           /* The allowance note is a .kraftyNote, not a .kraftyPanelNote -
              a distinction the first version of the allowance test missed,
              which is why it passed without ever reading this. */
-          basis: panel?.querySelector(".kraftyNote")?.textContent ?? "",
+          basis: root?.querySelector(".kraftyNote")?.textContent ?? "",
           summary:
-            panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+            root?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
         };
       });
     }
@@ -102,7 +105,7 @@ test("image checker", async (t) => {
 
         const row = ".kraftyImageList li.kraftyLocatable";
 
-        await page.hover(row);
+        await hoverShadow(page, PANEL, row);
 
         const shown = await page.evaluate(() => {
           const box = document.getElementById("js-kraftyPointerHover");
@@ -115,7 +118,7 @@ test("image checker", async (t) => {
 
         assert.ok(shown, "hovering the row draws a box over the image");
 
-        await page.click(row);
+        await clickShadow(page, PANEL, row);
 
         const pinned = await page.evaluate(
           () => document.getElementById("js-kraftyPointerPin") !== null
@@ -198,8 +201,10 @@ test("image checker", async (t) => {
         await page.evaluate(SCRIPTS.imageCheck);
 
         return page.evaluate(() => {
-          const panel = document.getElementById("js-kraftyImageInformation");
-          return [...(panel?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyImageInformation")
+          );
+          return [...(root?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
             (note) => note.textContent ?? ""
           );
         });

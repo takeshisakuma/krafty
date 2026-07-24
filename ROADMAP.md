@@ -416,7 +416,8 @@ ready.
 | 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — shipped |
 | 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — shipped |
 | 0.13.0 | 12 the dummy-text listing — the last decidable-enough part; inline console.log parked (see 12) |
-| 0.14.0 | 24 panels isolated from the page's CSS — a rendering bug, alone for the shadow-DOM build split |
+| 0.13.1 | Pointing fix: skip opacity:0 / zero-size targets so the red box does not light empty space |
+| 0.14.0 | 24 panels isolated from the page's CSS — shipped |
 | 0.15.0 | 25 QR of the current URL, for device testing |
 | 0.16.0 | 26 design-token audit |
 
@@ -1100,7 +1101,7 @@ outlives its findings. The dimensionless images and the headerless tables are
 counted rather than listed, so they have no row to point from yet; when they
 grow one, it points the same way.
 
-### 24. Panels isolated from the page's CSS
+### 24. Panels isolated from the page's CSS — done
 
 Asked 2026-07-22, from https://timetechnologies.ltd/, where a panel came up
 with the wrong font size and padding. The panels live in the page's own DOM,
@@ -1149,6 +1150,16 @@ stylesheet-build split above, which is more than the dummy text in 0.13.0
 can carry beside it. The frequency is low, so it does not jump ahead of the
 dummy text; the size is not, so it does not ride with it. A release of its
 own is the answer to both.
+
+Built 2026-07-24, in 0.14.0. Each panel host attaches an open shadow root,
+styles it from `kraftyPanelCss` (compiled from `panel.scss` and embedded by
+`scripts/embed-panel-css.js`), and keeps chrome and findings inside. Paint
+sits on an inner `.kraftyPanelShell`: the host is still a light-DOM `div`,
+and pages such as timetechnologies.ltd reset `div { background: transparent }`,
+which would clear a white background set on `:host`. Global `content.css` is
+only the page overlays. The Amazon list-marker case and the transparent-host
+case are regressions in `panel.test.js`; the popup review and the tests pierce
+`shadowRoot` through `kraftyPanelRoot`.
 
 ### 25. A QR code of the current URL, for device testing
 

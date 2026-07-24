@@ -5,11 +5,10 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { withPage, SCRIPTS } = require("./support.js");
+const { withPage, SCRIPTS, shadowBox, clickShadow } = require("./support.js");
 
 const PAGE = `<ul><div>a div directly inside ul</div></ul>`;
 const PANEL = "#js-kraftyNestInformation";
-const BAR = `${PANEL} .kraftyPanelBar`;
 
 /**
  * @param {import("puppeteer").Page} page
@@ -25,14 +24,16 @@ async function boxOf(page, selector) {
 }
 
 /**
- * Drag the title bar by the given offset.
+ * Drag the title bar by the given offset. The bar lives in the panel's
+ * shadow root, so the handle is resolved there rather than via a light
+ * selector under the host.
  *
  * @param {import("puppeteer").Page} page
  * @param {number} byX
  * @param {number} byY
  */
 async function dragBar(page, byX, byY) {
-  const bar = await boxOf(page, BAR);
+  const bar = await shadowBox(page, PANEL, ".kraftyPanelBar");
   const fromX = bar.x + bar.width / 2;
   const fromY = bar.y + bar.height / 2;
 
@@ -127,7 +128,7 @@ test("panel dragging", async (t) => {
         async (page) =>
           page.evaluate(() => {
             const panel = document.getElementById("js-kraftyNestInformation");
-            const handle = panel?.querySelector(".kraftyPanelBar");
+            const handle = kraftyPanelRoot(panel)?.querySelector(".kraftyPanelBar");
             const box = handle?.getBoundingClientRect();
 
             return box
@@ -159,7 +160,7 @@ test("panel dragging", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyNestInformation");
-          const handle = panel?.querySelector(".kraftyPanelBar");
+          const handle = kraftyPanelRoot(panel)?.querySelector(".kraftyPanelBar");
           const box = handle?.getBoundingClientRect();
 
           return box
@@ -191,7 +192,7 @@ test("panel dragging", async (t) => {
         hasTouch: true,
       },
       async (page) => {
-        const bar = await boxOf(page, BAR);
+        const bar = await shadowBox(page, PANEL, ".kraftyPanelBar");
         const startX = Math.round(bar.x + bar.width / 2);
         const startY = Math.round(bar.y + bar.height / 2);
 
@@ -252,12 +253,7 @@ test("panel dragging", async (t) => {
     const result = await withPage(
       { html: PAGE, checkers: ["nestCheck"], width: 1000, height: 700 },
       async (page) => {
-        const close = await boxOf(page, `${PANEL} .kraftyPanelClose`);
-
-        await page.mouse.click(
-          close.x + close.width / 2,
-          close.y + close.height / 2
-        );
+        await clickShadow(page, PANEL, ".kraftyPanelClose");
 
         return page.evaluate(() => ({
           panel: document.querySelector("#js-kraftyNestInformation") !== null,
@@ -275,5 +271,148 @@ test("panel dragging", async (t) => {
       false,
       "body class stayed, so the popup would still show this as active"
     );
+  });
+
+  /* Item 24: open shadow on the host. The host stays in the light DOM for
+     getElementById; chrome and findings live under shadowRoot. */
+  await t.test("hosts findings in an open shadow root", async () => {
+    const state = await withPage(
+      { html: PAGE, checkers: ["nestCheck"] },
+      async (page) =>
+        page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+          const root = panel?.shadowRoot;
+
+          return {
+            host: panel !== null,
+            hostClass: panel?.classList.contains("kraftyPanel") ?? false,
+            hasShadow: root !== null && root !== undefined,
+            bar: root?.querySelector(".kraftyPanelBar") !== null,
+            lightBar: panel?.querySelector(".kraftyPanelBar") !== null,
+          };
+        })
+    );
+
+    assert.ok(state.host, "panel host should stay in the light DOM");
+    assert.ok(state.hostClass, "host should keep kraftyPanel");
+    assert.ok(state.hasShadow, "panel.shadowRoot should be non-null");
+    assert.ok(state.bar, "chrome should live in the shadow");
+    assert.strictEqual(
+      state.lightBar,
+      false,
+      "chrome must not remain a light-DOM child of the host"
+    );
+  });
+
+  /* After the shadow split, max-height on the host alone was not enough: the
+     shell grew with its content and painted past the host (overflow visible).
+     Tall findings must scroll inside .kraftyPanelBody instead. */
+  await t.test("scrolls tall findings inside the panel", async () => {
+    const tall = Array.from(
+      { length: 40 },
+      () => `<button type="button"><svg></svg></button>`
+    ).join("");
+
+    const size = await withPage(
+      {
+        html: tall,
+        checkers: ["markupCheck"],
+        width: 1000,
+        height: 600,
+      },
+      async (page) =>
+        page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyMarkupInformation");
+          const body = panel?.shadowRoot?.querySelector(".kraftyPanelBody");
+          const box = panel?.getBoundingClientRect();
+
+          return {
+            panelHeight: box?.height ?? 0,
+            viewport: window.innerHeight,
+            bodyScroll: body
+              ? {
+                  scrollHeight: body.scrollHeight,
+                  clientHeight: body.clientHeight,
+                }
+              : null,
+          };
+        })
+    );
+
+    assert.ok(size.bodyScroll, "panel body should exist");
+    assert.ok(
+      size.panelHeight <= size.viewport * 0.8 + 1,
+      `panel grew past 80% of the viewport: ${size.panelHeight} in ${size.viewport}`
+    );
+    assert.ok(
+      size.bodyScroll.scrollHeight > size.bodyScroll.clientHeight,
+      `body should scroll when findings are tall: scroll=${size.bodyScroll.scrollHeight} client=${size.bodyScroll.clientHeight}`
+    );
+  });
+
+  /* The host is still a light-DOM div. Pages with a reset like
+     timetechnologies.ltd set `div { background: transparent }`, which would
+     clear a white background painted on :host. Paint lives on the shell
+     inside the shadow, which that rule cannot reach. */
+  await t.test("page div background reset does not clear the panel shell", async () => {
+    const colors = await withPage(
+      {
+        html: `<style>div { background: transparent !important; }</style>
+               <ul><div>a div directly inside ul</div></ul>`,
+        checkers: ["nestCheck"],
+      },
+      async (page) =>
+        page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+          const shell = panel?.shadowRoot?.querySelector(".kraftyPanelShell");
+
+          return {
+            host: panel ? getComputedStyle(panel).backgroundColor : null,
+            shell: shell ? getComputedStyle(shell).backgroundColor : null,
+          };
+        })
+    );
+
+    assert.ok(colors.shell, "shell should exist");
+    assert.notStrictEqual(
+      colors.shell,
+      "rgba(0, 0, 0, 0)",
+      `shell must stay opaque, got ${colors.shell}`
+    );
+    assert.notStrictEqual(
+      colors.shell,
+      "transparent",
+      `shell must stay opaque, got ${colors.shell}`
+    );
+  });
+
+  /* Amazon and similar pages set ul, ol { list-style: disc !important }. Before
+     the shadow, that overrode the panel's list-style:none. Shadow styles are
+     local, so the page rule must not put bullets on findings lists. */
+  await t.test("page list-style does not put bullets on shadow findings", async () => {
+    const styles = await withPage(
+      {
+        html: `<style>ul, ol { list-style: disc !important; }</style>
+               <div id="d"></div><div id="d"></div>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) =>
+        page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyMarkupInformation");
+          const root = panel?.shadowRoot;
+          const checks = root?.querySelector(".kraftyChecks");
+          const list = root?.querySelector(".kraftyPanelList");
+
+          return {
+            hasShadow: root != null,
+            checks: checks ? getComputedStyle(checks).listStyleType : null,
+            list: list ? getComputedStyle(list).listStyleType : null,
+          };
+        })
+    );
+
+    assert.ok(styles.hasShadow, "expected an open shadow root");
+    assert.strictEqual(styles.checks, "none");
+    assert.strictEqual(styles.list, "none");
   });
 });

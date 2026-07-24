@@ -493,6 +493,16 @@
   };
 
   /**
+   * The tree a panel's chrome and findings live in. Item 24 moved that into
+   * an open shadow root so page CSS cannot reach it; callers that already
+   * hold the host ask here rather than assuming light-DOM children.
+   *
+   * @param {Element | null | undefined} panel
+   * @returns {ShadowRoot | Element | null | undefined}
+   */
+  globalThis.kraftyPanelRoot = (panel) => panel?.shadowRoot ?? panel;
+
+  /**
    * Build an empty panel. Callers fill the returned body.
    *
    * `onRescan` adds a button that runs the check again.
@@ -513,6 +523,21 @@
     const panel = document.createElement("div");
     panel.id = id;
     panel.className = `kraftyPanel ${className}`;
+
+    /* Open so the popup review and the tests can still read findings. Closed
+       would isolate as well, and leave the rest of the tool blind. */
+    const root = panel.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = globalThis.kraftyPanelCss ?? "";
+    root.appendChild(style);
+
+    /* Paint lives on this shell, not the host. The host is still a light-DOM
+       div the page can select (resets like `div { background: transparent }`
+       are common); descendants inside the shadow are not. */
+    const shell = document.createElement("div");
+    shell.className = "kraftyPanelShell";
+    root.appendChild(shell);
 
     const bar = document.createElement("div");
     bar.className = "kraftyPanelBar";
@@ -544,11 +569,11 @@
     close.addEventListener("click", onClose);
     controls.appendChild(close);
 
-    panel.appendChild(bar);
+    shell.appendChild(bar);
 
     const body = document.createElement("div");
     body.className = "kraftyPanelBody";
-    panel.appendChild(body);
+    shell.appendChild(body);
 
     makeMovable(panel, bar, id);
 

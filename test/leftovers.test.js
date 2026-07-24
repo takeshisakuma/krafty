@@ -31,16 +31,17 @@ async function check(html, serve) {
     async (page) =>
       page.evaluate(() => {
         const panel = document.getElementById("js-kraftyLeftoversInformation");
+        const root = kraftyPanelRoot(panel);
 
         return {
-          findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+          findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
             (item) => item.textContent ?? ""
           ),
-          rows: [...(panel?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
+          rows: [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
             (item) => item.textContent ?? ""
           ),
           summary:
-            panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+            root?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
         };
       })
   );

@@ -17,6 +17,10 @@ declare var kraftyMessage: (
    count is exactly one. */
 declare var kraftyCount: (key: string, count: number) => string;
 
+/* Panel stylesheet string, embedded by scripts/embed-panel-css.js and
+   injected ahead of panel.js so each shadow root can style itself. */
+declare var kraftyPanelCss: string;
+
 /* js/panel.js builds the floating panels. */
 declare var kraftySection: (into: HTMLElement, key: string) => HTMLElement;
 
@@ -35,6 +39,13 @@ declare var kraftyPanel: (options: {
   /** Adds a button that runs the check again over the page as it is now. */
   onRescan?: () => void;
 }) => { panel: HTMLElement; body: HTMLElement };
+
+/* The shadow root a panel's chrome lives in, or the host itself before
+   item 24. Callers that already hold the host ask here rather than assuming
+   light-DOM children. */
+declare var kraftyPanelRoot: (
+  panel: Element | null | undefined
+) => ShadowRoot | Element | null | undefined;
 
 /* The findings block inside a panel: summary, copy-all button, and the list
    every reported finding is appended to. Shared so a second checker that

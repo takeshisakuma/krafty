@@ -22,6 +22,7 @@ const css = read("code", "content.css");
 /* The injected scripts, in the order the popup injects them. */
 const SCRIPTS = {
   i18n: read("code", "js", "i18n.js"),
+  panelCss: read("code", "js", "panelCss.js"),
   panel: read("code", "js", "panel.js"),
   nestCheck: read("code", "js", "nestCheck.js"),
   headCheck: read("code", "js", "headCheck.js"),
@@ -151,7 +152,7 @@ async function withPage(
     await page.addStyleTag({ content: css });
     await page.evaluate(installI18n, messages);
 
-    for (const name of ["i18n", "panel", ...checkers]) {
+    for (const name of ["i18n", "panelCss", "panel", ...checkers]) {
       await page.evaluate(SCRIPTS[/** @type {keyof typeof SCRIPTS} */ (name)]);
     }
 
@@ -164,4 +165,61 @@ async function withPage(
   }
 }
 
-module.exports = { withPage, SCRIPTS, messages };
+/**
+ * Bounding box of an element inside a panel's open shadow root (or the host
+ * itself if there is no shadow yet). Puppeteer's light-DOM selectors stop at
+ * the host, so hover/click of panel chrome goes through here then page.mouse.
+ *
+ * @param {import("puppeteer").Page} page
+ * @param {string} hostSelector
+ * @param {string} innerSelector
+ * @returns {Promise<{ x: number; y: number; width: number; height: number }>}
+ */
+async function shadowBox(page, hostSelector, innerSelector) {
+  const box = await page.evaluate(
+    (host, inner) => {
+      const panel = document.querySelector(host);
+      const root = panel?.shadowRoot ?? panel;
+      const el = root?.querySelector(inner);
+      if (!el) return null;
+
+      const rect = el.getBoundingClientRect();
+      return {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
+      };
+    },
+    hostSelector,
+    innerSelector
+  );
+
+  if (!box) {
+    throw new Error(`missing shadow element: ${hostSelector} ${innerSelector}`);
+  }
+
+  return box;
+}
+
+/**
+ * @param {import("puppeteer").Page} page
+ * @param {string} hostSelector
+ * @param {string} innerSelector
+ */
+async function hoverShadow(page, hostSelector, innerSelector) {
+  const box = await shadowBox(page, hostSelector, innerSelector);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+}
+
+/**
+ * @param {import("puppeteer").Page} page
+ * @param {string} hostSelector
+ * @param {string} innerSelector
+ */
+async function clickShadow(page, hostSelector, innerSelector) {
+  const box = await shadowBox(page, hostSelector, innerSelector);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+}
+
+module.exports = { withPage, SCRIPTS, messages, shadowBox, hoverShadow, clickShadow };

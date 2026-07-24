@@ -85,15 +85,16 @@ async function collect() {
       }
 
       const panel = document.getElementById("js-kraftyNestInformation");
+      const root = kraftyPanelRoot(panel);
       const titled = document.querySelector("[data-titled]");
       const anError = document.querySelector(".kraftyNestError");
 
-      const summary = panel?.querySelector(".kraftyPanelSummary");
-      const pairs = panel?.querySelectorAll(".kraftyPanelList li") ?? [];
+      const summary = root?.querySelector(".kraftyPanelSummary");
+      const pairs = root?.querySelectorAll(".kraftyPanelList li") ?? [];
 
       return {
         flagged,
-        panelText: panel ? (panel.textContent ?? "") : null,
+        panelText: root ? (root.textContent ?? "") : null,
         summaryText: summary ? (summary.textContent ?? "") : null,
         pairCount: pairs.length,
         errorCount: document.querySelectorAll(".kraftyNestError").length,
@@ -106,7 +107,9 @@ async function collect() {
        expected text from the DOM instead would pass even if the button
        assembled something else entirely. */
     const copied = await page.evaluate(async () => {
-      const button = document.querySelector(".kraftyCopyAll");
+      const button = kraftyPanelRoot(
+        document.getElementById("js-kraftyNestInformation")
+      )?.querySelector(".kraftyCopyAll");
 
       if (!(button instanceof HTMLElement)) {
         return null;

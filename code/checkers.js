@@ -155,9 +155,9 @@ globalThis.kraftyRunChecker = async (tabId, checker) => {
 
   await chrome.scripting.executeScript({
     target: { tabId, allFrames: checker.allFrames },
-    /* i18n.js and panel.js run first, in the same context, so the checker
-       can look up localised strings and build its panel. */
-    files: ["js/i18n.js", "js/panel.js", checker.file],
+    /* panelCss.js before panel.js: the shadow root reads kraftyPanelCss when
+       the shell is built. i18n.js stays ahead of both for localised strings. */
+    files: ["js/i18n.js", "js/panelCss.js", "js/panel.js", checker.file],
   });
 };
 

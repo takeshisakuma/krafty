@@ -100,19 +100,22 @@ function collectReview(panels) {
 
     lines.push(title);
 
-    const summary = panel.querySelector(".kraftyChecksSummary");
+    /* Item 24: findings live in the panel's shadow root. */
+    const root = panel.shadowRoot ?? panel;
+
+    const summary = root.querySelector(".kraftyChecksSummary");
 
     if (summary) {
       lines.push(`  ${summary.textContent}`);
     }
 
-    for (const finding of panel.querySelectorAll(".kraftyCheck")) {
+    for (const finding of root.querySelectorAll(".kraftyCheck")) {
       lines.push(`  - ${finding.textContent}`);
     }
 
     /* The nest checker's breakdown is its findings, and it has no
        .kraftyCheck rows to show for them. */
-    for (const row of panel.querySelectorAll(".kraftyPanelList li")) {
+    for (const row of root.querySelectorAll(".kraftyPanelList li")) {
       lines.push(`  - ${(row.textContent ?? "").replace(/\s+/g, " ").trim()}`);
     }
 

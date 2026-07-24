@@ -15,23 +15,26 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { withPage, SCRIPTS } = require("./support.js");
+const { withPage, SCRIPTS, hoverShadow, clickShadow } = require("./support.js");
+
+const PANEL = "#js-kraftyMarkupInformation";
 
 /** @param {string} html */
 async function check(html) {
   return withPage({ html, checkers: ["markupCheck"] }, async (page) =>
     page.evaluate(() => {
       const panel = document.getElementById("js-kraftyMarkupInformation");
+      const root = kraftyPanelRoot(panel);
 
       return {
-        findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+        findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
           (item) => item.textContent ?? ""
         ),
-        rows: [...(panel?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
+        rows: [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
           (item) => item.textContent ?? ""
         ),
         summary:
-          panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+          root?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
       };
     })
   );
@@ -95,9 +98,11 @@ test("markup checker", async (t) => {
         await page.evaluate(SCRIPTS.markupCheck);
 
         return page.evaluate(() => {
-          const panel = document.getElementById("js-kraftyMarkupInformation");
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyMarkupInformation")
+          );
           return [
-            ...(panel?.querySelectorAll(".kraftyCheck") ?? []),
+            ...(root?.querySelectorAll(".kraftyCheck") ?? []),
           ].map((item) => item.textContent ?? "");
         });
       }
@@ -120,9 +125,11 @@ test("markup checker", async (t) => {
         await page.evaluate(SCRIPTS.markupCheck);
 
         return page.evaluate(() => {
-          const panel = document.getElementById("js-kraftyMarkupInformation");
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyMarkupInformation")
+          );
           return [
-            ...(panel?.querySelectorAll(".kraftyPanelList li") ?? []),
+            ...(root?.querySelectorAll(".kraftyPanelList li") ?? []),
           ].map((item) => item.textContent ?? "");
         });
       }
@@ -632,7 +639,7 @@ test("markup checker", async (t) => {
       async (page) => {
         const row = ".kraftyPanelList li.kraftyLocatable";
 
-        await page.hover(row);
+        await hoverShadow(page, PANEL, row);
 
         const hover = await page.evaluate(() => {
           const box = document.getElementById("js-kraftyPointerHover");
@@ -647,7 +654,7 @@ test("markup checker", async (t) => {
         assert.ok(hover.inBody, "in the page body, not inside a panel");
         assert.ok(hover.shown, "and shown while the row is hovered");
 
-        await page.click(row);
+        await clickShadow(page, PANEL, row);
 
         const pinned = await page.evaluate(() => {
           const box = document.getElementById("js-kraftyPointerPin");
@@ -681,11 +688,14 @@ test("markup checker", async (t) => {
         checkers: ["markupCheck"],
       },
       async (page) =>
-        page.evaluate(() =>
-          [...document.querySelectorAll(".kraftyPanelList li")]
+        page.evaluate(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyMarkupInformation")
+          );
+          return [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])]
             .filter((li) => !li.textContent?.includes("svg"))
-            .map((li) => li.classList.contains("kraftyLocatable"))
-        )
+            .map((li) => li.classList.contains("kraftyLocatable"));
+        })
     );
 
     assert.deepStrictEqual(
@@ -704,11 +714,14 @@ test("markup checker", async (t) => {
         checkers: ["markupCheck"],
       },
       async (page) =>
-        page.evaluate(() =>
-          [...document.querySelectorAll(".kraftyPanelList li")].map((li) =>
-            li.classList.contains("kraftyLocatable")
-          )
-        )
+        page.evaluate(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyMarkupInformation")
+          );
+          return [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
+            (li) => li.classList.contains("kraftyLocatable")
+          );
+        })
     );
 
     assert.deepStrictEqual(locatable, [false]);
@@ -725,9 +738,9 @@ test("markup checker", async (t) => {
         const finding = () =>
           page.evaluate(
             () =>
-              document
-                .getElementById("js-kraftyMarkupInformation")
-                ?.querySelector(".kraftyCheck")?.textContent ?? ""
+              kraftyPanelRoot(
+                document.getElementById("js-kraftyMarkupInformation")
+              )?.querySelector(".kraftyCheck")?.textContent ?? ""
           );
 
         const first = await finding();
@@ -743,7 +756,7 @@ test("markup checker", async (t) => {
 
         const stale = await finding();
 
-        await page.click(".kraftyPanelRescan");
+        await clickShadow(page, PANEL, ".kraftyPanelRescan");
 
         return { first, stale, fresh: await finding() };
       }

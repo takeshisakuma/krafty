@@ -43,7 +43,7 @@ async function check(headMarkup, options = {}) {
         const panel = document.getElementById("js-kraftyHeadInformation");
 
         return {
-          findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+          findings: [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyCheck") ?? [])].map(
             (item) => ({
               level: item.classList.contains("kraftyCheck-alert")
                 ? "alert"
@@ -52,15 +52,15 @@ async function check(headMarkup, options = {}) {
             })
           ),
           summary:
-            panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+            kraftyPanelRoot(panel)?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
           serpTitle:
-            panel?.querySelector(".kraftySerpTitle")?.textContent ?? "",
+            kraftyPanelRoot(panel)?.querySelector(".kraftySerpTitle")?.textContent ?? "",
           cardTitle:
-            panel?.querySelector(".kraftyCardTitle")?.textContent ?? "",
+            kraftyPanelRoot(panel)?.querySelector(".kraftyCardTitle")?.textContent ?? "",
           cardDescription:
-            panel?.querySelector(".kraftyCardDescription")?.textContent ?? "",
+            kraftyPanelRoot(panel)?.querySelector(".kraftyCardDescription")?.textContent ?? "",
           fallbacks: [
-            ...(panel?.querySelectorAll(".kraftyFallbackNote") ?? []),
+            ...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyFallbackNote") ?? []),
           ].map((n) => n.textContent ?? ""),
         };
       });
@@ -155,9 +155,9 @@ test("head checker", async (t) => {
 
           const findings = await page.evaluate(() =>
             [
-              ...(document
-                .getElementById("js-kraftyHeadInformation")
-                ?.querySelectorAll(".kraftyCheck") ?? []),
+              ...(kraftyPanelRoot(
+                document.getElementById("js-kraftyHeadInformation")
+              )?.querySelectorAll(".kraftyCheck") ?? []),
             ].map((item) => item.textContent ?? "")
           );
 
@@ -278,9 +278,9 @@ test("head checker", async (t) => {
 
         return page.evaluate(() =>
           [
-            ...(document
-              .getElementById("js-kraftyHeadInformation")
-              ?.querySelectorAll(".kraftyCheck") ?? []),
+            ...(kraftyPanelRoot(
+              document.getElementById("js-kraftyHeadInformation")
+            )?.querySelectorAll(".kraftyCheck") ?? []),
           ].map((item) => item.textContent ?? "")
         );
       }
@@ -328,14 +328,14 @@ test("head checker", async (t) => {
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
 
-          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+          const row = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])].find(
             (candidate) =>
               candidate.querySelector("strong")?.textContent === "og:image"
           );
 
           return {
             /* Same shape check() returns, so matching() works on it. */
-            findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+            findings: [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyCheck") ?? [])].map(
               (item) => ({
                 level: item.classList.contains("kraftyCheck-alert")
                   ? "alert"
@@ -519,7 +519,7 @@ test("head checker", async (t) => {
           const panel = document.getElementById("js-kraftyHeadInformation");
 
           return (
-            [...(panel?.querySelectorAll(".kraftyRow") ?? [])]
+            [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])]
               .find(
                 (candidate) =>
                   candidate.querySelector("strong")?.textContent === "hreflang"
@@ -562,8 +562,8 @@ test("head checker", async (t) => {
           const panel = document.getElementById("js-kraftyHeadInformation");
           return {
             summary:
-              panel?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
-            findings: [...(panel?.querySelectorAll(".kraftyCheck") ?? [])].map(
+              kraftyPanelRoot(panel)?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+            findings: [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyCheck") ?? [])].map(
               (i) => i.textContent ?? ""
             ),
           };
@@ -610,7 +610,7 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
-          const rows = [...(panel?.querySelectorAll(".kraftyRow") ?? [])];
+          const rows = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])];
 
           /** @param {string} label */
           const row = (label) =>
@@ -675,7 +675,7 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
-          const rows = [...(panel?.querySelectorAll(".kraftyRow") ?? [])];
+          const rows = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])];
 
           const titleRow = rows.find(
             (row) => row.querySelector("strong")?.textContent === "title"
@@ -688,9 +688,9 @@ test("head checker", async (t) => {
             onValue: titleRow?.querySelector(".kraftyCopy") !== null,
             onMissing: missingRow?.querySelector(".kraftyCopy") !== null,
             findingsShown:
-              panel?.querySelector(".kraftyCopyAll") instanceof HTMLElement &&
+              kraftyPanelRoot(panel)?.querySelector(".kraftyCopyAll") instanceof HTMLElement &&
               !(/** @type {HTMLElement} */ (
-                panel.querySelector(".kraftyCopyAll")
+                kraftyPanelRoot(panel)?.querySelector(".kraftyCopyAll")
               ).hidden),
           };
         });
@@ -729,7 +729,9 @@ test("head checker", async (t) => {
         await page.evaluate(SCRIPTS.headCheck);
 
         return page.evaluate(() => {
-          const button = document.querySelector(".kraftyCopyAll");
+          const button = kraftyPanelRoot(
+            document.getElementById("js-kraftyHeadInformation")
+          )?.querySelector(".kraftyCopyAll");
           return button instanceof HTMLElement ? button.hidden : null;
         });
       }
@@ -754,7 +756,7 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
-          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+          const row = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])].find(
             (candidate) =>
               candidate.querySelector("strong")?.textContent === "title"
           );
@@ -834,7 +836,7 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
-          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+          const row = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])].find(
             (candidate) =>
               candidate.querySelector("strong")?.textContent === "favicon"
           );
@@ -907,7 +909,7 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
-          const row = [...(panel?.querySelectorAll(".kraftyRow") ?? [])].find(
+          const row = [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyRow") ?? [])].find(
             (candidate) =>
               candidate.querySelector("strong")?.textContent === "twitter:image"
           );
