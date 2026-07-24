@@ -413,9 +413,12 @@ ready.
 | | items |
 |---|---|
 | 0.10.0 | 19 hreflang · 10 inputs with no label · 21 svg — shipped |
-| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — built |
-| 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — built |
-| 0.13.0 | 12 the rest — the dummy-text listing, and inline console.log if ever |
+| 0.11.0 | 11 link text, incl. the missing name · 22 ARIA contradictions · 23 point at the element · 12 leftovers, resource subset — shipped |
+| 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — shipped |
+| 0.13.0 | 12 the dummy-text listing — the last decidable-enough part; inline console.log parked (see 12) |
+| 0.14.0 | 24 panels isolated from the page's CSS — a rendering bug, alone for the shadow-DOM build split |
+| 0.15.0 | 25 QR of the current URL, for device testing |
+| 0.16.0 | 26 design-token audit |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -438,10 +441,15 @@ question waited until item 11 was built. With 11 built, its decidable half —
 resource addresses — was pulled forward into 0.11.0 as a checker of its own,
 the Leftovers checker, on the reasoning that a localhost URL is a deployment
 leftover rather than markup wrong in a way the page hides, so the Markup
-family would have had to stretch to hold it. What is left of 12 is the
-judgement half — staging hostnames and dummy text, listed not asserted — and
-inline console.log, which the entry below still argues is barely worth the
-reach; those keep 0.13.0, if they are done at all.
+family would have had to stretch to hold it. The staging
+hostnames shipped in 0.12.0 as notes, so what is left of 12 is the dummy
+text — per-language and open-ended, listed not asserted, the same shape as
+item 11's vague link text — and inline console.log, which the entry below
+still argues is barely worth the reach. **0.13.0 is scoped to the dummy text
+alone** (decided 2026-07-24): it is the last part of 12 that a script can
+reach honestly, and it extends the Leftovers checker rather than adding a
+surface. console.log stays parked, done only if the panel is ever made
+honest about reading inline scripts only; the entry below is why.
 
 23 and 24 were added 2026-07-22, left out of the table at first because where
 they fell against 11, 22, 20 and 12 was not settled. What was settled is 23
@@ -450,7 +458,25 @@ panels is the larger job and the one 23 is built to survive. Neither is a
 check, so neither competes for the accessible-name work the accessibility
 items share; they slot in wherever a release has room. 23 took that room in
 0.11.0 the day it was proposed, riding the link and ARIA findings it points
-at; 24 is still unplaced.
+at; 24 was placed 2026-07-24 in **0.14.0, on its own**. It is motivated by a
+real rendering bug (a panel came up with the wrong font and padding), so it
+is a fix rather than a feature — but the fix is a shadow-DOM refactor that
+splits the stylesheet build and touches every panel, too large to ride
+alongside the dummy text, so it takes a release of its own rather than
+co-shipping. Bug or feature is the wrong axis for release sizing; the size
+of the change is the axis, and this one is not small.
+
+25 and 26 were added 2026-07-24, the first features here that are not checks
+at all — a director's inspection tools rather than defect finders, which is a
+small widening of what the extension is for and worth naming as such. They
+were floated together with the dummy text; the three were deliberately not
+bundled into one release, on the same submission-size reasoning as
+everywhere above, and because each of the two carries an unsettled design
+question of its own. One per release: 25 in 0.15.0, 26 in 0.16.0, after the
+dummy text closes item 12 and item 24 isolates the panels. Neither competes
+for the accessible-name work the
+checks share, so both slot in wherever a release has room, the way 23 and 24
+do.
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
@@ -1086,6 +1112,20 @@ inside the panel reaches in. `panel.js` already marks left/top/right/bottom
 `!important` for this exact reason — the page is "not to be trusted" — but
 doing it a property at a time is a list that is never finished.
 
+A second case, 2026-07-24, on
+`https://www.amazon.co.jp/.../b/?node=2632478051` (the Amazon points page):
+the Markup Checker's findings list came up with a `・` bullet before every
+`li`, the page's list styling reaching into `.kraftyChecks`. What makes this
+one worth recording is that the mixin **already sets `list-style: none`** on
+`.kraftyChecks` — so this is not an unstated property inherited from the
+page, it is a stated one being overridden, by an Amazon rule specific or
+`!important` enough to beat the panel's class selector. That is the argument
+against the property-at-a-time defence in one screenshot: even the properties
+already on the list do not hold, so lengthening the list is not the fix. The
+shadow boundary with `:host { all: initial }` is, because a page rule cannot
+cross it however specific it is. When 24 is built, this page is a fixture to
+check the list markers against.
+
 The answer is a shadow root per panel, styled inside it, with
 `:host { all: initial }` to cut the inheritance the prefixes cannot reach. An
 `all: initial` reset without a shadow was the lighter option and is declined:
@@ -1102,6 +1142,67 @@ untouched, and the clipboard and i18n paths do not change.
 
 Bigger than item 23 and after it. It is also why item 23's box is specified
 to live in the page rather than in a panel.
+
+Placed in 0.14.0 on its own, 2026-07-24. It reads as a bug — the panels
+render wrong on some sites — but the fix is the shadow-DOM refactor and the
+stylesheet-build split above, which is more than the dummy text in 0.13.0
+can carry beside it. The frequency is low, so it does not jump ahead of the
+dummy text; the size is not, so it does not ride with it. A release of its
+own is the answer to both.
+
+### 25. A QR code of the current URL, for device testing
+
+Asked 2026-07-24. The everyday move it serves: a page is being reviewed on a
+desktop and has to be checked on a real phone, and typing a staging URL with
+a path and a query into a handset by hand is the friction. A QR of
+`location.href` in a panel is scanned once and the phone is on the page.
+
+Not a check — it finds no defect and reports nothing about the page. It is a
+utility, and the first item here that is, so it sits in its own panel with no
+findings section rather than pretending to be a checker.
+
+The one hard constraint is that the code is generated **locally, in the
+page**, never by handing the URL to a QR-image service. Krafty asks for no
+host permissions and the store listing says it collects nothing; the URLs it
+would be asked to encode are exactly the staging and intranet addresses the
+Leftovers checker exists to catch, and posting one to `api.qrserver.com`
+would leak the thing the rest of the tool treats as sensitive. A dependency-
+free generator is a few KB and keeps the extension self-contained — the same
+trade `panel.js` already makes for the clipboard, where it avoids a
+permission by doing the work itself. An external API is not an acceptable
+shortcut here; if a local generator cannot be made to fit, the feature waits
+rather than reaching for one.
+
+Open before building: whether it belongs in a page panel like the checkers
+or in the popup, since it is a per-tab utility and not a reading of the DOM.
+Lean towards the popup — it needs nothing from the page but its address, and
+the popup already has the tab.
+
+### 26. A design-token audit
+
+Asked 2026-07-24. What a designer reviewing a build wants to see: the colours
+and fonts the page actually renders with, to check them against the design
+system it was built from.
+
+The trap is shipping this as a dump. A flat list of every colour and font on
+the page is what DevTools and a dozen extensions already give, adds no
+judgement, and is the opposite of everything else here, which reports on what
+it looked at. So the shape has to be an **audit, not an inventory**: the
+finding is palette sprawl — forty-seven near-identical greys where a system
+has five — and unintended fonts, a `font-family` resolving to a fallback
+because the webfont never loaded being the useful case. List the tokens for
+the reader, the way item 11 lists link text, but lead with the counts that
+say whether the palette is disciplined.
+
+Two things to settle before building, both about noise. Reading every
+computed style on a busy page is expensive and produces a wall of values;
+the collection has to be bounded — used colours and font stacks, deduplicated
+and counted, not per-element. And "off-system" cannot be asserted without
+knowing the system, which the tool does not, so like the dummy text and the
+vague link text this stays a listing a person judges, not a pass/fail.
+
+The larger of the two new utilities, and the one whose framing is least
+settled, which is why it follows the QR code rather than leading.
 
 ## Deferred, with reasons
 
