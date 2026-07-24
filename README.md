@@ -84,7 +84,7 @@ Whether the page marks up the regions it ought to is not something software can 
 
 ### Token Check
 
-Lists the colours, fonts, border radii and box shadows the page actually renders with, led by the counts that say whether the tokens look disciplined. Near-identical values and a typeface whose first named face never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert that anything is off-system.
+Lists the colours, fonts, border radii and box shadows the page actually renders with, led by the counts that say whether the tokens look disciplined. Near-identical colours, radii or shadows, and a typeface whose first named face never loaded, are noted for you to judge — Krafty does not know the design system, so it does not assert that anything is off-system.
 
 ### Outline Checker
 
@@ -182,7 +182,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### トークンチェック
 
-ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ値や、先頭の書体が読み込まれていないスタックは断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。
+ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ色・角丸・影や、先頭の書体が読み込まれていないスタックは断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。
 
 ### アウトラインチェッカー
 

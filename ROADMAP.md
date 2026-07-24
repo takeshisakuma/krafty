@@ -419,7 +419,7 @@ ready.
 | 0.13.1 | Pointing fix: skip opacity:0 / zero-size targets so the red box does not light empty space |
 | 0.14.0 | 24 panels isolated from the page's CSS — shipped; host/pointer hardening, Escape to close, panelCss drift check folded in |
 | 0.15.0 | 25 QR of the current URL, for device testing — shipped (popup) |
-| 0.16.0 | 26 design-token audit — shipped |
+| 0.16.0 | 26 design-token audit (colours, fonts, radii, shadows) — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -478,8 +478,9 @@ dummy text closes item 12 and item 24 isolates the panels. Neither competes
 for the accessible-name work the
 checks share, so both slot in wherever a release has room, the way 23 and 24
 do. Item 25 shipped 2026-07-25 in the popup (settled there rather than as a
-page panel). Item 26 shipped 2026-07-25 as the Token Check panel: it has to
-read computed styles, so it could not follow the QR into the popup.
+page panel). Item 26 shipped 2026-07-25 as the Token Check panel (colours,
+fonts, border radii, box shadows): it has to read computed styles, so it
+could not follow the QR into the popup.
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
@@ -1218,26 +1219,27 @@ checker, has no keyboard command, and does not touch `kraftyCheckers`.
 
 ### 26. A design-token audit — done
 
-Asked 2026-07-24. What a designer reviewing a build wants to see: the colours
-and fonts the page actually renders with, to check them against the design
-system it was built from.
+Asked 2026-07-24. What a designer reviewing a build wants to see: the colours,
+fonts, border radii and box shadows the page actually renders with, to check
+them against the design system it was built from.
 
-The trap is shipping this as a dump. A flat list of every colour and font on
-the page is what DevTools and a dozen extensions already give, adds no
-judgement, and is the opposite of everything else here, which reports on what
-it looked at. So the shape has to be an **audit, not an inventory**: the
-finding is palette sprawl — forty-seven near-identical greys where a system
-has five — and unintended fonts, a `font-family` resolving to a fallback
-because the webfont never loaded being the useful case. List the tokens for
-the reader, the way item 11 lists link text, but lead with the counts that
-say whether the palette is disciplined.
+The trap is shipping this as a dump. A flat list of every token on the page
+is what DevTools and a dozen extensions already give, adds no judgement, and
+is the opposite of everything else here, which reports on what it looked at.
+So the shape has to be an **audit, not an inventory**: the finding is token
+sprawl — forty-seven near-identical greys, or a handful of almost-same
+radii and shadows, where a system has a few — and unintended fonts, a
+`font-family` resolving to a fallback because the webfont never loaded being
+the useful case. List the tokens for the reader, the way item 11 lists link
+text, but lead with the counts that say whether the set is disciplined.
 
 Two things to settle before building, both about noise. Reading every
 computed style on a busy page is expensive and produces a wall of values;
-the collection has to be bounded — used colours and font stacks, deduplicated
-and counted, not per-element. And "off-system" cannot be asserted without
-knowing the system, which the tool does not, so like the dummy text and the
-vague link text this stays a listing a person judges, not a pass/fail.
+the collection has to be bounded — used colours, font stacks, radii and
+shadows, deduplicated and counted, not per-element. And "off-system" cannot
+be asserted without knowing the system, which the tool does not, so like the
+dummy text and the vague link text this stays a listing a person judges, not
+a pass/fail.
 
 The larger of the two new utilities, and the one whose framing is least
 settled, which is why it follows the QR code rather than leading.
