@@ -25,21 +25,31 @@
    A placeholder image service - placehold.co, dummyimage.com and the like -
    an image nobody swapped for the real one. A closed list, no guessing.
 
-   Two more from item 12's list are here, but as listings rather than
+   Three more from item 12's list are here, but as listings rather than
    assertions - notes, not alerts, because each is a guess a person has to
    weigh. A hostname whose first label reads like an environment nobody meant
-   to ship - dev., staging. - which can equally be a real product. And a
-   developer marker left in an HTML comment - TODO, FIXME, 仮 - where that the
-   comment exists is decidable but whether it still matters is not. Both are
-   the same shape as item 11's vague link text: shown for the reader to judge,
-   never asserted to be wrong.
+   to ship - dev., staging. - which can equally be a real product. A developer
+   marker left in an HTML comment - TODO, FIXME, 仮 - where that the comment
+   exists is decidable but whether it still matters is not. And dummy text
+   left in the visible copy - Lorem ipsum, あああ, テストです - where "テスト"
+   is a real word as often as it is filler, so only the reader knows which
+   this one is. All three are the same shape as item 11's vague link text:
+   shown for the reader to judge, never asserted to be wrong.
 
-   The dummy text and the inline console.log from item 12's list are still not
-   here. The first is per-language and open-ended. The second cannot be read
-   honestly - most of it lives in bundled cross-origin scripts a content
-   script cannot see, so a panel scanning the inline minority and reporting
-   nothing would claim "no debug output" while never having read the code -
-   and both wait. */
+   The dummy text is why this checker is per-language and open-ended, and the
+   reason it is listed the way it is. Two shapes are distinctive enough to
+   catch anywhere in a fragment - Lorem ipsum, and one letter repeated
+   (あああ, aaaa) - and the rest are a closed list of filler words matched
+   only when they are the whole of an element's text, because "無料サンプル"
+   is real copy where "サンプル" alone on a line is not. It cannot be
+   exhaustive and does not try; it catches the common cases and leaves the
+   judgement to the note.
+
+   Only the inline console.log from item 12's list is still not here. It
+   cannot be read honestly - most of it lives in bundled cross-origin scripts
+   a content script cannot see, so a panel scanning the inline minority and
+   reporting nothing would claim "no debug output" while never having read the
+   code - so it waits. */
 
 (() => {
   const PANEL_ID = "js-kraftyLeftoversInformation";
@@ -156,6 +166,52 @@
      something innocent in a comment nobody meant as a marker. */
   const MARKER = /\b(?:TODO|FIXME|XXX)\b|仮|後で|後日差し替え/i;
 
+  /* Dummy copy left where the real text should be. Two shapes are distinctive
+     enough to match anywhere in a fragment: Lorem ipsum, and a run of one
+     letter (あああ, aaaa - three or more, so an ordinary double letter is
+     spared) or one placeholder mark (○○, ××, △△ - two or more of the *same*
+     mark, so a ○ / × comparison table is spared). The alternation carries two
+     capture groups because a placeholder mark repeats from two while a letter
+     needs three. */
+  const DUMMY_RUN = /lorem ipsum|([\p{L}])\1{2,}|([○◯×✕△▲□■])\2+/iu;
+
+  /* The rest are ordinary words as often as they are filler - "サンプル" is
+     real copy inside "無料サンプル" - so they count only when they are the
+     whole of an element's text, never as a substring. A closed list, matched
+     case-insensitively against the collapsed text; the Latin entries are the
+     ones with no innocent meaning (dummy, hoge, asdf), the everyday words
+     (test, sample, foo) left out because as a whole label they are ordinary
+     English. Japanese keeps テスト and サンプル: a line that is only that word
+     reads as filler far more often than the English does. */
+  const DUMMY_WHOLE = new Set([
+    "dummy",
+    "dummy text",
+    "placeholder",
+    "hoge",
+    "hogehoge",
+    "fuga",
+    "piyo",
+    "foobar",
+    "asdf",
+    "ダミー",
+    "ダミーテキスト",
+    "サンプル",
+    "サンプルテキスト",
+    "テスト",
+    "テストです",
+    "テストテキスト",
+    "てすと",
+    "仮",
+    "仮テキスト",
+    "ここにテキスト",
+    "ここにテキストが入ります",
+  ]);
+
+  /** Whether a fragment of collapsed, trimmed text reads as dummy copy.
+     @param {string} text */
+  const isDummy = (text) =>
+    DUMMY_RUN.test(text) || DUMMY_WHOLE.has(text.toLowerCase());
+
   /** Every address an element carries. src, href and action are one each;
      srcset is a comma-separated list, each entry a URL and an optional
      descriptor.
@@ -265,6 +321,65 @@
       }
     }
 
+    /* Dummy text left in the visible copy. Unlike a comment, this is on the
+       page and has an element to point at, so each row carries its element the
+       way the resource rows do. The isDummy test is cheap and runs first;
+       whether the fragment reaches anyone is checked only once it matches, so
+       a hidden template or an aria-hidden icon font is not listed and the
+       visibility work is paid for the few matches, not every text node. */
+    /** @type {{ element: Element, text: string }[]} */
+    const dummy = [];
+
+    const textWalker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT
+    );
+
+    for (let node = textWalker.nextNode(); node; node = textWalker.nextNode()) {
+      const parent = node.parentElement;
+
+      if (!parent || parent.closest(".kraftyPanel")) {
+        continue;
+      }
+
+      const tag = parent.localName;
+
+      /* The text inside these is code or is not shown, so it is not copy a
+         reader would ever see filler in. */
+      if (
+        tag === "script" ||
+        tag === "style" ||
+        tag === "noscript" ||
+        tag === "template"
+      ) {
+        continue;
+      }
+
+      const text = (node.nodeValue ?? "").replace(/\s+/g, " ").trim();
+
+      if (text === "" || !isDummy(text)) {
+        continue;
+      }
+
+      /* Reaches nobody, so it is not filler anyone was left looking at - and
+         this is where an icon font's private-use glyphs and a hidden template
+         would otherwise turn up. */
+      if (
+        parent.closest('[aria-hidden="true"]') ||
+        !parent.checkVisibility({
+          contentVisibilityAuto: true,
+          visibilityProperty: true,
+        })
+      ) {
+        continue;
+      }
+
+      dummy.push({
+        element: parent,
+        text: text.length > 100 ? `${text.slice(0, 100)}…` : text,
+      });
+    }
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -297,6 +412,10 @@
 
     if (staging.length > 0) {
       reportText("note", kraftyCount("leftoversStaging", staging.length));
+    }
+
+    if (dummy.length > 0) {
+      reportText("note", kraftyCount("leftoversDummy", dummy.length));
     }
 
     if (markers.length > 0) {
@@ -365,6 +484,47 @@
 
     if (staging.length > 0) {
       listOf("leftoversSectionStaging", "leftoversStagingListLabel", staging);
+    }
+
+    /* One row per fragment: the text, the element's tag, and a box that points
+       at it - the same row as a resource address, since dummy text has an
+       element on the page where a comment marker does not. */
+    if (dummy.length > 0) {
+      const section = kraftySection(body, "leftoversSectionDummy");
+
+      kraftyListHead(
+        section,
+        "leftoversDummyListLabel",
+        kraftyMessage("copyFindings"),
+        () => [location.href, ...dummy.map((row) => `- ${row.text}`)].join("\n")
+      );
+
+      const list = document.createElement("ul");
+      list.className = "kraftyPanelList";
+
+      for (const row of dummy) {
+        const item = document.createElement("li");
+
+        const code = document.createElement("code");
+        /* textContent, not insertAdjacentHTML: the fragment is the page's own
+           text and must never be parsed as markup. */
+        code.textContent = row.text;
+        item.appendChild(code);
+
+        const tag = document.createElement("span");
+        tag.className = "kraftyPanelHint";
+        tag.textContent = row.element.localName;
+        item.appendChild(tag);
+
+        const rect = row.element.getBoundingClientRect();
+        if (rect.width > 0 || rect.height > 0) {
+          kraftyPointAt(item, row.element);
+        }
+
+        list.appendChild(item);
+      }
+
+      section.appendChild(list);
     }
 
     if (markers.length > 0) {

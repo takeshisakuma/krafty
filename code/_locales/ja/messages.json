@@ -589,6 +589,20 @@
     "message": "TODO や FIXME などの開発マーカーを含む HTML コメントが 1 個あります",
     "description": "Used when exactly one marked comment was found."
   },
+  "leftoversDummy": {
+    "message": "ダミー・プレースホルダーらしきテキストが $count$ 個あります。実際の原稿か確認してください",
+    "description": "Lorem ipsum, a repeated letter like あああ, or a filler word that is the whole of an element's text. Listed, not asserted: a word like テスト can be real copy.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "leftoversDummyOne": {
+    "message": "ダミー・プレースホルダーらしきテキストが 1 個あります。実際の原稿か確認してください",
+    "description": "Used when exactly one dummy-looking fragment was found."
+  },
   "leftoversSectionStaging": {
     "message": "ステージング環境らしきホスト",
     "description": "Heading of the section listing staging-looking resource addresses."
@@ -604,6 +618,14 @@
   "leftoversCommentListLabel": {
     "message": "HTML コメントに残っています",
     "description": "Label above the list of marked comments."
+  },
+  "leftoversSectionDummy": {
+    "message": "ダミー・プレースホルダーテキスト",
+    "description": "Heading of the section listing text fragments that read as filler."
+  },
+  "leftoversDummyListLabel": {
+    "message": "本物の原稿か確認してください",
+    "description": "Label above the list of dummy-looking text fragments. Each row is the fragment, with the element's tag."
   },
   "checkerHeading": {
     "message": "見出しチェック",
@@ -1016,7 +1038,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversBody": {
-    "message": "ページが公開時に残してしまった開発時の痕跡を見つけます。訪問者が到達できないローカル・プライベートアドレスを指すリソース、https ページ上でブラウザにブロックされる http リソース、プレースホルダ画像サービスのままの画像、そして——断定せず一覧で——ステージング環境らしきホストと、HTML コメントに残った開発マーカーです。",
+    "message": "ページが公開時に残してしまった開発時の痕跡を見つけます。訪問者が到達できないローカル・プライベートアドレスを指すリソース、https ページ上でブラウザにブロックされる http リソース、プレースホルダ画像サービスのままの画像、そして——断定せず一覧で——ステージング環境らしきホスト、HTML コメントに残った開発マーカー、本文に残ったダミー・プレースホルダーテキストです。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualLandmarkTitle": {

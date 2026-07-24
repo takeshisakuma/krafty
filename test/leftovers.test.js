@@ -145,6 +145,70 @@ test("leftovers checker", async (t) => {
     assert.deepStrictEqual(result.findings, []);
   });
 
+  await t.test("reports Lorem ipsum as dummy text", async () => {
+    const result = await check(
+      `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>`
+    );
+
+    const found = matchingFindings(result, /dummy or placeholder/);
+    assert.strictEqual(found.length, 1);
+    assert.ok(
+      result.rows.some((row) => /Lorem ipsum/.test(row)),
+      "the fragment is listed by its text"
+    );
+  });
+
+  await t.test("reports a repeated-letter run as dummy text", async () => {
+    /* あああ - the everyday Japanese keyboard-mash placeholder. */
+    const result = await check(`<h2>あああ</h2>`);
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 1);
+  });
+
+  await t.test("reports a filler word that is the whole of an element", async () => {
+    const result = await check(`<p>テストです</p>`);
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 1);
+  });
+
+  await t.test("leaves a filler word alone inside real copy", async () => {
+    /* サンプル is dummy only when it is the whole text; inside a phrase it is
+       an ordinary word, and 無料サンプル is real copy. */
+    const result = await check(`<p>無料サンプルを請求する</p>`);
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 0);
+  });
+
+  await t.test("spares a comparison table of single marks", async () => {
+    /* ○ and × alone, and different marks side by side, are a real legend;
+       only the same mark repeated (○○) reads as a placeholder. */
+    const result = await check(
+      `<table><tbody><tr><td>○</td><td>×</td><td>△</td></tr></tbody></table>`
+    );
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 0);
+  });
+
+  await t.test("reports a repeated placeholder mark", async () => {
+    const result = await check(`<p>○○について</p>`);
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 1);
+  });
+
+  await t.test("does not read dummy text from a script or a hidden element", async () => {
+    /* Script text is code, a display:none fragment reaches nobody, and an
+       aria-hidden one is out of the accessibility tree - none is copy a
+       reader was left looking at. */
+    const result = await check(
+      `<script>var placeholder = "あああ";</script>
+       <p style="display:none">テストです</p>
+       <span aria-hidden="true">Lorem ipsum dolor</span>`
+    );
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 0);
+  });
+
+  await t.test("leaves ordinary copy alone", async () => {
+    const result = await check(
+      `<h1>会社概要</h1><p>私たちは1998年の創業以来、地域に根ざしたサービスを提供しています。</p>`
+    );
+    assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 0);
+  });
+
   await t.test("leaves nothing behind when toggled off", async () => {
     const after = await withPage(
       {
