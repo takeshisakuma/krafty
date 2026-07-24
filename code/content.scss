@@ -299,6 +299,38 @@ $panelInset: 50px;
     font-style: italic;
   }
 
+  /* The outline list, shared by the two structural checkers - the heading
+     checker draws the document outline, the landmark checker the region
+     tree, and both are the same shape: a monospace level or role chip, then
+     a name. Written under the heading checker until the landmark checker
+     wanted it identically; the same-place argument as the list reset above.
+     The indent is set per item from the JS, because neither aria-level nor
+     landmark nesting has a fixed ceiling. .kraftyOutlineSkip stays with the
+     heading checker: a jumped level is a heading fault with no landmark
+     equivalent. */
+  .kraftyOutline {
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .kraftyOutlineItem {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 2px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .kraftyOutlineLevel {
+    flex: none;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    background-color: #f0f0f0;
+    color: #555;
+    border-radius: 2px;
+    padding: 1px 4px;
+  }
+
   &.kraftyPanelDragging {
     box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.35);
   }
@@ -438,38 +470,38 @@ $panelInset: 50px;
        the height from the bottom left. */
     @include panel(top-right);
 
-    /* The indent is set per item, from the heading's own level, because
-       aria-level is not capped at six. */
-    .kraftyOutline {
-      word-break: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .kraftyOutlineItem {
-      display: flex;
-      align-items: baseline;
-      gap: 7px;
-      padding: 2px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .kraftyOutlineLevel {
-      flex: none;
-      font-family: ui-monospace, monospace;
-      font-size: 11px;
-      background-color: #f0f0f0;
-      color: #555;
-      border-radius: 2px;
-      padding: 1px 4px;
-    }
-
-    /* Marks where the outline jumps a level. The finding above says which
-       pair, but reading it off the list is what makes it actionable. */
+    /* The outline list itself - the reset, the item row and the level chip -
+       is shared with the landmark checker and lives in the panel mixin. What
+       stays here is the one thing only the heading outline has: a mark where
+       it jumps a level. The finding above says which pair, but reading it off
+       the list is what makes it actionable. */
     .kraftyOutlineSkip .kraftyOutlineLevel {
       background-color: #fdf5e4;
       color: #7a5400;
       box-shadow: inset 0 0 0 1px #c98a00;
     }
+  }
+}
+
+/* --- landmark checker --- */
+
+#js-kraftyLandmarkInformation.kraftyLandmarkInformation {
+  display: none;
+}
+
+.kraftyLandmarkChecker {
+  #js-kraftyLandmarkInformation.kraftyLandmarkInformation {
+    /* Cascaded off the nest checker rather than beside the heading checker.
+       The heading outline and the landmark tree are the two structural
+       reviews most likely to be open together, so they start in opposite
+       corners; the nest checker answers a different question and is the
+       safer neighbour to share a corner with. A corner is where a panel
+       starts, not where it stays - they are draggable.
+
+       Its outline list - the role chip and the name - is styled by the panel
+       mixin, shared with the heading checker; there is nothing landmark-only
+       to add here. */
+    @include panel(bottom-right, 1);
   }
 }
 
