@@ -662,6 +662,39 @@ test("markup checker", async (t) => {
     );
   });
 
+  await t.test("does not point at a target the reader cannot see", async () => {
+    /* opacity:0 still has a rectangle - a custom-styled select, or a closed
+       modal that stays position:fixed with opacity:0. Drawing over that
+       lights a red box in empty-looking space. Zero-size (display:none) is
+       the same failure from the other end: the row looked clickable, scrolled
+       on click, and still showed nothing. */
+    const buttons = await withPage(
+      {
+        html: `
+          <button style="width:40px;height:40px;opacity:0"><svg></svg></button>
+          <button style="display:none"><svg></svg></button>
+          <div style="opacity:0">
+            <button style="width:40px;height:40px"><svg></svg></button>
+          </div>
+          <button style="width:40px;height:40px"><svg></svg></button>
+        `,
+        checkers: ["markupCheck"],
+      },
+      async (page) =>
+        page.evaluate(() =>
+          [...document.querySelectorAll(".kraftyPanelList li")]
+            .filter((li) => !li.textContent?.includes("svg"))
+            .map((li) => li.classList.contains("kraftyLocatable"))
+        )
+    );
+
+    assert.deepStrictEqual(
+      buttons,
+      [false, false, false, true],
+      "opacity:0, display:none, and opacity:0 ancestor stay inert; the painted button points"
+    );
+  });
+
   await t.test("does not offer to point at a row naming several elements", async () => {
     /* A duplicated id names every element that carries it, so there is no
        single thing to point at. The row stays inert. */

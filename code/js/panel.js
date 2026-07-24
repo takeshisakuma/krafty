@@ -377,6 +377,34 @@
   const PIN_BOX = "js-kraftyPointerPin";
 
   /**
+   * Whether a target can be pointed at: it must occupy space and be painted
+   * enough that a box over it would mark something the reader can see.
+   *
+   * Size alone is not enough. A native <select> under a custom control is
+   * often opacity:0; a closed modal may stay position:fixed with opacity:0
+   * while its children still report a full rectangle. Both light a red box
+   * in empty-looking space. checkVisibility with checkOpacity catches them.
+   *
+   * @param {Element} target
+   */
+  const isPointable = (target) => {
+    const rect = target.getBoundingClientRect();
+
+    if (rect.width === 0 && rect.height === 0) {
+      return false;
+    }
+
+    if (typeof target.checkVisibility === "function") {
+      return target.checkVisibility({
+        checkOpacity: true,
+        checkVisibilityCSS: true,
+      });
+    }
+
+    return true;
+  };
+
+  /**
    * @param {string} id
    * @param {string} className
    * @returns {HTMLElement}
@@ -401,13 +429,14 @@
    * @param {Element} target
    */
   const placeBox = (box, target) => {
-    const rect = target.getBoundingClientRect();
-
-    /* A display:none or unrendered target has no box to point at. */
-    if (rect.width === 0 && rect.height === 0) {
+    /* Hide rather than draw over empty space when the target has collapsed
+       or been painted invisible since the row was wired. */
+    if (!isPointable(target)) {
       box.hidden = true;
       return;
     }
+
+    const rect = target.getBoundingClientRect();
 
     box.style.left = `${rect.left + window.scrollX}px`;
     box.style.top = `${rect.top + window.scrollY}px`;
@@ -420,11 +449,17 @@
    * Wire a findings row to the page element it names: hover previews, click
    * travels. A row with no locatable element - a duplicated id names several,
    * a reused link text as many - simply does not call this and stays inert.
+   * The same for a target that is not painted: wiring it would make the row
+   * look clickable, scroll on click, and still show no useful box.
    *
    * @param {HTMLElement} row
    * @param {Element} target
    */
   globalThis.kraftyPointAt = (row, target) => {
+    if (!isPointable(target)) {
+      return;
+    }
+
     row.classList.add("kraftyLocatable");
 
     row.addEventListener("pointerenter", () => {
