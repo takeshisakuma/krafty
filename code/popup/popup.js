@@ -22,6 +22,15 @@ for (const element of document.querySelectorAll("[data-i18n]")) {
   }
 }
 
+for (const element of document.querySelectorAll("[data-i18n-aria]")) {
+  const key = element.getAttribute("data-i18n-aria");
+  const message = key ? chrome.i18n.getMessage(key) : "";
+
+  if (message) {
+    element.setAttribute("aria-label", message);
+  }
+}
+
 document.documentElement.lang = chrome.i18n.getUILanguage();
 
 const statusArea = element("js-status");
@@ -150,7 +159,44 @@ async function syncButtons(tabId) {
   }
 }
 
+/**
+ * Draw a local QR of the tab URL. Needs nothing from the page, so it still
+ * works when the checkers cannot inject (chrome:// and the like).
+ *
+ * @param {string} url
+ */
+function showQr(url) {
+  const block = element("js-qrBlock");
+  const canvas = element("js-qrCanvas");
+  const urlLine = element("js-qrUrl");
+
+  if (!(canvas instanceof HTMLCanvasElement)) {
+    throw new Error("Krafty: js-qrCanvas is not a canvas");
+  }
+
+  if (!url) {
+    block.classList.add("isEmpty");
+    urlLine.textContent = "";
+    return;
+  }
+
+  try {
+    const code = kraftyQrGenerate(url);
+    code.toCanvas(canvas, { pad: 2 });
+    block.classList.remove("isEmpty");
+    urlLine.textContent = url;
+  } catch (error) {
+    block.classList.add("isEmpty");
+    urlLine.textContent = "";
+  }
+}
+
 async function init() {
+  /* The QR only needs the tab's address. Resolve it before any scripting so
+     a restricted page still gets a code the phone can open (or not). */
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  showQr(tab?.url ?? "");
+
   /** @type {number} */
   let tabId;
 

@@ -418,7 +418,7 @@ ready.
 | 0.13.0 | 12 the dummy-text listing — the last decidable-enough part; inline console.log parked (see 12) |
 | 0.13.1 | Pointing fix: skip opacity:0 / zero-size targets so the red box does not light empty space |
 | 0.14.0 | 24 panels isolated from the page's CSS — shipped; host/pointer hardening, Escape to close, panelCss drift check folded in |
-| 0.15.0 | 25 QR of the current URL, for device testing |
+| 0.15.0 | 25 QR of the current URL, for device testing — shipped (popup) |
 | 0.16.0 | 26 design-token audit |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
@@ -477,7 +477,8 @@ question of its own. One per release: 25 in 0.15.0, 26 in 0.16.0, after the
 dummy text closes item 12 and item 24 isolates the panels. Neither competes
 for the accessible-name work the
 checks share, so both slot in wherever a release has room, the way 23 and 24
-do.
+do. Item 25 shipped 2026-07-25 in the popup (settled there rather than as a
+page panel).
 
 Two things to settle before building, not now: which panel items 21 and 22
 report into, and whether 22 belongs under a checker named Markup at all.
@@ -1179,19 +1180,19 @@ be overwritten into a green CI run, and `test/wiring.test.js` asserts the
 same embed ≡ recompile equality. Escape closes the topmost panel (skips
 when focus is in a page field); see the panels' accessibility note below.
 
-### 25. A QR code of the current URL, for device testing
+### 25. A QR code of the current URL, for device testing — done
 
 Asked 2026-07-24. The everyday move it serves: a page is being reviewed on a
 desktop and has to be checked on a real phone, and typing a staging URL with
-a path and a query into a handset by hand is the friction. A QR of
-`location.href` in a panel is scanned once and the phone is on the page.
+a path and a query into a handset by hand is the friction. A QR of the tab's
+address is scanned once and the phone is on the page.
 
 Not a check — it finds no defect and reports nothing about the page. It is a
-utility, and the first item here that is, so it sits in its own panel with no
+utility, and the first item here that is, so it lives in the popup with no
 findings section rather than pretending to be a checker.
 
 The one hard constraint is that the code is generated **locally, in the
-page**, never by handing the URL to a QR-image service. Krafty asks for no
+browser**, never by handing the URL to a QR-image service. Krafty asks for no
 host permissions and the store listing says it collects nothing; the URLs it
 would be asked to encode are exactly the staging and intranet addresses the
 Leftovers checker exists to catch, and posting one to `api.qrserver.com`
@@ -1206,6 +1207,13 @@ Open before building: whether it belongs in a page panel like the checkers
 or in the popup, since it is a per-tab utility and not a reading of the DOM.
 Lean towards the popup — it needs nothing from the page but its address, and
 the popup already has the tab.
+
+Settled 2026-07-25: **the popup**. Built the same day in 0.15.0. The active
+tab's URL is read with `chrome.tabs.query` and encoded locally by a vendored
+copy of lean-qr (`popup/qr.js`); nothing is posted to a QR-image service.
+The code still draws when the checkers cannot inject (for example
+`chrome://` pages), because the address alone is enough. It is not a
+checker, has no keyboard command, and does not touch `kraftyCheckers`.
 
 ### 26. A design-token audit
 

@@ -118,6 +118,24 @@ declare var kraftyRunChecker: (
 ) => Promise<void>;
 declare var kraftyActiveTabId: () => Promise<number | null>;
 
+/* popup/qr.js — local QR encoder (vendored lean-qr). */
+declare var kraftyQrGenerate: (
+  text: string,
+  options?: {
+    minCorrectionLevel?: number;
+    maxCorrectionLevel?: number;
+    minVersion?: number;
+    maxVersion?: number;
+  }
+) => {
+  size: number;
+  get: (x: number, y: number) => boolean;
+  toCanvas: (
+    canvas: HTMLCanvasElement,
+    options?: { pad?: number; padX?: number; padY?: number }
+  ) => void;
+};
+
 /* Available to the service worker, which is a classic worker rather than a
    module. lib.webworker cannot be pulled in alongside lib.dom. */
 declare function importScripts(...urls: string[]): void;

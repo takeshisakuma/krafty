@@ -40,9 +40,19 @@
     <button type="button" id="js-reviewButton" class="reviewButton" data-i18n="popupReview">Copy the review</button>
   </p>
 
+  <!-- Item 25: not a checker. Needs only the tab URL, generated locally. -->
+  <p class="checkerGroup" data-i18n="popupGroupQr">Open on a phone</p>
+
+  <div class="qrBlock isEmpty" id="js-qrBlock">
+    <canvas id="js-qrCanvas" class="qrCanvas" width="128" height="128" data-i18n-aria="popupQrLabel" aria-label="QR code of this page's address"></canvas>
+    <p id="js-qrUrl" class="qrUrl"></p>
+    <p id="js-qrEmpty" class="qrEmpty" data-i18n="popupQrUnavailable">No address to encode on this tab.</p>
+  </div>
+
   <p id="js-status" class="status" role="status" hidden></p>
 
   <script src="../checkers.js"></script>
+  <script src="qr.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

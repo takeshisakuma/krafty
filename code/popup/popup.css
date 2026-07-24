@@ -205,3 +205,39 @@ body {
 .status.statusDone {
   color: #1a7f37;
 }
+
+.qrBlock {
+  margin: 4px 16px 0;
+  padding-bottom: 4px;
+}
+
+.qrCanvas {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+  image-rendering: pixelated;
+}
+
+.qrUrl {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #555;
+  word-break: break-all;
+}
+
+.qrEmpty {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #767676;
+}
+
+.qrBlock.isEmpty .qrCanvas,
+.qrBlock.isEmpty .qrUrl {
+  display: none;
+}
+
+.qrBlock:not(.isEmpty) .qrEmpty {
+  display: none;
+}

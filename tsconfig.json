@@ -23,5 +23,8 @@
     "scripts/**/*.js",
     "test/**/*.js",
     "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "code/popup/qr.js"
   ]
 }

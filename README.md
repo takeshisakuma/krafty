@@ -94,6 +94,10 @@ Shows the alt text of every image, and separates an image with no alt attribute 
 
 Turns the page monochrome, which shows up anything that relies on colour alone to be understood.
 
+### Open on a phone
+
+Shows a QR code of the current tab's address in the toolbar menu, generated in your own browser — never by sending the URL to a QR service. Scan it once and the phone is on the same page, including staging URLs you would rather not type by hand.
+
 ## Checkers (Japanese)
 
 The store's Japanese locale. Written rather than translated, so the two say
@@ -184,6 +188,10 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ページをモノクロにします。色だけで情報を伝えている箇所が浮かび上がります。
 
+### スマホで開く
+
+ツールバーメニューに、いま見ているタブのアドレスの QR コードを出します。生成はブラウザ内だけで行い、URL を QR 画像サービスに送ることはありません。ステージングの長いアドレスも、手入力せずにスマホで開けます。
+
 ## Development
 
 The extension itself lives in `code/`. That directory is the extension
@@ -204,6 +212,11 @@ Panel chrome lives in `code/panel.scss` and is embedded as
 is also committed; rebuild whenever `panel.scss` changes. `npm test` runs
 `scripts/embed-panel-css.js --check` first so a stale embed fails rather
 than being overwritten into a green run.
+
+The popup QR encoder is vendored at `code/popup/qr.js` (lean-qr, MIT).
+Regenerate it with `node scripts/vendor-qr.js` after `npm install lean-qr`
+if that dependency is ever updated; the packaged extension never talks to
+a QR-image service.
 
 To try a change: open `chrome://extensions`, enable developer mode, load
 `code/` via "Load unpacked", and press reload (⟳) after each edit.

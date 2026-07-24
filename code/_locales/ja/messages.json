@@ -105,6 +105,18 @@
     "message": "レビュー結果をコピー",
     "description": "Runs every checker that reports and puts all of their findings on the clipboard."
   },
+  "popupGroupQr": {
+    "message": "スマホで開く",
+    "description": "Heading over the QR code of the current tab's URL (item 25)."
+  },
+  "popupQrLabel": {
+    "message": "このページのアドレスのQRコード",
+    "description": "Accessible name for the QR canvas in the popup."
+  },
+  "popupQrUnavailable": {
+    "message": "このタブにはエンコードできるアドレスがありません。",
+    "description": "Shown when the active tab has no URL the popup can turn into a QR code."
+  },
   "panelRescan": {
     "message": "再チェック",
     "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
