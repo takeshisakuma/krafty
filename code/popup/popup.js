@@ -103,7 +103,9 @@ function collectReview(panels) {
     /* Item 24: findings live in the panel's shadow root. */
     const root = panel.shadowRoot ?? panel;
 
-    const summary = root.querySelector(".kraftyChecksSummary");
+    const summary =
+      root.querySelector(".kraftyChecksSummary") ??
+      root.querySelector(".kraftyPanelSummary");
 
     if (summary) {
       lines.push(`  ${summary.textContent}`);
@@ -113,9 +115,12 @@ function collectReview(panels) {
       lines.push(`  - ${finding.textContent}`);
     }
 
-    /* The nest checker's breakdown is its findings, and it has no
-       .kraftyCheck rows to show for them. */
-    for (const row of root.querySelectorAll(".kraftyPanelList li")) {
+    /* Nest and leftovers use .kraftyPanelList; the image checker's oversized
+       rows use .kraftyImageList. Both are the detail the panels show, so both
+       belong in the pasted report. */
+    for (const row of root.querySelectorAll(
+      ".kraftyPanelList li, .kraftyImageList li"
+    )) {
       lines.push(`  - ${(row.textContent ?? "").replace(/\s+/g, " ").trim()}`);
     }
 

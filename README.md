@@ -52,7 +52,9 @@ Each finding is listed underneath as well as counted, and each list copies in on
 
 Hover a listed row to draw a box over the element on the page, and click it to scroll there and leave the box behind. The short descriptor a row shows is weakest for exactly the elements these checks flag, so the box is the surer way to find them.
 
-Every panel has a check-again button. A check reads the page as it stands when it runs, so press it after opening an accordion or scrolling a list in.
+Every panel has a check-again button, and Escape closes the topmost panel.
+A check reads the page as it stands when it runs, so press check-again after
+opening an accordion or scrolling a list in.
 
 ### The review
 
@@ -142,7 +144,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 一覧の行にカーソルを合わせると、ページ上の該当要素に枠が描かれます。クリックするとそこまでスクロールし、枠を残します。行に出る短い記述子は、これらのチェックが指摘する要素——自前の識別子を持たない要素——ではとりわけ弱いので、枠の方が確実に見つけられます。
 
-各パネルには再チェックのボタンがあります。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
+各パネルには再チェックのボタンがあり、Escape でいちばん上のパネルを閉じられます。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
 
 ### レビュー結果のコピー
 
@@ -190,12 +192,18 @@ repository root) as an unpacked extension.
 
 ```sh
 npm install
-npm run build     # compile code/content.scss -> code/content.css
-npm run watch     # same, but recompile on save
+npm run build     # content.scss -> content.css; panel.scss -> js/panelCss.js
+npm run watch     # recompile content.scss on save
 ```
 
 `code/content.css` is generated and committed, so a fresh clone can be
-loaded without building. Rebuild it whenever `code/content.scss` changes.
+loaded without building. Rebuild whenever `code/content.scss` changes.
+
+Panel chrome lives in `code/panel.scss` and is embedded as
+`code/js/panelCss.js` (injected into each panel's shadow root). That file
+is also committed; rebuild whenever `panel.scss` changes. `npm test` runs
+`scripts/embed-panel-css.js --check` first so a stale embed fails rather
+than being overwritten into a green run.
 
 To try a change: open `chrome://extensions`, enable developer mode, load
 `code/` via "Load unpacked", and press reload (⟳) after each edit.
@@ -219,7 +227,7 @@ worth catching in a popup whose markup and script must agree.
 ### Testing
 
 ```sh
-npm test          # builds, type checks, then runs the suite
+npm test          # checks panelCss.js is current, builds, type checks, then runs the suite
 ```
 
 The nest checker is entirely CSS, so its behaviour depends on selector

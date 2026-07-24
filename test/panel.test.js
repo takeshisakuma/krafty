@@ -273,6 +273,46 @@ test("panel dragging", async (t) => {
     );
   });
 
+  await t.test("Escape closes the topmost panel", async () => {
+    const result = await withPage(
+      { html: PAGE, checkers: ["nestCheck"], width: 1000, height: 700 },
+      async (page) => {
+        await page.keyboard.press("Escape");
+
+        return page.evaluate(() => ({
+          panel: document.querySelector("#js-kraftyNestInformation") !== null,
+          errors: document.querySelectorAll(".kraftyNestError").length,
+          bodyClass: document.body.classList.contains("kraftyNestChecker"),
+        }));
+      }
+    );
+
+    assert.strictEqual(result.panel, false, "panel was not removed");
+    assert.strictEqual(result.errors, 0, "highlights were left behind");
+    assert.strictEqual(
+      result.bodyClass,
+      false,
+      "body class stayed, so the popup would still show this as active"
+    );
+  });
+
+  await t.test("Escape leaves the panel when typing in a field", async () => {
+    const html = `${PAGE}<input id="js-field" value="x">`;
+    const open = await withPage(
+      { html, checkers: ["nestCheck"], width: 1000, height: 700 },
+      async (page) => {
+        await page.focus("#js-field");
+        await page.keyboard.press("Escape");
+
+        return page.evaluate(
+          () => document.querySelector("#js-kraftyNestInformation") !== null
+        );
+      }
+    );
+
+    assert.strictEqual(open, true, "Escape closed the panel from an input");
+  });
+
   /* Item 24: open shadow on the host. The host stays in the light DOM for
      getElementById; chrome and findings live under shadowRoot. */
   await t.test("hosts findings in an open shadow root", async () => {
@@ -383,6 +423,65 @@ test("panel dragging", async (t) => {
       colors.shell,
       "transparent",
       `shell must stay opaque, got ${colors.shell}`
+    );
+  });
+
+  /* Layout still lives on the host. A page that forces every div to
+     position:relative and max-width:100% with !important used to unwind the
+     panel after item 24; hardenHost pins those properties the way place()
+     already pins drag insets. */
+  await t.test("page div layout !important does not unwind the host", async () => {
+    const layout = await withPage(
+      {
+        html: `<style>
+                 div {
+                   position: relative !important;
+                   display: block !important;
+                   max-width: 100px !important;
+                   min-width: 0 !important;
+                   z-index: 1 !important;
+                 }
+               </style>
+               <ul><div>a div directly inside ul</div></ul>`,
+        checkers: ["nestCheck"],
+        width: 1000,
+        height: 700,
+      },
+      async (page) => {
+        await page.evaluate(async () => {
+          await Promise.resolve();
+        });
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+
+          if (!panel) {
+            return null;
+          }
+
+          const cs = getComputedStyle(panel);
+
+          return {
+            position: cs.position,
+            display: cs.display,
+            minWidth: cs.minWidth,
+            maxWidth: cs.maxWidth,
+            zIndex: cs.zIndex,
+            width: panel.getBoundingClientRect().width,
+          };
+        });
+      }
+    );
+
+    assert.ok(layout, "panel host should exist");
+    assert.strictEqual(layout.position, "fixed");
+    assert.match(layout.display, /flex/);
+    assert.strictEqual(layout.minWidth, "280px");
+    assert.strictEqual(layout.maxWidth, "420px");
+    assert.strictEqual(layout.zIndex, "2147483647");
+    assert.ok(
+      layout.width >= 280,
+      `host should keep its floor width, got ${layout.width}`
     );
   });
 

@@ -85,6 +85,12 @@ declare var kraftyPanelPositions:
    file does not stack another one. */
 declare var kraftyResizeBound: boolean | undefined;
 
+/* Set once panel.js has attached the pointer scroll/resize sync. */
+declare var kraftyPointerBound: boolean | undefined;
+
+/* Escape-to-close is bound once; this file is injected again on every click. */
+declare var kraftyEscapeBound: boolean | undefined;
+
 /* checkers.js, shared by the popup and the service worker. */
 interface Checker {
   /** Element id of the popup button that toggles it. */

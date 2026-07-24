@@ -647,12 +647,14 @@ test("markup checker", async (t) => {
             exists: box !== null,
             inBody: box?.parentElement === document.body,
             shown: box instanceof HTMLElement && box.hidden === false,
+            fixed: box ? getComputedStyle(box).position === "fixed" : false,
           };
         });
 
         assert.ok(hover.exists, "a hover box is drawn");
         assert.ok(hover.inBody, "in the page body, not inside a panel");
         assert.ok(hover.shown, "and shown while the row is hovered");
+        assert.ok(hover.fixed, "viewport-fixed so sticky/fixed targets can stick");
 
         await clickShadow(page, PANEL, row);
 
@@ -669,12 +671,115 @@ test("markup checker", async (t) => {
     );
   });
 
+  await t.test("page div resets do not erase the pointer box", async () => {
+    /* The pointer lives in the light DOM on purpose. A reset that clears
+       every div's border would hide the outline while scroll-to still worked,
+       which is exactly how the computermusic hover looked broken. */
+    const paint = await withPage(
+      {
+        html: `<style>
+                 div {
+                   border: 0 !important;
+                   box-shadow: none !important;
+                   background: transparent !important;
+                   opacity: 0 !important;
+                   position: static !important;
+                   display: none !important;
+                 }
+               </style>
+               <button style="width:40px;height:40px"><svg></svg></button>`,
+        checkers: ["markupCheck"],
+      },
+      async (page) => {
+        await hoverShadow(page, PANEL, ".kraftyPanelList li.kraftyLocatable");
+
+        return page.evaluate(() => {
+          const box = document.getElementById("js-kraftyPointerHover");
+          if (!(box instanceof HTMLElement) || box.hidden) {
+            return null;
+          }
+
+          const cs = getComputedStyle(box);
+
+          return {
+            display: cs.display,
+            position: cs.position,
+            opacity: cs.opacity,
+            borderTopWidth: cs.borderTopWidth,
+            borderTopColor: cs.borderTopColor,
+            boxShadow: cs.boxShadow,
+          };
+        });
+      }
+    );
+
+    assert.ok(paint, "hover box should show despite page resets");
+    assert.strictEqual(paint.display, "block");
+    assert.strictEqual(paint.position, "fixed");
+    assert.strictEqual(paint.opacity, "1");
+    assert.strictEqual(paint.borderTopWidth, "2px");
+    assert.match(paint.borderTopColor, /rgb\(255,\s*0,\s*0\)/);
+    assert.notStrictEqual(paint.boxShadow, "none");
+  });
+
+  await t.test("keeps the box on a fixed target after the page scrolls", async () => {
+    /* Document coordinates left the box where the page had been; a fixed
+       banner stays on screen. Viewport coordinates plus a scroll sync keep
+       them together - the same idea as kraftyAltFixed. */
+    const aligned = await withPage(
+      {
+        html: `<div style="height:2000px"></div>
+               <button id="fixed-btn" style="position:fixed;top:20px;left:20px;width:40px;height:40px">
+                 <svg></svg>
+               </button>`,
+        checkers: ["markupCheck"],
+        width: 800,
+        height: 500,
+      },
+      async (page) => {
+        await clickShadow(page, PANEL, ".kraftyPanelList li.kraftyLocatable");
+
+        await page.evaluate(() => window.scrollTo(0, 800));
+        await new Promise((r) => setTimeout(r, 50));
+
+        return page.evaluate(() => {
+          const target = document.getElementById("fixed-btn");
+          const box = document.getElementById("js-kraftyPointerPin");
+          const a = target?.getBoundingClientRect();
+          const b = box?.getBoundingClientRect();
+
+          return {
+            shown: box instanceof HTMLElement && box.hidden === false,
+            dx: a && b ? Math.abs(a.left - b.left) : null,
+            dy: a && b ? Math.abs(a.top - b.top) : null,
+            dw: a && b ? Math.abs(a.width - b.width) : null,
+            dh: a && b ? Math.abs(a.height - b.height) : null,
+          };
+        });
+      }
+    );
+
+    assert.ok(aligned.shown, "pin should stay visible");
+    assert.ok(
+      (aligned.dx ?? 99) <= 2 && (aligned.dy ?? 99) <= 2,
+      `box drifted from the fixed target: dx=${aligned.dx} dy=${aligned.dy}`
+    );
+    assert.ok(
+      (aligned.dw ?? 99) <= 2 && (aligned.dh ?? 99) <= 2,
+      `box size drifted: dw=${aligned.dw} dh=${aligned.dh}`
+    );
+  });
+
   await t.test("does not point at a target the reader cannot see", async () => {
     /* opacity:0 still has a rectangle - a custom-styled select, or a closed
        modal that stays position:fixed with opacity:0. Drawing over that
        lights a red box in empty-looking space. Zero-size (display:none) is
        the same failure from the other end: the row looked clickable, scrolled
-       on click, and still showed nothing. */
+       on click, and still showed nothing.
+
+       Overflow clipping is the carousel case the alt checker already skips:
+       the slide is in the document with a real box, hidden only by an
+       ancestor's overflow, so a pointer would light empty-looking space. */
     const buttons = await withPage(
       {
         html: `
@@ -682,6 +787,9 @@ test("markup checker", async (t) => {
           <button style="display:none"><svg></svg></button>
           <div style="opacity:0">
             <button style="width:40px;height:40px"><svg></svg></button>
+          </div>
+          <div style="width:80px;height:40px;overflow:hidden">
+            <button style="width:40px;height:40px;margin-left:200px"><svg></svg></button>
           </div>
           <button style="width:40px;height:40px"><svg></svg></button>
         `,
@@ -700,8 +808,8 @@ test("markup checker", async (t) => {
 
     assert.deepStrictEqual(
       buttons,
-      [false, false, false, true],
-      "opacity:0, display:none, and opacity:0 ancestor stay inert; the painted button points"
+      [false, false, false, false, true],
+      "opacity:0, display:none, opacity:0 ancestor, and overflow-clipped stay inert; the painted button points"
     );
   });
 

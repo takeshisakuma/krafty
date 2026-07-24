@@ -36,6 +36,23 @@ const PANELS = [
   { id: "js-kraftyMarkupInformation", title: "Markup Check" },
 ];
 
+const IMAGE_PANEL = {
+  id: "js-kraftyImageInformation",
+  title: "Image Check",
+};
+
+/**
+ * An SVG data URL carries its own intrinsic size, so naturalWidth is known
+ * without shipping fixture files around.
+ *
+ * @param {number} width
+ * @param {number} height
+ */
+const imageSource = (width, height) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#ccc"/></svg>`
+  )}`;
+
 test("the review the popup copies", async (t) => {
   /** @type {string} */
   const review = await withPage(
@@ -117,4 +134,43 @@ test("the review the popup copies", async (t) => {
       );
     }
   });
+});
+
+test("the review includes image detail rows", async () => {
+  /* Oversized rows live in .kraftyImageList, not .kraftyPanelList. The review
+     used to copy only the latter, so a pasted report named Image Check and
+     then dropped the filenames. */
+  const review = await withPage(
+    {
+      html: `<img src="${imageSource(800, 600)}" width="100" height="75" alt="">`,
+      checkers: [],
+      width: 1280,
+      height: 900,
+      serve: "/",
+    },
+    async (page) => {
+      await page.waitForFunction(() =>
+        [...document.images].every((image) => image.complete)
+      );
+      await page.evaluate(SCRIPTS.imageCheck);
+
+      return page.evaluate(
+        ([source, panels]) =>
+          new Function(`${source}; return collectReview(${JSON.stringify(
+            panels
+          )});`)(),
+        /** @type {[string, typeof IMAGE_PANEL[]]} */ ([
+          collectReview,
+          [IMAGE_PANEL],
+        ])
+      );
+    }
+  );
+
+  assert.ok(review.includes(IMAGE_PANEL.title), "Image Check is named");
+  assert.match(
+    review,
+    /800\s*[×x]\s*600/,
+    `oversized measurement belongs in the review, got:\n${review}`
+  );
 });

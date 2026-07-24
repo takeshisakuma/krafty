@@ -55,6 +55,48 @@
     style.setProperty("bottom", "auto", "important");
   };
 
+  /* Layout that must survive on the light-DOM host. Item 24 moved paint into
+     the shadow, but position / display / size still live on a page `div`,
+     and a reset with !important beats the stylesheet. Same defence place()
+     already uses for the drag insets. The 60px matches panel.scss:
+     $panelInset + 10px. */
+  /**
+   * @param {HTMLElement} panel
+   */
+  const hardenHost = (panel) => {
+    const style = panel.style;
+    /** @param {string} name @param {string} value */
+    const set = (name, value) => style.setProperty(name, value, "important");
+
+    set("position", "fixed");
+    set("display", "flex");
+    set("flex-direction", "column");
+    set("z-index", "2147483647");
+    set("box-sizing", "border-box");
+    set("min-width", "280px");
+    set("max-width", "420px");
+    set("max-height", "min(80%, calc(100% - 60px))");
+  };
+
+  /* Once the panel is in the document, the stylesheet has applied its
+     corner. Copy those insets onto the style attribute with !important so
+     a page rule cannot pull the panel off its corner the way place() already
+     protects a dragged one. */
+  /**
+   * @param {HTMLElement} panel
+   */
+  const lockInsets = (panel) => {
+    const computed = getComputedStyle(panel);
+
+    for (const edge of ["top", "right", "bottom", "left"]) {
+      const value = computed.getPropertyValue(edge);
+
+      if (value && value !== "auto") {
+        panel.style.setProperty(edge, value, "important");
+      }
+    }
+  };
+
   /**
    * @param {HTMLElement} panel
    * @param {HTMLElement} handle
@@ -364,17 +406,24 @@
      because it is what the copy button puts in a ticket, where there is no
      page to point at.
 
-     The box is an overlay positioned in document coordinates and appended to
-     the body, not to a panel. So it never moves or restyles the page element
-     the way an `outline` on the element itself would, and item 24's
-     shadow-rooted panels cannot carry it off. The coordinates are the
-     element's position in the document (rect plus scroll), which does not
-     change as the page scrolls, so the box stays glued to the element
-     through the travel and after it - the same reasoning as the alt labels,
-     and the same snapshot limitation if the page reflows. */
+     The box is an overlay appended to the body, not to a panel, so it never
+     moves or restyles the page element the way an `outline` on the element
+     itself would, and item 24's shadow-rooted panels cannot carry it off.
+
+     It is position:fixed at the target's getBoundingClientRect(). Document
+     coordinates (absolute + scroll) stay glued to in-flow elements without
+     further work, but slide off anything that rides the viewport -
+     position:fixed, and sticky once it sticks. Viewport coordinates keep
+     both kinds aligned; a scroll/resize listener re-places while a box is
+     showing, including through scrollIntoView's smooth travel. */
 
   const HOVER_BOX = "js-kraftyPointerHover";
   const PIN_BOX = "js-kraftyPointerPin";
+
+  /** @type {Element | null} */
+  let hoverTarget = null;
+  /** @type {Element | null} */
+  let pinTarget = null;
 
   /**
    * Whether a target can be pointed at: it must occupy space and be painted
@@ -385,6 +434,11 @@
    * while its children still report a full rectangle. Both light a red box
    * in empty-looking space. checkVisibility with checkOpacity catches them.
    *
+   * Overflow clipping is the other case the alt checker already knew: a
+   * carousel keeps off-screen slides in the document at real coordinates and
+   * hides them only with an ancestor's overflow. A box over one of those
+   * lands on whatever is on screen at those coordinates.
+   *
    * @param {Element} target
    */
   const isPointable = (target) => {
@@ -392,6 +446,38 @@
 
     if (rect.width === 0 && rect.height === 0) {
       return false;
+    }
+
+    /* Same walk as altCheck's outOfSight: fully outside a clipping ancestor
+       means the reader cannot see the element, even though it has a box. */
+    for (
+      let parent = target.parentElement;
+      parent && parent !== document.body;
+      parent = parent.parentElement
+    ) {
+      const styles = getComputedStyle(parent);
+      const clipsX = styles.overflowX !== "visible";
+      const clipsY = styles.overflowY !== "visible";
+
+      if (!clipsX && !clipsY) {
+        continue;
+      }
+
+      const frame = parent.getBoundingClientRect();
+
+      if (
+        clipsX &&
+        (rect.right <= frame.left || rect.left >= frame.right)
+      ) {
+        return false;
+      }
+
+      if (
+        clipsY &&
+        (rect.bottom <= frame.top || rect.top >= frame.bottom)
+      ) {
+        return false;
+      }
     }
 
     if (typeof target.checkVisibility === "function") {
@@ -420,8 +506,52 @@
     box.id = id;
     box.className = className;
     box.hidden = true;
+    /* Paint is also stated here with !important: the box is a light-DOM div
+       (it has to sit on the page, not in a panel shadow), so a page reset
+       like `div { border: 0 !important }` would otherwise erase the outline
+       the stylesheet draws. Same defence as hardenHost. */
+    hardenPointerBox(box, id === PIN_BOX);
+    box.style.setProperty("display", "none", "important");
     document.body.appendChild(box);
     return box;
+  };
+
+  /**
+   * @param {HTMLElement} box
+   * @param {boolean} pinned
+   */
+  const hardenPointerBox = (box, pinned) => {
+    /** @param {string} name @param {string} value */
+    const set = (name, value) => box.style.setProperty(name, value, "important");
+
+    set("position", "fixed");
+    set("box-sizing", "border-box");
+    set("pointer-events", "none");
+    set("margin", "0");
+    set("padding", "0");
+    set("border-style", "solid");
+    set("border-color", "#f00");
+    set("border-width", pinned ? "3px" : "2px");
+    set("border-radius", "2px");
+    set("z-index", "2147483644");
+    set("opacity", "1");
+    set("visibility", "visible");
+    set("max-width", "none");
+    set("max-height", "none");
+    set("min-width", "0");
+    set("min-height", "0");
+    set("transform", "none");
+    set("filter", "none");
+    set("clip", "auto");
+    set("clip-path", "none");
+    set("outline", "none");
+    set(
+      "box-shadow",
+      pinned
+        ? "0 0 0 2px rgba(255, 255, 255, 0.65), 0 0 8px 2px rgba(255, 0, 0, 0.35)"
+        : "0 0 0 2px rgba(255, 255, 255, 0.65)"
+    );
+    set("background-color", pinned ? "rgba(255, 0, 0, 0.08)" : "transparent");
   };
 
   /**
@@ -432,18 +562,50 @@
     /* Hide rather than draw over empty space when the target has collapsed
        or been painted invisible since the row was wired. */
     if (!isPointable(target)) {
+      box.style.setProperty("display", "none", "important");
       box.hidden = true;
       return;
     }
 
     const rect = target.getBoundingClientRect();
+    const pinned = box.id === PIN_BOX;
 
-    box.style.left = `${rect.left + window.scrollX}px`;
-    box.style.top = `${rect.top + window.scrollY}px`;
-    box.style.width = `${rect.width}px`;
-    box.style.height = `${rect.height}px`;
+    hardenPointerBox(box, pinned);
+
+    /* Viewport coordinates with position:fixed. Adding scroll would put a
+       fixed banner's box where the document has moved on. */
+    box.style.setProperty("left", `${rect.left}px`, "important");
+    box.style.setProperty("top", `${rect.top}px`, "important");
+    box.style.setProperty("width", `${rect.width}px`, "important");
+    box.style.setProperty("height", `${rect.height}px`, "important");
+    box.style.setProperty("display", "block", "important");
     box.hidden = false;
   };
+
+  const syncPointerBoxes = () => {
+    if (hoverTarget) {
+      const hover = document.getElementById(HOVER_BOX);
+
+      if (hover instanceof HTMLElement && !hover.hidden) {
+        placeBox(hover, hoverTarget);
+      }
+    }
+
+    if (pinTarget) {
+      const pin = document.getElementById(PIN_BOX);
+
+      if (pin instanceof HTMLElement && !pin.hidden) {
+        placeBox(pin, pinTarget);
+      }
+    }
+  };
+
+  /* Bound once. This file is injected again on every click. */
+  if (!globalThis.kraftyPointerBound) {
+    globalThis.kraftyPointerBound = true;
+    window.addEventListener("scroll", syncPointerBoxes, true);
+    window.addEventListener("resize", syncPointerBoxes);
+  }
 
   /**
    * Wire a findings row to the page element it names: hover previews, click
@@ -463,12 +625,15 @@
     row.classList.add("kraftyLocatable");
 
     row.addEventListener("pointerenter", () => {
+      hoverTarget = target;
       placeBox(overlayBox(HOVER_BOX, "kraftyPointerBox"), target);
     });
 
     row.addEventListener("pointerleave", () => {
+      hoverTarget = null;
       const box = document.getElementById(HOVER_BOX);
       if (box) {
+        box.style.setProperty("display", "none", "important");
         box.hidden = true;
       }
     });
@@ -480,6 +645,7 @@
         return;
       }
 
+      pinTarget = target;
       target.scrollIntoView({ behavior: "smooth", block: "center" });
       placeBox(overlayBox(PIN_BOX, "kraftyPointerBox kraftyPointerPin"), target);
     });
@@ -488,6 +654,8 @@
   /* Drop both boxes. Called when a panel is (re)built or closed, so a pinned
      box does not outlive the findings it belonged to. */
   globalThis.kraftyClearPointer = () => {
+    hoverTarget = null;
+    pinTarget = null;
     document.getElementById(HOVER_BOX)?.remove();
     document.getElementById(PIN_BOX)?.remove();
   };
@@ -575,20 +743,69 @@
     body.className = "kraftyPanelBody";
     shell.appendChild(body);
 
+    hardenHost(panel);
     makeMovable(panel, bar, id);
 
     /* Restoring the remembered position needs the panel measured, so it has
-     to wait until the caller has added it to the document. */
+       to wait until the caller has added it to the document. The same tick
+       locks the stylesheet's corner insets when nothing was remembered. */
     const remembered = positions[id];
 
-    if (remembered) {
-      queueMicrotask(() => {
-        if (panel.isConnected) {
-          place(panel, remembered.left, remembered.top);
-        }
-      });
-    }
+    queueMicrotask(() => {
+      if (!panel.isConnected) {
+        return;
+      }
+
+      if (remembered) {
+        place(panel, remembered.left, remembered.top);
+      } else {
+        lockInsets(panel);
+      }
+    });
 
     return { panel, body };
   };
+
+  /* Escape closes the topmost panel. Bound once: this file is injected again
+     on every click. Editable fields on the page keep Escape for themselves. */
+  if (!globalThis.kraftyEscapeBound) {
+    globalThis.kraftyEscapeBound = true;
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented) {
+        return;
+      }
+
+      const target = event.target;
+
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName;
+
+        if (
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          tag === "SELECT" ||
+          target.isContentEditable
+        ) {
+          return;
+        }
+      }
+
+      const panels = document.querySelectorAll(".kraftyPanel");
+      const top = panels[panels.length - 1];
+
+      if (!(top instanceof HTMLElement)) {
+        return;
+      }
+
+      const close = top.shadowRoot?.querySelector(".kraftyPanelClose");
+
+      if (!(close instanceof HTMLElement)) {
+        return;
+      }
+
+      event.preventDefault();
+      close.click();
+    });
+  }
 })();

@@ -417,7 +417,7 @@ ready.
 | 0.12.0 | 20 landmarks · 12 comment markers + staging hosts — shipped |
 | 0.13.0 | 12 the dummy-text listing — the last decidable-enough part; inline console.log parked (see 12) |
 | 0.13.1 | Pointing fix: skip opacity:0 / zero-size targets so the red box does not light empty space |
-| 0.14.0 | 24 panels isolated from the page's CSS — shipped |
+| 0.14.0 | 24 panels isolated from the page's CSS — shipped; host/pointer hardening, Escape to close, panelCss drift check folded in |
 | 0.15.0 | 25 QR of the current URL, for device testing |
 | 0.16.0 | 26 design-token audit |
 
@@ -1064,15 +1064,15 @@ what Lighthouse and axe do. Keep the descriptor — it is still what the copy
 button puts in the ticket, where there is no page to point at — and attach
 the element to its row.
 
-The box is absolutely positioned from `getBoundingClientRect()`, not an
-`outline` on the page element. The outline checker sets outlines on the page
-directly and is right to, because it marks every element at once and a
-one-pixel shift across all of them is invisible; a single box asked to sit
-exactly on one element must not move that element or be restyled by the
-page's own rules, and an overlay owes nothing to either. It also has to live
-in the page rather than inside any panel — the same place the alt labels
-go — so that item 24's shadow-rooted panels do not carry it off. Put it
-there from the first line written.
+The box is positioned from `getBoundingClientRect()`, not an `outline` on
+the page element. The outline checker sets outlines on the page directly and
+is right to, because it marks every element at once and a one-pixel shift
+across all of them is invisible; a single box asked to sit exactly on one
+element must not move that element or be restyled by the page's own rules,
+and an overlay owes nothing to either. It also has to live in the page
+rather than inside any panel — the same place the alt labels go — so that
+item 24's shadow-rooted panels do not carry it off. Put it there from the
+first line written.
 
 Interaction is hover to preview, click to travel. Moving down the list draws
 a light box under each row in turn; clicking a row scrolls its element into
@@ -1100,6 +1100,16 @@ checkers drop it when the panel is rebuilt or closed so a pinned box never
 outlives its findings. The dimensionless images and the headerless tables are
 counted rather than listed, so they have no row to point from yet; when they
 grow one, it points the same way.
+
+Hardened afterwards, still under the same item: **0.13.1** skips
+`opacity:0` and zero-size targets so the box does not light empty space
+(custom selects, dormant full-page modals). In **0.14.0** the box uses
+`position: fixed` with viewport coordinates and resyncs on scroll/resize, so
+a `fixed`/`sticky` target no longer drifts; targets clipped behind an
+`overflow` ancestor are not wired, matching the alt checker's discipline;
+and the overlay's own layout properties are set `!important` so a page
+`div { … }` reset cannot erase the frame the way it used to reach panel
+chrome before item 24.
 
 ### 24. Panels isolated from the page's CSS — done
 
@@ -1156,10 +1166,18 @@ styles it from `kraftyPanelCss` (compiled from `panel.scss` and embedded by
 `scripts/embed-panel-css.js`), and keeps chrome and findings inside. Paint
 sits on an inner `.kraftyPanelShell`: the host is still a light-DOM `div`,
 and pages such as timetechnologies.ltd reset `div { background: transparent }`,
-which would clear a white background set on `:host`. Global `content.css` is
-only the page overlays. The Amazon list-marker case and the transparent-host
-case are regressions in `panel.test.js`; the popup review and the tests pierce
-`shadowRoot` through `kraftyPanelRoot`.
+which would clear a white background set on `:host`. Host layout insets are
+also locked with `!important` from JS, because the host remains selectable
+in the light DOM. Global `content.css` is only the page overlays. The
+Amazon list-marker case and the transparent-host case are regressions in
+`panel.test.js`; the popup review and the tests pierce `shadowRoot` through
+`kraftyPanelRoot`.
+
+`panelCss.js` is generated and committed. `npm test` runs
+`scripts/embed-panel-css.js --check` before build so a stale embed cannot
+be overwritten into a green CI run, and `test/wiring.test.js` asserts the
+same embed ≡ recompile equality. Escape closes the topmost panel (skips
+when focus is in a page field); see the panels' accessibility note below.
 
 ### 25. A QR code of the current URL, for device testing
 
@@ -1424,12 +1442,13 @@ house and that a reviewer auditing Krafty's own panel and finding it wanting
 would cost real credibility. But the honest placement is below the two above
 and beside the limitations below, not over them. The baseline is not broken:
 close, rescan and copy are real focusable buttons with labels, so a keyboard
-reaches all of them. What is missing is polish — no Escape to close, no focus
-moved into a panel when it opens or back when it closes, no keyboard way to
-reposition a panel that drags by pointer. None of it touches a check's
-accuracy, which is where the tool is believed or not, and the audience is a
-director at a desktop with a mouse. Worth a few minutes to confirm nothing is
-egregiously broken; not worth a focus-management project.
+reaches all of them, and Escape closes the topmost panel (folded into 0.14.0).
+What is still missing is polish — no focus moved into a panel when it opens
+or back when it closes, no keyboard way to reposition a panel that drags by
+pointer. None of it touches a check's accuracy, which is where the tool is
+believed or not, and the audience is a director at a desktop with a mouse.
+Worth a few minutes to confirm nothing is egregiously broken; not worth a
+focus-management project.
 
 The limitations below sit at the same tier as the last of these: real,
 costed, and waiting for a reason to be worth their price rather than for

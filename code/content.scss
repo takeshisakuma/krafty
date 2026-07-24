@@ -179,9 +179,15 @@ $alertColor: #f00;
 /* Drawn over the page, not inside a panel, so these are top-level rather than
    nested under a checker. The box marks the element a findings row names; a
    light one follows the pointer down the list, a stronger one stays where a
-   click sent the page. Item 24's shadow-rooted panels cannot carry it off. */
+   click sent the page. Item 24's shadow-rooted panels cannot carry it off.
+
+   The outline itself is also pinned from panel.js with !important: a page
+   `div { border: 0 !important }` would otherwise erase what this rule draws. */
 .kraftyPointerBox {
-  position: absolute;
+  /* Viewport coordinates from getBoundingClientRect, so a box over a
+     position:fixed (or stuck sticky) target stays with it as the page
+     scrolls. In-flow targets are kept aligned by re-placing on scroll. */
+  position: fixed;
   box-sizing: border-box;
   pointer-events: none;
   border: 2px solid $alertColor;
