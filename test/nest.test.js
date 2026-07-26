@@ -90,13 +90,21 @@ async function collect() {
       const anError = document.querySelector(".kraftyNestError");
 
       const summary = root?.querySelector(".kraftyPanelSummary");
-      const pairs = root?.querySelectorAll(".kraftyPanelList li") ?? [];
+      const pairs = [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])];
 
       return {
         flagged,
         panelText: root ? (root.textContent ?? "") : null,
         summaryText: summary ? (summary.textContent ?? "") : null,
         pairCount: pairs.length,
+        pairsPointed: pairs.filter((item) =>
+          item.classList.contains("kraftyLocatable")
+        ).length,
+        pairsMarked: pairs.every(
+          (item) =>
+            item.classList.contains("kraftyLocatable") ||
+            item.classList.contains("kraftyInert")
+        ),
         errorCount: document.querySelectorAll(".kraftyNestError").length,
         reason: anError ? anError.getAttribute("title") : null,
         titleWhileOn: titled ? titled.getAttribute("title") : null,
@@ -189,6 +197,14 @@ test("nest checker", async (t) => {
 
   await t.test("lists the offending pairs in the panel", () => {
     assert.match(String(result.panelText), /ul > div/);
+    assert.ok(
+      result.pairsPointed > 0,
+      "at least one pair row points at a sample flagged element"
+    );
+    assert.ok(
+      result.pairsMarked,
+      "every pair row is either locatable or inert (unpainted sample)"
+    );
   });
 
   await t.test("does not destroy a title the page already had", () => {

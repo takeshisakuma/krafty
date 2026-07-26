@@ -80,6 +80,7 @@
   }
 
   if (!document.body.classList.toggle(BODY_CLASS)) {
+    kraftyClearPointer();
     return;
   }
 
@@ -326,14 +327,15 @@
 
   const run = () => {
     document.getElementById(PANEL_ID)?.remove();
+    kraftyClearPointer();
 
-    /** @type {Map<string, { colour: { r: number, g: number, b: number, a: number, key: string }, count: number }>} */
+    /** @type {Map<string, { colour: { r: number, g: number, b: number, a: number, key: string }, count: number, element: Element }>} */
     const colours = new Map();
-    /** @type {Map<string, { stack: string, primary: string, count: number, loaded: boolean }>} */
+    /** @type {Map<string, { stack: string, primary: string, count: number, loaded: boolean, element: Element }>} */
     const fonts = new Map();
-    /** @type {Map<string, { radius: { key: string, size: number }, count: number }>} */
+    /** @type {Map<string, { radius: { key: string, size: number }, count: number, element: Element }>} */
     const radii = new Map();
-    /** @type {Map<string, { shadow: { key: string, x: number, y: number, blur: number, spread: number, colour: { r: number, g: number, b: number } | null }, count: number }>} */
+    /** @type {Map<string, { shadow: { key: string, x: number, y: number, blur: number, spread: number, colour: { r: number, g: number, b: number } | null }, count: number, element: Element }>} */
     const shadows = new Map();
 
     let examined = 0;
@@ -374,7 +376,7 @@
         if (existing) {
           existing.count += 1;
         } else {
-          colours.set(parsed.key, { colour: parsed, count: 1 });
+          colours.set(parsed.key, { colour: parsed, count: 1, element });
         }
       }
 
@@ -392,6 +394,7 @@
             primary,
             count: 1,
             loaded: fontFaceLoaded(stack, primary),
+            element,
           });
         }
       }
@@ -404,7 +407,7 @@
         if (existingRadius) {
           existingRadius.count += 1;
         } else {
-          radii.set(radius.key, { radius, count: 1 });
+          radii.set(radius.key, { radius, count: 1, element });
         }
       }
 
@@ -416,7 +419,7 @@
         if (existingShadow) {
           existingShadow.count += 1;
         } else {
-          shadows.set(shadow.key, { shadow, count: 1 });
+          shadows.set(shadow.key, { shadow, count: 1, element });
         }
       }
     }
@@ -468,6 +471,7 @@
       onRescan: run,
       onClose: () => {
         panel.remove();
+        kraftyClearPointer();
         document.body.classList.remove(BODY_CLASS);
       },
     });
@@ -526,7 +530,7 @@
      * @param {string} sectionKey
      * @param {string} labelKey
      * @param {string} listClass
-     * @param {{ label: string, count: number, swatch?: string }[]} rows
+     * @param {{ label: string, count: number, swatch?: string, element: Element }[]} rows
      * @param {() => string} copy
      */
     const listTokens = (sectionKey, labelKey, listClass, rows, copy) => {
@@ -556,6 +560,10 @@
         count.textContent = `× ${row.count}`;
         item.appendChild(count);
 
+        /* Count stays; the first element that used the token is the sample
+           the row points at. */
+        kraftyPointAt(item, row.element);
+
         list.appendChild(item);
       }
 
@@ -571,6 +579,7 @@
           label: row.colour.key,
           count: row.count,
           swatch: row.colour.key,
+          element: row.element,
         })),
         () =>
           [
@@ -619,6 +628,8 @@
         count.textContent = `× ${row.count}`;
         item.appendChild(count);
 
+        kraftyPointAt(item, row.element);
+
         list.appendChild(item);
       }
 
@@ -633,6 +644,7 @@
         radiusRows.map((row) => ({
           label: row.radius.key,
           count: row.count,
+          element: row.element,
         })),
         () =>
           [
@@ -650,6 +662,7 @@
         shadowRows.map((row) => ({
           label: row.shadow.key,
           count: row.count,
+          element: row.element,
         })),
         () =>
           [

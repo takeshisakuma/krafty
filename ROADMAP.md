@@ -120,7 +120,10 @@ wrong" is fast; judging a bare string is not. Krafty already did this for
 favicon and og:image by showing the picture — this is the same move for
 text. The previews are labelled as approximate, because search engines
 rewrite titles and truncate by width, and promising a faithful rendering
-would be a lie.
+would be a lie. When the URL is set but the file is gone, a blank broken
+`<img>` next to a still-visible path reads as "no preview" rather than
+"not found"; the card finding already said so, and the reference-row
+thumbnail now says so too (`headImageFailed`).
 
 Collapsible sections were considered and dropped. Tabs would eat horizontal
 room a 420px panel needs for URLs and would hide the very thing an
@@ -216,6 +219,10 @@ missing dimensions. Around the same signal-to-noise as the nest checker's
 An image that has not loaded has no natural size, which lazy loading makes
 routine below the fold. Those are counted and declared rather than passed
 as fine, on the same principle as the head checker's summary.
+
+Extended afterwards to CSS `background-image` on element boxes (heroes and
+sections), with the same allowance and waste floor. `cover` / `contain` are
+not modelled — the layout box is the half that is honest without guessing.
 
 ## Waiting on real use
 
@@ -420,6 +427,7 @@ ready.
 | 0.14.0 | 24 panels isolated from the page's CSS — shipped; host/pointer hardening, Escape to close, panelCss drift check folded in |
 | 0.15.0 | 25 QR of the current URL, for device testing — shipped (popup) |
 | 0.16.0 | 26 design-token audit (colours, fonts, radii, shadows) — shipped |
+| 0.17.0 | Hardening + small checks: panel dock against page CSS, outline `!important`, CSS `background-image` waste, unsupported inline `style`, og:image load failure, alt remeasure, https leftovers harness, panel focus/arrow keys — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -610,9 +618,8 @@ a placeholder image service from the closed list (a note). Its own checker,
 not the Markup family — the reasoning below on "an eighth checker or joins
 item 11's" settled here, once item 11 was built, on the side of its own: a
 localhost URL is a deployment leftover, not markup wrong in a way the page
-hides. The mixed-content positive case has no browser test — the http harness
-cannot serve https — so it is code and reasoning without a fixture, noted
-rather than hidden.
+hides. The mixed-content positive and the staging own-host exclusion are
+covered by the https harness in `test/support.js`.
 
 Extended 2026-07-23, in 0.12.0, with two more from the list below — the
 developer markers in HTML comments, and the staging-looking hostnames — both
@@ -1176,6 +1183,15 @@ Amazon list-marker case and the transparent-host case are regressions in
 `panel.test.js`; the popup review and the tests pierce `shadowRoot` through
 `kraftyPanelRoot`.
 
+Hardened afterwards on scalermusic.com: document styles on the host beat
+normal `:host` corner rules, so a page-wide `inset: unset` left fixed panels
+at their static position — thousands of pixels down a tall body — and
+copying that used value with `!important` froze them there. Default docking
+is now `PANEL_DOCKS` + `place()` in `js/panel.js`, not `getComputedStyle`.
+The outline overlay needs the same kind of defence: that site ships
+`* { outline: none !important }`, so the checker rule carries `!important`
+too (nest highlights already did).
+
 `panelCss.js` is generated and committed. `npm test` runs
 `scripts/embed-panel-css.js --check` before build so a stale embed cannot
 be overwritten into a green CI run, and `test/wiring.test.js` asserts the
@@ -1318,7 +1334,9 @@ the thing this project is least willing to ship.
 declaration, so no property database is needed. Inline `style` attributes
 are therefore checkable honestly, and a hand-typed `style` in a CMS is a
 plausible place for a typo that shows no symptom. That much is a real
-option; the general case is not.
+option; the general case is not. Built afterwards as a Markup Checker note:
+`getAttribute("style")` split into declarations, judged with `CSS.supports`,
+SVG exporter leftovers such as `enable-background` skipped.
 
 **HTML: reachable, and partly already done.** Attributes are preserved as
 written, bogus ones included, and the nest checker already validates the
@@ -1445,30 +1463,24 @@ the same idea named once; this is it as a habit. A pass over a spread of
 real, busy, varied sites — Japanese and not, static and single-page —
 logging each false positive and each miss per checker, is the surest
 defence of the one thing the project cannot afford to lose: being believed
-on the day a finding is right.
+on the day a finding is right. `node scripts/fp-pass.js` opens a short
+spread (Wikipedia, brainpad, timetechnologies, a personal site) and prints
+each panel's lines; fix what is clearly wrong, leave notes that need a
+person.
 
-**The two paths no test covers.** The mixed-content positive and the staging
-check's own-host exclusion are code and reasoning with no browser fixture,
-because the http test harness cannot serve https — noted in
-`test/leftovers.test.js`, where they live. A harness serving https with a
-self-signed certificate and Puppeteer set to accept it would close them. A
-bounded piece of work against a risk this project names elsewhere: a check
-that quietly measures nothing looks exactly like one that found nothing
-wrong.
+**The two paths no test covers — closed.** `test/support.js` can serve
+https from a self-signed fixture (`test/fixtures/https/`) with Puppeteer
+`acceptInsecureCerts`, and map a hostname such as `staging.example.com` onto
+the listener. The mixed-content positive and the staging own-host exclusion
+are fixtures in `test/leftovers.test.js` now, not reasoning alone.
 
-**The panels' own accessibility — deliberately low.** It is tempting to rank
-this high, on the grounds that an accessibility tool should keep its own
-house and that a reviewer auditing Krafty's own panel and finding it wanting
-would cost real credibility. But the honest placement is below the two above
-and beside the limitations below, not over them. The baseline is not broken:
-close, rescan and copy are real focusable buttons with labels, so a keyboard
-reaches all of them, and Escape closes the topmost panel (folded into 0.14.0).
-What is still missing is polish — no focus moved into a panel when it opens
-or back when it closes, no keyboard way to reposition a panel that drags by
-pointer. None of it touches a check's accuracy, which is where the tool is
-believed or not, and the audience is a director at a desktop with a mouse.
-Worth a few minutes to confirm nothing is egregiously broken; not worth a
-focus-management project.
+**The panels' own accessibility — light polish done.** Still not a
+focus-management project: the audience is a director with a mouse, and none
+of this touches check accuracy. Close, rescan and copy were already real
+buttons; Escape already closed the topmost panel. Afterwards: focus moves to
+Close when a panel opens and returns to the previous element on close, and
+the title bar is focusable with arrow keys (Shift stretches the step) so
+reposition is not pointer-only.
 
 The limitations below sit at the same tier as the last of these: real,
 costed, and waiting for a reason to be worth their price rather than for
@@ -1484,9 +1496,9 @@ time.
   and titles the checker writes itself.
 - The checkers write classes onto the page's own `<body>`, so a page that
   rewrites `class` on `<body>` can clear them.
-- The alt checker places its labels by measuring where the images are when
-  it runs. A page that reflows afterwards — lazy loaded images arriving
-  below the fold is the everyday case — leaves them where they were.
-  Toggling off and on re-measures. The alternative was leaving them at their
-  static position, which put every label in a row on top of the first image,
-  so this is the better of the two snapshots rather than a fix for both.
+- The alt checker places its labels by measuring where the images are, and
+  re-measures when an image loads or enters the viewport. A reflow that
+  moves images without a load or intersection event still leaves labels
+  where they were — Check again covers that. The alternative was leaving
+  them at their static position, which put every label in a row on top of
+  the first image, so measurement is still the better of the two snapshots.

@@ -124,13 +124,24 @@ function collectReview(panels) {
       lines.push(`  - ${finding.textContent}`);
     }
 
-    /* Nest and leftovers use .kraftyPanelList; the image checker's oversized
-       rows use .kraftyImageList. Both are the detail the panels show, so both
-       belong in the pasted report. */
+    /* Nest and leftovers use .kraftyPanelList; the image checker uses
+       .kraftyImageList. Both are the detail the panels show, so both belong
+       in the pasted report. */
     for (const row of root.querySelectorAll(
       ".kraftyPanelList li, .kraftyImageList li"
     )) {
       lines.push(`  - ${(row.textContent ?? "").replace(/\s+/g, " ").trim()}`);
+    }
+
+    /* Heading and landmark keep their map in .kraftyOutline. The indent is
+       the shape of the thing - carried as data-krafty-depth because the
+       review cannot infer meaning from padding. */
+    for (const row of root.querySelectorAll(".kraftyOutlineItem")) {
+      const depth =
+        Number(/** @type {HTMLElement} */ (row).dataset.kraftyDepth ?? "0") ||
+        0;
+      const text = (row.textContent ?? "").replace(/\s+/g, " ").trim();
+      lines.push(`  - ${"  ".repeat(depth)}${text}`);
     }
 
     lines.push("");

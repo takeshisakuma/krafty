@@ -42,6 +42,16 @@ async function check(html, extra) {
         shadows: [
           ...(root?.querySelectorAll(".kraftyTokenShadowList code") ?? []),
         ].map((item) => item.textContent ?? ""),
+        rowsPointed: [
+          ...(root?.querySelectorAll(".kraftyPanelList li") ?? []),
+        ].filter((item) => item.classList.contains("kraftyLocatable")).length,
+        rowsMarked: [
+          ...(root?.querySelectorAll(".kraftyPanelList li") ?? []),
+        ].every(
+          (item) =>
+            item.classList.contains("kraftyLocatable") ||
+            item.classList.contains("kraftyInert")
+        ),
         bodyClass: document.body.classList.contains("kraftyTokenChecker"),
       };
     });
@@ -76,6 +86,14 @@ test("token checker", async (t) => {
     assert.ok(
       result.findings.some((item) => /2|3|4|5/.test(item.text)),
       `expected a summary count, got ${JSON.stringify(result.findings)}`
+    );
+    assert.ok(
+      result.rowsPointed > 0,
+      "at least one token row points at a sample element"
+    );
+    assert.ok(
+      result.rowsMarked,
+      "every token row is either locatable or inert (unpainted sample)"
     );
     assert.ok(
       result.colours.some((c) => c.includes("255, 0, 0")),

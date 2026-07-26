@@ -41,6 +41,7 @@ async function check(html, deviceScaleFactor = 1) {
       );
 
       await page.evaluate(SCRIPTS.imageCheck);
+      await page.waitForSelector("#js-kraftyImageInformation");
 
       return page.evaluate(() => {
         const panel = document.getElementById("js-kraftyImageInformation");
@@ -102,6 +103,7 @@ test("image checker", async (t) => {
         );
 
         await page.evaluate(SCRIPTS.imageCheck);
+        await page.waitForSelector("#js-kraftyImageInformation");
 
         const row = ".kraftyImageList li.kraftyLocatable";
 
@@ -175,6 +177,12 @@ test("image checker", async (t) => {
     /* 400 into a 200px box is exactly the 2x allowance, so the size finding
        must not appear alongside it. */
     assert.strictEqual(matching(result.findings, /larger than/).length, 0);
+
+    assert.strictEqual(
+      result.rows.length,
+      1,
+      "the dimensionless image is listed so it can be pointed at"
+    );
   });
 
   await t.test("says nothing about an image it cannot see", async () => {
@@ -199,6 +207,7 @@ test("image checker", async (t) => {
         /* Never given a src, so it never loads - standing in for a lazy
            loaded image still below the fold. */
         await page.evaluate(SCRIPTS.imageCheck);
+        await page.waitForSelector("#js-kraftyImageInformation");
 
         return page.evaluate(() => {
           const root = kraftyPanelRoot(
@@ -218,9 +227,11 @@ test("image checker", async (t) => {
   });
 
   await t.test("puts the worst offender first", async () => {
+    /* width/height attributes present so these stay out of the missing-
+       dimensions list; this assertion is only about oversized order. */
     const result = await check(
-      `<img src="${source(1200, 800)}" style="width:300px;height:200px">
-       <img src="${source(3000, 2000)}" style="width:300px;height:200px">`
+      `<img src="${source(1200, 800)}" width="300" height="200" style="width:300px;height:200px">
+       <img src="${source(3000, 2000)}" width="300" height="200" style="width:300px;height:200px">`
     );
 
     assert.strictEqual(result.rows.length, 2);
@@ -245,6 +256,25 @@ test("image checker", async (t) => {
     assert.match(result.basis, /Measured against 2× the displayed size/);
   });
 
+  await t.test("reports a background image served far larger than its box", async () => {
+    const result = await check(
+      `<div style="width:300px;height:200px;background-image:url('${source(3000, 2000)}')"></div>`
+    );
+
+    assert.strictEqual(matching(result.findings, /background images? .*larger/).length, 1);
+    assert.strictEqual(result.rows.length, 1);
+    assert.match(result.rows[0], /3000×2000/);
+    assert.match(result.rows[0], /300×200/);
+  });
+
+  await t.test("leaves a correctly sized background image alone", async () => {
+    const result = await check(
+      `<div style="width:300px;height:200px;background-image:url('${source(600, 400)}')"></div>`
+    );
+
+    assert.strictEqual(matching(result.findings, /background/).length, 0);
+  });
+
   await t.test("leaves nothing behind when toggled off", async () => {
     const after = await withPage(
       {
@@ -257,6 +287,7 @@ test("image checker", async (t) => {
         );
 
         await page.evaluate(SCRIPTS.imageCheck);
+        await page.waitForSelector("#js-kraftyImageInformation");
         await page.evaluate(SCRIPTS.imageCheck);
 
         return page.evaluate(() => ({

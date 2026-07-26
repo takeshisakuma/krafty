@@ -38,6 +38,7 @@ async function check(html) {
           role: item.querySelector(".kraftyOutlineLevel")?.textContent ?? "",
           text: item.textContent ?? "",
           indent: /** @type {HTMLElement} */ (item).style.paddingLeft,
+          locatable: item.classList.contains("kraftyLocatable"),
         })),
         hasReview: root?.querySelector(".kraftyOutline") !== null,
       };
@@ -108,6 +109,11 @@ test("landmark checker", async (t) => {
     assert.deepStrictEqual(
       result.outline.map((entry) => entry.role),
       ["banner", "navigation", "main", "contentinfo"]
+    );
+
+    assert.ok(
+      result.outline.every((entry) => entry.locatable),
+      "each outline row points at its landmark on the page"
     );
 
     /* The claim stays scoped to what was checked: the regions can all be

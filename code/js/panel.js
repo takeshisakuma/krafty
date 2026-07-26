@@ -78,23 +78,50 @@
     set("max-height", "min(80%, calc(100% - 60px))");
   };
 
-  /* Once the panel is in the document, the stylesheet has applied its
-     corner. Copy those insets onto the style attribute with !important so
-     a page rule cannot pull the panel off its corner the way place() already
-     protects a dragged one. */
+  /* Default corners match panel.scss's panel-place() mixin. They cannot be
+     read back from getComputedStyle: :host rules lose to author styles from
+     the page on the host element (outer tree wins for normal declarations),
+     so a reset like `top: unset` on almost every element leaves a fixed
+     panel at its static position — the end of a tall body — and locking
+     that used value with !important parked panels thousands of pixels down
+     the page on sites such as scalermusic.com. place() writes !important
+     insets from these numbers instead. */
+  const PANEL_INSET = 50;
+  const PANEL_STEP = 40;
+
+  /** @type {Record<string, { corner: "top-left" | "top-right" | "bottom-left" | "bottom-right", step: number }>} */
+  const PANEL_DOCKS = {
+    kraftyImageInformation: { corner: "top-left", step: 0 },
+    kraftyMarkupInformation: { corner: "top-left", step: 1 },
+    kraftyLeftoversInformation: { corner: "top-left", step: 2 },
+    kraftyHeadingInformation: { corner: "top-right", step: 0 },
+    kraftyTokenInformation: { corner: "top-right", step: 1 },
+    kraftyHeadInformation: { corner: "bottom-left", step: 0 },
+    kraftyNestInformation: { corner: "bottom-right", step: 0 },
+    kraftyLandmarkInformation: { corner: "bottom-right", step: 1 },
+  };
+
   /**
    * @param {HTMLElement} panel
    */
-  const lockInsets = (panel) => {
-    const computed = getComputedStyle(panel);
+  const dockDefault = (panel) => {
+    const name = [...panel.classList].find((entry) => PANEL_DOCKS[entry]);
+    const dock = (name && PANEL_DOCKS[name]) || {
+      corner: /** @type {const} */ ("bottom-right"),
+      step: 0,
+    };
+    const inset = PANEL_INSET + dock.step * PANEL_STEP;
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
 
-    for (const edge of ["top", "right", "bottom", "left"]) {
-      const value = computed.getPropertyValue(edge);
+    const left = dock.corner.endsWith("right")
+      ? window.innerWidth - width - inset
+      : inset;
+    const top = dock.corner.startsWith("bottom")
+      ? window.innerHeight - height - inset
+      : inset;
 
-      if (value && value !== "auto") {
-        panel.style.setProperty(edge, value, "important");
-      }
-    }
+    place(panel, left, top);
   };
 
   /**
@@ -103,6 +130,37 @@
    * @param {string} id
    */
   const makeMovable = (panel, handle, id) => {
+    /* Keyboard twin of the drag: the title bar is focusable, and the arrow
+       keys nudge by a step. Shift stretches the step. The audience is still
+       a director with a mouse; this is the polish that keeps Escape's
+       neighbours from being a dead end once focus is in the panel. */
+    handle.tabIndex = 0;
+    handle.title = kraftyMessage("panelMove");
+
+    handle.addEventListener("keydown", (event) => {
+      const step = event.shiftKey ? 40 : 20;
+      let deltaX = 0;
+      let deltaY = 0;
+
+      if (event.key === "ArrowLeft") {
+        deltaX = -step;
+      } else if (event.key === "ArrowRight") {
+        deltaX = step;
+      } else if (event.key === "ArrowUp") {
+        deltaY = -step;
+      } else if (event.key === "ArrowDown") {
+        deltaY = step;
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      const box = panel.getBoundingClientRect();
+      place(panel, box.left + deltaX, box.top + deltaY);
+      const end = panel.getBoundingClientRect();
+      positions[id] = { left: end.left, top: end.top };
+    });
+
     handle.addEventListener("pointerdown", (event) => {
       /* Left button only, and never when the press started on the close
        button - that is a click, not a drag. */
@@ -609,17 +667,21 @@
 
   /**
    * Wire a findings row to the page element it names: hover previews, click
-   * travels. A row with no locatable element - a duplicated id names several,
-   * a reused link text as many - simply does not call this and stays inert.
-   * The same for a target that is not painted: wiring it would make the row
-   * look clickable, scroll on click, and still show no useful box.
+   * travels. Returns whether the row was wired. A target that is not painted
+   * is left inert and marked `.kraftyInert` instead - wiring it would make
+   * the row look clickable, scroll on click, and still show no useful box.
+   * Aggregate findings (duplicated id, reused link text) still call this with
+   * the first instance, so the count stays honest and the row stays findable.
    *
    * @param {HTMLElement} row
    * @param {Element} target
+   * @returns {boolean}
    */
   globalThis.kraftyPointAt = (row, target) => {
     if (!isPointable(target)) {
-      return;
+      row.classList.add("kraftyInert");
+      row.title = kraftyMessage("panelRowNotPainted");
+      return false;
     }
 
     row.classList.add("kraftyLocatable");
@@ -649,6 +711,8 @@
       target.scrollIntoView({ behavior: "smooth", block: "center" });
       placeBox(overlayBox(PIN_BOX, "kraftyPointerBox kraftyPointerPin"), target);
     });
+
+    return true;
   };
 
   /* Drop both boxes. Called when a panel is (re)built or closed, so a pinned
@@ -734,7 +798,21 @@
     close.className = "kraftyPanelClose";
     close.textContent = "×";
     close.title = kraftyMessage("panelClose");
-    close.addEventListener("click", onClose);
+
+    /* Remember who had focus before the panel took it, and give it back on
+       close (button or Escape → click). A missing restore is what makes
+       keyboard use feel like a trap once Escape lands inside the chrome. */
+    /** @type {Element | null} */
+    let returnFocus = null;
+
+    close.addEventListener("click", () => {
+      const restore = returnFocus;
+      onClose();
+
+      if (restore instanceof HTMLElement && restore.isConnected) {
+        restore.focus({ preventScroll: true });
+      }
+    });
     controls.appendChild(close);
 
     shell.appendChild(bar);
@@ -748,7 +826,7 @@
 
     /* Restoring the remembered position needs the panel measured, so it has
        to wait until the caller has added it to the document. The same tick
-       locks the stylesheet's corner insets when nothing was remembered. */
+       docks the default corner and moves focus into the panel. */
     const remembered = positions[id];
 
     queueMicrotask(() => {
@@ -759,8 +837,21 @@
       if (remembered) {
         place(panel, remembered.left, remembered.top);
       } else {
-        lockInsets(panel);
+        dockDefault(panel);
       }
+
+      const active = document.activeElement;
+
+      if (
+        active instanceof Element &&
+        active !== document.body &&
+        active !== document.documentElement &&
+        !panel.contains(active)
+      ) {
+        returnFocus = active;
+      }
+
+      close.focus({ preventScroll: true });
     });
 
     return { panel, body };

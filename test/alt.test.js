@@ -375,6 +375,100 @@ test("alt checker", async (t) => {
     assert.deepStrictEqual(states, { missing: 1, empty: 1 });
   });
 
+  await t.test("re-measures when a late image finishes loading", async () => {
+    const labels = await withPage(
+      {
+        html: `<img src="${PIXEL}" alt="first" width="80" height="80">`,
+        checkers: ["altCheck"],
+        width: 1280,
+        height: 900,
+      },
+      async (page) => {
+        await page.evaluate((src) => {
+          const image = document.createElement("img");
+          image.alt = "late-load";
+          image.width = 80;
+          image.height = 80;
+          document.body.appendChild(image);
+          /* src after append so the capture-phase load listener sees it. */
+          image.src = src;
+        }, PIXEL);
+
+        await page.waitForFunction(() =>
+          [...document.querySelectorAll(".kraftyAltContent")].some((label) =>
+            (label.textContent ?? "").includes("late-load")
+          )
+        );
+
+        return page.evaluate(() =>
+          [...document.querySelectorAll(".kraftyAltContent")].map(
+            (label) => label.textContent ?? ""
+          )
+        );
+      }
+    );
+
+    assert.ok(
+      labels.some((text) => /late-load/.test(text)),
+      "load events must place a label without pressing Check again"
+    );
+  });
+
+  await t.test("re-measures labels on Check again without toggling off", async () => {
+    /* Pressing ↻ must not turn the checker off, and still covers a reflow
+       the load / intersection pass does not see. */
+    const state = await withPage(
+      {
+        html: `<img src="${PIXEL}" alt="first" width="80" height="80">`,
+        checkers: ["altCheck"],
+        width: 1280,
+        height: 900,
+      },
+      async (page) => {
+        const before = await page.evaluate(() => ({
+          labels: document.querySelectorAll(".kraftyAltContent").length,
+          rescan: document.getElementById("js-kraftyAltRescan") !== null,
+          bodyClass: document.body.classList.contains("kraftyAltChecker"),
+        }));
+
+        await page.evaluate((src) => {
+          const image = document.createElement("img");
+          image.src = src;
+          image.alt = "late";
+          image.width = 80;
+          image.height = 80;
+          document.body.appendChild(image);
+        }, PIXEL);
+
+        await page.waitForFunction(() =>
+          [...document.images].every((image) => image.complete)
+        );
+
+        await page.click("#js-kraftyAltRescan");
+
+        const after = await page.evaluate(() => ({
+          labels: document.querySelectorAll(".kraftyAltContent").length,
+          bodyClass: document.body.classList.contains("kraftyAltChecker"),
+          texts: [...document.querySelectorAll(".kraftyAltContent")].map(
+            (label) => label.textContent ?? ""
+          ),
+        }));
+
+        return { before, after };
+      }
+    );
+
+    assert.strictEqual(state.before.labels, 1);
+    assert.strictEqual(state.before.rescan, true);
+    assert.strictEqual(state.before.bodyClass, true);
+    assert.strictEqual(state.after.bodyClass, true, "rescan must not toggle off");
+    assert.strictEqual(state.after.labels, 2);
+    assert.ok(
+      state.after.texts.some((text) => /late/.test(text)),
+      "the late image gets a label after Check again"
+    );
+  });
+
   await t.test("leaves nothing behind when toggled off", async () => {
     const after = await withPage(
       {
@@ -386,12 +480,14 @@ test("alt checker", async (t) => {
 
         return page.evaluate(() => ({
           labels: document.querySelectorAll(".kraftyAltContent").length,
+          rescan: document.getElementById("js-kraftyAltRescan") !== null,
           bodyClass: document.body.classList.contains("kraftyAltChecker"),
         }));
       }
     );
 
     assert.strictEqual(after.labels, 0);
+    assert.strictEqual(after.rescan, false);
     assert.strictEqual(after.bodyClass, false);
   });
 });

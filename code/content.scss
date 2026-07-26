@@ -13,8 +13,11 @@ $alertColor: #f00;
    copies of the table would have drifted. The models now live in
    js/nestCheck.js, which marks offending elements with a class. */
 
+/* !important: sites such as scalermusic.com ship `* { outline: none
+   !important }` (a focus-ring reset). Without it the checker toggles on and
+   paints nothing. Same defence the nest highlight already uses. */
 .kraftyOutlineChecker *:not(.kraftyPanel, .kraftyPanel *) {
-  outline: $alertColor solid 1px;
+  outline: $alertColor solid 1px !important;
 }
 
 /* --- nest checker --- */
@@ -143,6 +146,32 @@ $alertColor: #f00;
 
     &.kraftyAltEmpty {
       color: #666;
+    }
+  }
+
+  /* Same job as a panel's ↻: re-measure after lazy load or reflow, without
+     toggling the checker off. Fixed to the viewport so it stays reachable
+     while the labels themselves may be pinned to the document. */
+  .kraftyAltRescan {
+    position: fixed;
+    z-index: 2147483647;
+    right: 16px;
+    bottom: 16px;
+    margin: 0;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.18);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1;
+    color: #333;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f4f6f8;
+      color: #000;
     }
   }
 }

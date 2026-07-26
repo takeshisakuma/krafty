@@ -68,8 +68,9 @@ declare var kraftyCopyButton: (
 ) => HTMLButtonElement;
 
 /* Wire a findings row to the element it names: hover previews a box over it,
-   click scrolls to it and pins the box (item 23). */
-declare var kraftyPointAt: (row: HTMLElement, target: Element) => void;
+   click scrolls to it and pins the box (item 23). Returns false and marks
+   the row inert when the target is not painted. */
+declare var kraftyPointAt: (row: HTMLElement, target: Element) => boolean;
 
 /* Remove both pointer boxes, so a pinned one does not outlive the findings
    it belonged to. Called when a panel is rebuilt or closed. */
@@ -90,6 +91,9 @@ declare var kraftyPointerBound: boolean | undefined;
 
 /* Escape-to-close is bound once; this file is injected again on every click. */
 declare var kraftyEscapeBound: boolean | undefined;
+
+/** Generation token for the image checker's async background probes. */
+declare var kraftyImageScan: number | undefined;
 
 /* checkers.js, shared by the popup and the service worker. */
 interface Checker {

@@ -81,6 +81,10 @@
     "message": "閉じる",
     "description": "Label of the button that dismisses a panel."
   },
+  "panelMove": {
+    "message": "ドラッグで移動。矢印キーで少しずつ、Shift+矢印で大きく動かします。",
+    "description": "title on the panel title bar: pointer drag and keyboard reposition."
+  },
   "checkerOutline": {
     "message": "アウトラインチェック",
     "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
@@ -120,6 +124,14 @@
   "panelRescan": {
     "message": "再チェック",
     "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
+  },
+  "panelRowNotLocatable": {
+    "message": "ページ上の一箇所を指す指摘ではありません。",
+    "description": "title on a findings row with no single page element to highlight (duplicated id, reused link text, comment marker, and the like)."
+  },
+  "panelRowNotPainted": {
+    "message": "ページ上に見えていないため、枠を付けられません。",
+    "description": "title on a findings row whose target has no painted box (opacity:0, display:none, clipped, and the like)."
   },
   "checkerHead": {
     "message": "ヘッドチェック",
@@ -223,6 +235,14 @@
     "message": "見出しセルの無いテーブルが 1 個あります。どのセルも見出しなしで読み上げられます",
     "description": "Used when exactly one table is missing its headers."
   },
+  "markupSectionTables": {
+    "message": "該当するテーブル",
+    "description": "Heading of the section listing tables with no header cells."
+  },
+  "markupTableListLabel": {
+    "message": "見出しセルが無い",
+    "description": "Label above the list of tables with no header cells."
+  },
   "markupSectionFields": {
     "message": "該当する入力欄",
     "description": "Heading of the section listing form fields with no name."
@@ -288,6 +308,28 @@
   "markupLinkNoNameOne": {
     "message": "アクセシブルな名前を持たないリンク・ボタンが 1 個あります。スクリーンリーダーは役割しか読み上げません",
     "description": "Used when exactly one link or button has no accessible name."
+  },
+  "markupSectionFrames": {
+    "message": "該当するフレーム",
+    "description": "Heading of the section listing iframes and embeds with no accessible name."
+  },
+  "markupFrameListLabel": {
+    "message": "名前を持たないもの",
+    "description": "Label above the list of iframes and embeds with no accessible name. A src is shown beside it where it has one."
+  },
+  "markupFrameNoName": {
+    "message": "アクセシブルな名前を持たない iframe・embed が $count$ 個あります。スクリーンリーダーは役割しか読み上げません",
+    "description": "No title, no aria-label, and no aria-labelledby that resolves. The usual case is a map or video embed left untitled.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupFrameNoNameOne": {
+    "message": "アクセシブルな名前を持たない iframe・embed が 1 個あります。スクリーンリーダーは役割しか読み上げません",
+    "description": "Used when exactly one iframe or embed has no accessible name."
   },
   "markupSvgUnnamedControl": {
     "message": "リンクやボタンの唯一の中身になっていて、それを無名にしているインライン SVG が $count$ 個あります",
@@ -425,6 +467,28 @@
     "message": "タブ順を飛び越えます",
     "description": "Label above the list of elements with a positive tabindex. Each row shows the value."
   },
+  "markupStyleInvalid": {
+    "message": "ブラウザが解釈できないインライン style 宣言が $count$ 件あります",
+    "description": "A typo in a style attribute is dropped by CSSOM and shows no symptom. Only inline attributes are checked; stylesheets are unreachable or already post-parse.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupStyleInvalidOne": {
+    "message": "ブラウザが解釈できないインライン style 宣言が 1 件あります",
+    "description": "Used when exactly one inline style declaration fails CSS.supports."
+  },
+  "markupSectionStyles": {
+    "message": "スタイル",
+    "description": "Heading of the section listing unsupported inline style declarations."
+  },
+  "markupStyleListLabel": {
+    "message": "この書き方では解釈されません",
+    "description": "Label above the list of invalid inline style declarations. Each row shows the bad property: value."
+  },
   "checkerImage": {
     "message": "画像チェック",
     "description": "Heading of the image weight panel."
@@ -436,6 +500,14 @@
   "imageListLabel": {
     "message": "表示サイズより大きく配信されている画像",
     "description": "Label above the list of oversized images."
+  },
+  "imageSectionNoSize": {
+    "message": "寸法の無い画像",
+    "description": "Heading of the section listing images with no width and height attributes."
+  },
+  "imageNoSizeListLabel": {
+    "message": "width と height が無い",
+    "description": "Label above the list of images missing width and height attributes."
   },
   "imageOversized": {
     "message": "表示サイズよりかなり大きく配信されている画像が $count$ 個あります",
@@ -450,6 +522,42 @@
   "imageOversizedOne": {
     "message": "表示サイズよりかなり大きく配信されている画像が 1 個あります",
     "description": "Used when exactly one image is oversized."
+  },
+  "imageBgOversized": {
+    "message": "表示領域よりかなり大きく配信されている背景画像が $count$ 個あります",
+    "description": "Same waste as an oversized <img>, for CSS background-image heroes and sections.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "imageBgOversizedOne": {
+    "message": "表示領域よりかなり大きく配信されている背景画像が 1 個あります",
+    "description": "Used when exactly one background image is oversized."
+  },
+  "imageSectionBackgrounds": {
+    "message": "背景画像",
+    "description": "Heading of the section listing oversized CSS background images."
+  },
+  "imageBgListLabel": {
+    "message": "表示領域より大きく配信されている背景",
+    "description": "Label above the list of oversized background images."
+  },
+  "imageBgUnmeasured": {
+    "message": "計測できなかった背景画像が $count$ 個あります",
+    "description": "A background url() that failed to load has no natural size.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "imageBgUnmeasuredOne": {
+    "message": "計測できなかった背景画像が 1 個あります",
+    "description": "Used when exactly one background image was not measurable."
   },
   "imageNoSize": {
     "message": "width と height の無い画像が $count$ 個あります。読み込み中にレイアウトがずれます",
@@ -1043,6 +1151,10 @@
     "message": "og:image を読み込めませんでした",
     "description": "The URL is set but nothing came back."
   },
+  "headImageFailed": {
+    "message": "読み込めませんでした",
+    "description": "Shown in place of a head-panel thumbnail (og:image, favicon, …) when the URL returns nothing."
+  },
   "headCharacterCount": {
     "message": "($count$ 文字)",
     "description": "Length of a metadata value, counted in code points.",
@@ -1158,7 +1270,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualHeadingBody": {
-    "message": "見出し構造について自動で確認できる範囲を報告し、見出しを字下げした一覧として表示します。",
+    "message": "見出し構造について自動で確認できる範囲を報告し、見出しを字下げした一覧として表示します。行にカーソルを合わせるとページ上の見出しに枠が描かれ、クリックでそこまでスクロールします。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupTitle": {
@@ -1166,7 +1278,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "見た目には現れない形で誤っているマークアップを報告します。複数回使われている id、見出しセルの無いテーブル、名前を持たない入力欄・リンク・ボタン、名前も aria-hidden も無いインライン SVG、そしてページの ARIA の矛盾。指摘にカーソルを合わせるとページ上の要素に枠が描かれ、クリックでそこまでスクロールします。",
+    "message": "見た目には現れない形で誤っているマークアップを報告します。複数回使われている id、見出しセルの無いテーブル、名前を持たない入力欄・リンク・ボタン、名前を持たない iframe・embed、名前も aria-hidden も無いインライン SVG、そしてページの ARIA の矛盾。指摘にカーソルを合わせるとページ上の要素に枠が描かれ、クリックでそこまでスクロールします。複数箇所にまたがる指摘は先頭の1件を指します。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
@@ -1174,7 +1286,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageBody": {
-    "message": "表示領域よりかなり大きく配信されている画像と、width / height 属性の無い画像を見つけます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
+    "message": "表示領域よりかなり大きく配信されている画像（CSS の background-image を含む）と、width / height 属性の無い画像を見つけ、どちらも一覧にしてページ上で指せます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversTitle": {
@@ -1190,7 +1302,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualLandmarkBody": {
-    "message": "ページのランドマーク領域について機械が判断できること——main の欠落や重複、同じ役割で区別できないランドマーク——を報告し、ランドマークを入れ子で、役割と名前を添えて並べます。ページの地図として読めます。",
+    "message": "ページのランドマーク領域について機械が判断できること——main の欠落や重複、同じ役割で区別できないランドマーク——を報告し、ランドマークを入れ子で、役割と名前を添えて並べます。ページの地図として読めます。行にカーソルを合わせるとページ上の領域に枠が描かれ、クリックでそこまでスクロールします。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualTokenTitle": {
@@ -1214,7 +1326,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualAltBody": {
-    "message": "すべての画像の alt 属性を表示し、alt が未設定または空の画像を指摘します。",
+    "message": "すべての画像の alt 属性を表示し、alt が未設定または空の画像を指摘します。ラベルは計測で置き、画像の読み込みや表示領域への進入で取り直します。自動では拾えないリフローのあとは「再チェック」で位置を合わせてください。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualBrightnessTitle": {

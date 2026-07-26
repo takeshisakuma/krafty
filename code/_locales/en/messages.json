@@ -81,6 +81,10 @@
     "message": "Close",
     "description": "Label of the button that dismisses a panel."
   },
+  "panelMove": {
+    "message": "Drag to move. Arrow keys nudge; Shift+Arrow nudges farther.",
+    "description": "title on the panel title bar: pointer drag and keyboard reposition."
+  },
   "checkerOutline": {
     "message": "Outline Check",
     "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
@@ -120,6 +124,14 @@
   "panelRescan": {
     "message": "Check again",
     "description": "Runs the check over the page as it is now, for content a single page app added after the first scan."
+  },
+  "panelRowNotLocatable": {
+    "message": "Does not point at one place on the page.",
+    "description": "title on a findings row with no single page element to highlight (duplicated id, reused link text, comment marker, and the like)."
+  },
+  "panelRowNotPainted": {
+    "message": "Not visible on the page, so there is nothing to highlight.",
+    "description": "title on a findings row whose target has no painted box (opacity:0, display:none, clipped, and the like)."
   },
   "checkerHead": {
     "message": "Head Check",
@@ -223,6 +235,14 @@
     "message": "1 table has no header cells, so every cell is announced bare",
     "description": "Used when exactly one table is missing its headers."
   },
+  "markupSectionTables": {
+    "message": "The tables",
+    "description": "Heading of the section listing tables with no header cells."
+  },
+  "markupTableListLabel": {
+    "message": "No header cells",
+    "description": "Label above the list of tables with no header cells."
+  },
   "markupSectionFields": {
     "message": "The fields",
     "description": "Heading of the section listing form fields with no name."
@@ -288,6 +308,28 @@
   "markupLinkNoNameOne": {
     "message": "1 link or button has no accessible name, so a screen reader announces only its role",
     "description": "Used when exactly one link or button has no accessible name."
+  },
+  "markupSectionFrames": {
+    "message": "The frames",
+    "description": "Heading of the section listing iframes and embeds with no accessible name."
+  },
+  "markupFrameListLabel": {
+    "message": "Nothing names them",
+    "description": "Label above the list of iframes and embeds with no accessible name. A src is shown beside it where it has one."
+  },
+  "markupFrameNoName": {
+    "message": "$count$ iframes or embeds have no accessible name, so a screen reader announces only their role",
+    "description": "No title, no aria-label, and no aria-labelledby that resolves. The usual case is a map or video embed left untitled.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupFrameNoNameOne": {
+    "message": "1 iframe or embed has no accessible name, so a screen reader announces only its role",
+    "description": "Used when exactly one iframe or embed has no accessible name."
   },
   "markupSvgUnnamedControl": {
     "message": "$count$ inline SVGs are the only content of a link or button, leaving it unnamed",
@@ -425,6 +467,28 @@
     "message": "They jump the tab order",
     "description": "Label above the list of elements with a positive tabindex. Each row shows the value."
   },
+  "markupStyleInvalid": {
+    "message": "$count$ inline style declarations the browser does not support",
+    "description": "A typo in a style attribute is dropped by CSSOM and shows no symptom. Only inline attributes are checked; stylesheets are unreachable or already post-parse.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupStyleInvalidOne": {
+    "message": "1 inline style declaration the browser does not support",
+    "description": "Used when exactly one inline style declaration fails CSS.supports."
+  },
+  "markupSectionStyles": {
+    "message": "The styles",
+    "description": "Heading of the section listing unsupported inline style declarations."
+  },
+  "markupStyleListLabel": {
+    "message": "Not supported as written",
+    "description": "Label above the list of invalid inline style declarations. Each row shows the bad property: value."
+  },
   "checkerImage": {
     "message": "Image Check",
     "description": "Heading of the image weight panel."
@@ -436,6 +500,14 @@
   "imageListLabel": {
     "message": "Served larger than shown",
     "description": "Label above the list of oversized images."
+  },
+  "imageSectionNoSize": {
+    "message": "Missing dimensions",
+    "description": "Heading of the section listing images with no width and height attributes."
+  },
+  "imageNoSizeListLabel": {
+    "message": "No width and height",
+    "description": "Label above the list of images missing width and height attributes."
   },
   "imageOversized": {
     "message": "$count$ images are served much larger than they are shown",
@@ -450,6 +522,42 @@
   "imageOversizedOne": {
     "message": "1 image is served much larger than it is shown",
     "description": "Used when exactly one image is oversized."
+  },
+  "imageBgOversized": {
+    "message": "$count$ background images are served much larger than the boxes they fill",
+    "description": "Same waste as an oversized <img>, for CSS background-image heroes and sections.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "imageBgOversizedOne": {
+    "message": "1 background image is served much larger than the box it fills",
+    "description": "Used when exactly one background image is oversized."
+  },
+  "imageSectionBackgrounds": {
+    "message": "Background images",
+    "description": "Heading of the section listing oversized CSS background images."
+  },
+  "imageBgListLabel": {
+    "message": "Served larger than the box",
+    "description": "Label above the list of oversized background images."
+  },
+  "imageBgUnmeasured": {
+    "message": "$count$ background images could not be measured",
+    "description": "A background url() that failed to load has no natural size.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "imageBgUnmeasuredOne": {
+    "message": "1 background image could not be measured",
+    "description": "Used when exactly one background image was not measurable."
   },
   "imageNoSize": {
     "message": "$count$ images have no width and height: the layout jumps as they load",
@@ -1043,6 +1151,10 @@
     "message": "og:image could not be loaded",
     "description": "The URL is set but nothing came back."
   },
+  "headImageFailed": {
+    "message": "could not be loaded",
+    "description": "Shown in place of a head-panel thumbnail (og:image, favicon, …) when the URL returns nothing."
+  },
   "headCharacterCount": {
     "message": "($count$ characters)",
     "description": "Length of a metadata value, counted in code points.",
@@ -1158,7 +1270,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualHeadingBody": {
-    "message": "Report what can be checked automatically about the heading structure, and list the headings as an indented outline for you to read.",
+    "message": "Report what can be checked automatically about the heading structure, and list the headings as an indented outline for you to read. Hover a row to box the heading on the page and click to scroll to it.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupTitle": {
@@ -1166,7 +1278,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Hover a finding to box the element on the page and click to scroll to it.",
+    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, iframes and embeds with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Hover a finding to box an element on the page and click to scroll to it — aggregate findings point at the first instance.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
@@ -1174,7 +1286,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageBody": {
-    "message": "Find images served much larger than the space they are shown in, and images with no width and height attributes. Allows for high-density displays, so a correctly built retina image is not reported.",
+    "message": "Find images — including CSS background-image — served much larger than the space they are shown in, and images with no width and height attributes — both listed so you can point at them on the page. Allows for high-density displays, so a correctly built retina image is not reported.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversTitle": {
@@ -1190,7 +1302,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualLandmarkBody": {
-    "message": "Report what can be decided about a page's landmark regions — a missing or duplicated main, and landmarks of one role a screen reader cannot tell apart — and draw the landmarks nested, each with its role and name, for you to read as a map of the page.",
+    "message": "Report what can be decided about a page's landmark regions — a missing or duplicated main, and landmarks of one role a screen reader cannot tell apart — and draw the landmarks nested, each with its role and name, for you to read as a map of the page. Hover a row to box the region on the page and click to scroll to it.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualTokenTitle": {
@@ -1214,7 +1326,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualAltBody": {
-    "message": "Display the alt attribute of every image, and flag images whose alt is missing or empty.",
+    "message": "Display the alt attribute of every image, and flag images whose alt is missing or empty. Labels are placed by measurement and re-measured when images load or enter view; use Check again after a reflow the automatic pass misses.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualBrightnessTitle": {

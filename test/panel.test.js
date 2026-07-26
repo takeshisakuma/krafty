@@ -313,6 +313,86 @@ test("panel dragging", async (t) => {
     assert.strictEqual(open, true, "Escape closed the panel from an input");
   });
 
+  await t.test("moves focus into the panel when it opens", async () => {
+    const focused = await withPage(
+      {
+        html: `<button type="button" id="js-before">before</button>${PAGE}`,
+        checkers: [],
+        width: 1000,
+        height: 700,
+      },
+      async (page) => {
+        await page.focus("#js-before");
+        await page.evaluate(SCRIPTS.nestCheck);
+        await page.evaluate(() => Promise.resolve());
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+          const active = panel?.shadowRoot?.activeElement;
+
+          return active instanceof HTMLElement ? active.className : null;
+        });
+      }
+    );
+
+    assert.match(
+      focused ?? "",
+      /kraftyPanelClose/,
+      "close control should take focus when the panel opens"
+    );
+  });
+
+  await t.test("returns focus to the page when the panel closes", async () => {
+    const after = await withPage(
+      {
+        html: `<button type="button" id="js-before">before</button>${PAGE}`,
+        checkers: [],
+        width: 1000,
+        height: 700,
+      },
+      async (page) => {
+        await page.focus("#js-before");
+        await page.evaluate(SCRIPTS.nestCheck);
+        await page.evaluate(() => Promise.resolve());
+        await page.keyboard.press("Escape");
+
+        return page.evaluate(() => document.activeElement?.id ?? null);
+      }
+    );
+
+    assert.strictEqual(after, "js-before");
+  });
+
+  await t.test("arrow keys nudge a focused title bar", async () => {
+    const moved = await withPage(
+      { html: PAGE, checkers: ["nestCheck"], width: 1000, height: 700 },
+      async (page) => {
+        await page.evaluate(() => Promise.resolve());
+
+        const before = await boxOf(page, PANEL);
+
+        await page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+          const bar = panel?.shadowRoot?.querySelector(".kraftyPanelBar");
+
+          if (bar instanceof HTMLElement) {
+            bar.focus();
+          }
+        });
+
+        await page.keyboard.press("ArrowLeft");
+        const after = await boxOf(page, PANEL);
+
+        return { before, after };
+      }
+    );
+
+    assert.ok(
+      moved.after.x < moved.before.x - 10,
+      `expected a left nudge, before=${moved.before.x} after=${moved.after.x}`
+    );
+  });
+
   /* Item 24: open shadow on the host. The host stays in the light DOM for
      getElementById; chrome and findings live under shadowRoot. */
   await t.test("hosts findings in an open shadow root", async () => {
@@ -387,6 +467,67 @@ test("panel dragging", async (t) => {
     assert.ok(
       size.bodyScroll.scrollHeight > size.bodyScroll.clientHeight,
       `body should scroll when findings are tall: scroll=${size.bodyScroll.scrollHeight} client=${size.bodyScroll.clientHeight}`
+    );
+  });
+
+  /* scalermusic.com (and similar Tailwind-style resets) unset position and
+     insets on almost every element. Those document rules beat :host corner
+     placement on the host, so a fixed panel sat at its static position on a
+     tall page — thousands of pixels below the fold — and lockInsets used to
+     freeze that. Default docking must use place(), not computed style. */
+  await t.test("page inset reset does not dock the panel below the fold", async () => {
+    const box = await withPage(
+      {
+        html: `<style>
+                 :where(:not(html, iframe, canvas, img, svg, video, audio):not(svg *, symbol *)) {
+                   position: unset;
+                   top: unset;
+                   right: unset;
+                   bottom: unset;
+                   left: unset;
+                   inset: unset;
+                 }
+               </style>
+               <div style="height:9000px"></div>
+               <ul><div>a div directly inside ul</div></ul>`,
+        checkers: ["nestCheck"],
+        width: 1280,
+        height: 900,
+      },
+      async (page) => {
+        await page.evaluate(async () => {
+          await Promise.resolve();
+        });
+
+        return page.evaluate(() => {
+          const panel = document.getElementById("js-kraftyNestInformation");
+
+          if (!panel) {
+            return null;
+          }
+
+          const rect = panel.getBoundingClientRect();
+
+          return {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            right: rect.right,
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth,
+          };
+        });
+      }
+    );
+
+    assert.ok(box, "panel host should exist");
+    assert.ok(
+      box.top >= 0 && box.bottom <= box.innerHeight + 1,
+      `panel must stay in the viewport vertically, got top=${box.top} bottom=${box.bottom}`
+    );
+    assert.ok(
+      box.left >= 0 && box.right <= box.innerWidth + 1,
+      `panel must stay in the viewport horizontally, got left=${box.left} right=${box.right}`
     );
   });
 

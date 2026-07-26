@@ -541,7 +541,7 @@ test("head checker", async (t) => {
   });
 
   await t.test("says only that the automatic checks found nothing", async () => {
-    const { summary, findings } = await withPage(
+    const { summary, findings, scanned } = await withPage(
       { html: "<p>page</p>", checkers: [] },
       async (page) => {
         await page.evaluate(() => {
@@ -560,12 +560,15 @@ test("head checker", async (t) => {
 
         return page.evaluate(() => {
           const panel = document.getElementById("js-kraftyHeadInformation");
+          const root = kraftyPanelRoot(panel);
           return {
             summary:
-              kraftyPanelRoot(panel)?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
-            findings: [...(kraftyPanelRoot(panel)?.querySelectorAll(".kraftyCheck") ?? [])].map(
+              root?.querySelector(".kraftyChecksSummary")?.textContent ?? "",
+            findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
               (i) => i.textContent ?? ""
             ),
+            scanned:
+              root?.querySelector(".kraftyPanelNote")?.textContent ?? "",
           };
         });
       }
@@ -577,6 +580,7 @@ test("head checker", async (t) => {
        can be present, well formed, and still be the wrong title. */
     assert.match(summary, /automatically/);
     assert.doesNotMatch(summary, /^No problems\.?$/i);
+    assert.match(scanned, /Scanned/, "head stamps the scan time like the others");
   });
 
   await t.test("falls back to title and description on the card, and says so", async () => {
@@ -920,6 +924,62 @@ test("head checker", async (t) => {
     );
 
     assert.strictEqual(shown, true, "twitter:image should show its picture");
+  });
+
+  await t.test("says when a reference thumbnail could not be loaded", async () => {
+    /* mdigital.tech/company: og:image URL is set, file is gone. The card
+       already reported it; the row used to show a blank broken image. */
+    const state = await withPage(
+      { html: "<p>page</p>", checkers: [], width: 1280, height: 900, serve: "/" },
+      async (page) => {
+        await page.evaluate(() => {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            `<title>t</title>
+             <meta property="og:image" content="/missing-og.png">`
+          );
+        });
+
+        const { SCRIPTS } = require("./support.js");
+        await page.evaluate(SCRIPTS.headCheck);
+        await page.waitForSelector("#js-kraftyHeadInformation");
+
+        await page.waitForFunction(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyHeadInformation")
+          );
+          return Boolean(root?.querySelector(".kraftyHeadImageFailed"));
+        });
+
+        return page.evaluate(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyHeadInformation")
+          );
+          const row = [...(root?.querySelectorAll(".kraftyRow") ?? [])].find(
+            (candidate) =>
+              candidate.querySelector("strong")?.textContent === "og:image"
+          );
+
+          return {
+            finding: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].some(
+              (item) => /could not be loaded/.test(item.textContent ?? "")
+            ),
+            card: root?.querySelector(".kraftyCardImage")?.textContent ?? "",
+            cardEmpty: root
+              ?.querySelector(".kraftyCardImage")
+              ?.classList.contains("kraftyCardImageEmpty"),
+            rowLabel: row?.querySelector(".kraftyHeadImageFailed")?.textContent ?? "",
+            brokenImg: Boolean(row?.querySelector("img.headImage")),
+          };
+        });
+      }
+    );
+
+    assert.strictEqual(state.finding, true);
+    assert.match(state.card, /could not be loaded/);
+    assert.strictEqual(state.cardEmpty, true);
+    assert.match(state.rowLabel, /could not be loaded/);
+    assert.strictEqual(state.brokenImg, false, "no blank broken img left in the row");
   });
 
   await t.test("prefers og values on the card when present", async () => {

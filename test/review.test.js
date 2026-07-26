@@ -153,6 +153,7 @@ test("the review includes image detail rows", async () => {
         [...document.images].every((image) => image.complete)
       );
       await page.evaluate(SCRIPTS.imageCheck);
+      await page.waitForSelector("#js-kraftyImageInformation");
 
       return page.evaluate(
         ([source, panels]) =>
@@ -172,5 +173,63 @@ test("the review includes image detail rows", async () => {
     review,
     /800\s*[×x]\s*600/,
     `oversized measurement belongs in the review, got:\n${review}`
+  );
+});
+
+const OUTLINE_PANELS = [
+  { id: "js-kraftyHeadingInformation", title: "Heading Check" },
+  { id: "js-kraftyLandmarkInformation", title: "Landmark Check" },
+];
+
+test("the review includes heading and landmark outlines", async () => {
+  /* Outlines live in .kraftyOutline, not .kraftyPanelList. Without them the
+     pasted report names the checker and drops the map that is half of what
+     those panels show. */
+  const review = await withPage(
+    {
+      html: `<header>Logo</header>
+             <nav aria-label="Primary">links</nav>
+             <main>
+               <h1>Delivery</h1>
+               <h2>Section</h2>
+             </main>
+             <footer>fine print</footer>`,
+      checkers: ["headingCheck", "landmarkCheck"],
+      serve: "/",
+    },
+    async (page) =>
+      page.evaluate(
+        ([source, panels]) =>
+          new Function(`${source}; return collectReview(${JSON.stringify(
+            panels
+          )});`)(),
+        /** @type {[string, typeof OUTLINE_PANELS]} */ ([
+          collectReview,
+          OUTLINE_PANELS,
+        ])
+      )
+  );
+
+  assert.ok(review.includes("Heading Check"), "Heading Check is named");
+  assert.ok(review.includes("Landmark Check"), "Landmark Check is named");
+  assert.match(
+    review,
+    /h1\s*Delivery/,
+    `heading outline belongs in it, got:\n${review}`
+  );
+  assert.match(
+    review,
+    /^  - {3}h2Section$/m,
+    `heading indent is kept in the paste, got:\n${review}`
+  );
+  assert.match(
+    review,
+    /main/,
+    `landmark outline belongs in it, got:\n${review}`
+  );
+  assert.match(
+    review,
+    /navigation/,
+    `landmark roles belong in it, got:\n${review}`
   );
 });

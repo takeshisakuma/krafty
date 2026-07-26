@@ -9,13 +9,10 @@
    resolves to localhost, and flagging it would fill the panel on the
    developer's own screen.
 
-   Mixed content is checked in the code but not here: the positive case needs
-   an https origin, which the http test harness cannot serve. The negative -
-   that an http resource on an http page is not called mixed - rides the
-   clean-page test below. The staging check's own-host exclusion is the same
-   blind spot: the harness serves from 127.0.0.1, not from a staging host, so
-   the code that spares a page served from staging.example.com its own
-   relative URLs is reasoning without a fixture, like the local one it copies. */
+   Mixed content's positive case and the staging check's own-host exclusion
+   use the https harness in support.js (self-signed cert + optional Host
+   mapping). The negative - that an http resource on an http page is not
+   called mixed - still rides the clean-page test below. */
 
 const { test } = require("node:test");
 const assert = require("node:assert");
@@ -88,6 +85,93 @@ test("leftovers checker", async (t) => {
     const found = matchingFindings(result, /staging-looking/);
     assert.strictEqual(found.length, 1);
     assert.match(result.rows[0], /staging\.example\.com/);
+  });
+
+  await t.test("reports mixed content on an https page", async () => {
+    /* Needs a real https origin: location.protocol is what classify() reads.
+       The self-signed fixture is accepted under ignoreHTTPSErrors. */
+    const result = await withPage(
+      {
+        html: `<img src="http://cdn.example.com/hero.png">
+               <script src="https://cdn.example.com/app.js"></script>`,
+        checkers: ["leftoversCheck"],
+        serve: "/",
+        https: true,
+      },
+      async (page) =>
+        page.evaluate(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyLeftoversInformation")
+          );
+
+          return {
+            protocol: location.protocol,
+            findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
+              (item) => item.textContent ?? ""
+            ),
+            rows: [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
+              (item) => item.textContent ?? ""
+            ),
+          };
+        })
+    );
+
+    assert.strictEqual(result.protocol, "https:");
+    assert.strictEqual(
+      result.findings.filter((text) => /loads over http/.test(text)).length,
+      1
+    );
+    assert.ok(
+      result.rows.some((row) => /cdn\.example\.com\/hero\.png/.test(row)),
+      "the http image is listed"
+    );
+  });
+
+  await t.test("does not call the page's own staging host a leftover", async () => {
+    /* Page served as staging.example.com: its relative URLs and absolute
+       same-host URLs are where the page is, not leftovers left in production. */
+    const result = await withPage(
+      {
+        html: `<img src="/logo.png">
+               <script src="https://staging.example.com/app.js"></script>
+               <script src="https://dev.example.com/other.js"></script>`,
+        checkers: ["leftoversCheck"],
+        serve: "/",
+        https: true,
+        host: "staging.example.com",
+      },
+      async (page) =>
+        page.evaluate(() => {
+          const root = kraftyPanelRoot(
+            document.getElementById("js-kraftyLeftoversInformation")
+          );
+
+          return {
+            host: location.hostname,
+            findings: [...(root?.querySelectorAll(".kraftyCheck") ?? [])].map(
+              (item) => item.textContent ?? ""
+            ),
+            rows: [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
+              (item) => item.textContent ?? ""
+            ),
+          };
+        })
+    );
+
+    assert.strictEqual(result.host, "staging.example.com");
+    assert.strictEqual(
+      result.findings.filter((text) => /staging-looking/.test(text)).length,
+      1,
+      "only the other staging host is noted"
+    );
+    assert.ok(
+      result.rows.some((row) => /dev\.example\.com/.test(row)),
+      "dev.example.com is listed"
+    );
+    assert.ok(
+      !result.rows.some((row) => /staging\.example\.com/.test(row)),
+      "the page's own staging host is not listed"
+    );
   });
 
   await t.test("does not call an ordinary host staging by its letters", async () => {
@@ -163,6 +247,19 @@ test("leftovers checker", async (t) => {
     /* あああ - the everyday Japanese keyboard-mash placeholder. */
     const result = await check(`<h2>あああ</h2>`);
     assert.strictEqual(matchingFindings(result, /dummy or placeholder/).length, 1);
+  });
+
+  await t.test("reports a Latin mash of four letters, not a three-letter acronym", async () => {
+    /* Found on ja.wikipedia.org (WWW, IIIR) and a personal site (AAA in a
+       handle): three Latin letters repeating is ordinary acronym noise. */
+    const acronym = await check(`<p>WWWにおいて</p><p>IIIR Working</p>`);
+    assert.strictEqual(
+      matchingFindings(acronym, /dummy or placeholder/).length,
+      0
+    );
+
+    const mash = await check(`<p>aaaa</p>`);
+    assert.strictEqual(matchingFindings(mash, /dummy or placeholder/).length, 1);
   });
 
   await t.test("reports a filler word that is the whole of an element", async () => {

@@ -12,7 +12,7 @@ Eleven checks you can turn on over any page, from the toolbar or from a keyboard
 
 ### Head Checker
 
-Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, and an og:image smaller than sharing platforms want.
+Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, an og:image smaller than sharing platforms want, and an og:image URL that does not load.
 
 On a multilingual site it checks the hreflang set too: whether it names the page it is on, since one that does not is ignored entirely, and whether the codes are language codes at all — `jp` and `cn` are countries, and Japanese and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported; one language needs none.
 
@@ -30,7 +30,7 @@ The panel totals them and breaks them down by pair, and copies the whole list in
 
 Reports what can be decided about the heading structure: more than one level one heading, a level skipped on the way down, a heading with no text at all, and a page with no headings.
 
-Whether the headings read as a sensible outline of the page is not something software can answer, so they are listed in order and indented by level, as a table of contents to read. Headings hidden from everyone are left out, and the panel says how many. The whole outline copies as one indented block.
+Whether the headings read as a sensible outline of the page is not something software can answer, so they are listed in order and indented by level, as a table of contents to read. Hover a row to box the heading on the page, and click to scroll to it. Headings hidden from everyone are left out, and the panel says how many. The whole outline copies as one indented block.
 
 ### Markup Checker
 
@@ -42,19 +42,25 @@ And tables with no header cells, where a screen reader announces every cell bare
 
 Then form fields with nothing naming them — no label, wrapping or by `for`, no `aria-label`, no `aria-labelledby` that resolves to anything, and no `title`. The placeholder inside a field says what it is to anyone looking at it and to nobody else. Hidden fields and the button types are not counted; those take no label.
 
+And iframes and embeds with nothing naming them — no `title`, no `aria-label`, no resolving `aria-labelledby` — so a screen reader announces only the bare role.
+
 And inline SVGs that are neither named nor hidden. Named, an icon is announced; marked `aria-hidden`, it is skipped; neither, and what a screen reader does with it varies by screen reader. An `aria-hidden` on any element above the icon counts, since wrapping one is the ordinary way to hide it. Where such an icon is the whole of a link or button, that link is flagged as heavier — it is the reason the control has no name.
 
 And links or buttons with no accessible name at all: an icon `<button>` or an `<a>` with only an svg inside is announced as just its role — "button", "link" — and nothing else. Beside them, a link whose `href` is empty, which reloads the page it sits on rather than going anywhere; the same text used for more than one destination, which reads as one word repeated in a screen reader's link list; and the vague texts — "こちら", "read more" — listed for you to weigh rather than asserted, since whether a phrase is too vague is a judgement and depends on the language.
 
 And contradictions in the ARIA already on the page: an interactive `role` on an element that cannot take focus, so the control it promises cannot be reached; `aria-hidden` on something still in the tab order, which takes focus and is then announced as nothing; a `tabindex` above zero, which reorders the whole document's tab sequence. Each is a statement the markup makes twice and disagrees with itself.
 
+And inline `style` attributes with declarations the browser does not support — typos such as `colr` or `flexx` that CSSOM drops silently. SVG exporter leftovers are left alone.
+
 Each finding is listed underneath as well as counted, and each list copies in one go. The fields, the icons and the nameless links have nothing to be called — that is the defect — so each row is built from whatever the element does carry: its id, its name, a link's address, its class, or the parent's where it has none of its own. An unlabelled field shows its placeholder beside it, which is both the quickest way to find it on the page and, usually, the reason the label was left off.
 
-Hover a listed row to draw a box over the element on the page, and click it to scroll there and leave the box behind. The short descriptor a row shows is weakest for exactly the elements these checks flag, so the box is the surer way to find them.
+Hover a listed row to draw a box over the element on the page, and click it to scroll there and leave the box behind. Aggregate findings — a duplicated id, a reused link text — keep the count and point at the first instance. The short descriptor a row shows is weakest for exactly the elements these checks flag, so the box is the surer way to find them.
 
 Every panel has a check-again button, and Escape closes the topmost panel.
-A check reads the page as it stands when it runs, so press check-again after
-opening an accordion or scrolling a list in.
+Focus moves into a panel when it opens and returns when it closes; the title
+bar also moves with the arrow keys. A check reads the page as it stands when
+it runs, so press check-again after opening an accordion or scrolling a list
+in.
 
 ### The review
 
@@ -64,7 +70,7 @@ There is no total, on purpose. A single number would be a verdict on the whole p
 
 ### Image Checker
 
-Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — and lists them worst first, with the file name and the address ready to copy. Also counts the images with no width and height attributes, which is what makes a layout jump while it loads.
+Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — including CSS `background-image` on heroes and sections, and lists them worst first, with the file name and the address ready to copy. Also lists images with no width and height attributes, which is what makes a layout jump while it loads.
 
 High-density displays are allowed for, so an image correctly built at twice the displayed size is never reported, and the allowance does not depend on the monitor you happen to be checking on. The panel states the basis it judged against, and each row carries its own ratio. Hover a row to box the image on the page, and click to scroll to it.
 
@@ -80,7 +86,7 @@ The page's own host is left alone, so a site served from localhost is not flagge
 
 Reports what can be decided about a page's landmark regions: no `main` for a reader to skip to, or more than one where only one may be exposed; and two landmarks of the same role that a screen reader announces identically, because they share a name or because neither has one — two unlabelled `nav`s read as the same word twice in the list a reader jumps between regions with.
 
-Whether the page marks up the regions it ought to is not something software can answer — one `main` and nothing else may be right, or may be a header and footer built from unmarked divs — so the landmarks are drawn in document order, nested, each with its role and accessible name, for you to read as a map of the page. Regions hidden from everyone are left out, and the whole map copies as one indented block.
+Whether the page marks up the regions it ought to is not something software can answer — one `main` and nothing else may be right, or may be a header and footer built from unmarked divs — so the landmarks are drawn in document order, nested, each with its role and accessible name, for you to read as a map of the page. Hover a row to box the region on the page, and click to scroll to it. Regions hidden from everyone are left out, and the whole map copies as one indented block.
 
 ### Token Check
 
@@ -92,7 +98,7 @@ Draws an outline around every element, so the structure and spacing of a layout 
 
 ### Alt Checker
 
-Shows the alt text of every image, and separates an image with no alt attribute at all from one deliberately marked decorative with an empty alt. The two look identical in a browser and mean opposite things.
+Shows the alt text of every image, and separates an image with no alt attribute at all from one deliberately marked decorative with an empty alt. The two look identical in a browser and mean opposite things. Labels are placed by measurement and re-measured when images load or enter view; use Check again after a reflow those miss.
 
 ### Brightness Checker
 
@@ -112,7 +118,7 @@ Krafty はページの構造とメタデータを確認するためのブラウ�
 
 ### ヘッドチェッカー
 
-head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image。
+head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image、読み込めない og:image。
 
 多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその指定はすべて無視されます）、そして値が言語コードとして成立しているか。`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が無いこと自体は報告しません。単一言語のサイトには不要だからです。
 
@@ -130,7 +136,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 見出し構造について機械が判断できることを報告します。レベル1の見出しが複数ある、レベルが飛んでいる、文字列のない見出しがある、そもそも見出しがない、といったものです。
 
-その見出しがページの構成として筋が通っているかどうかは、ソフトウェアには答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。目次として読んでご判断ください。誰にも見えない見出しは集計から外し、その件数を明記します。構造全体はそのままの字下げでコピーできます。
+その見出しがページの構成として筋が通っているかどうかは、ソフトウェアには答えられません。そこで見出しを出現順に、レベルごとに字下げして並べます。目次として読んでご判断ください。行にカーソルを合わせるとページ上の見出しに枠が描かれ、クリックするとそこまでスクロールします。誰にも見えない見出しは集計から外し、その件数を明記します。構造全体はそのままの字下げでコピーできます。
 
 ### マークアップチェッカー
 
@@ -142,17 +148,21 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 続いて、名前を持たない入力欄。for による label も、囲んでいる label も、`aria-label` も、参照先が存在する `aria-labelledby` も、`title` も無いものです。中に書かれたプレースホルダは、見えている人にだけ何の欄かを伝えます。type が hidden とボタン系のものは、そもそも label を取らないので数えません。
 
+そして、名前を持たない iframe・embed。`title` も `aria-label` も、参照先がある `aria-labelledby` も無いものです。スクリーンリーダーは役割しか読み上げません。
+
 そして、名前も `aria-hidden` も無いインライン SVG。名前があれば読み上げられ、`aria-hidden` があれば飛ばされますが、どちらも無いと、どう扱われるかはスクリーンリーダー次第になります。アイコンを包む要素に `aria-hidden` が付いている場合も対象外です。実際にはその書き方が最も一般的だからです。そのアイコンがリンクやボタンの中身のすべてである場合は、より重い指摘として扱います。そのリンクを無名にしている当の原因だからです。
 
 そして、アクセシブルな名前をまったく持たないリンクやボタン。中身が svg だけのアイコン `<button>` や `<a>` は、役割——「ボタン」「リンク」——としか読み上げられません。あわせて、`href` が空で、どこにも遷移せず今のページを再読み込みするだけのリンク、同じテキストで複数の遷移先を持つリンク（スクリーンリーダーのリンク一覧で同じ名前が繰り返されます）、そして「こちら」「read more」のような曖昧なテキスト——曖昧かどうかは言語にもよる判断なので、断定せず一覧にして委ねます。
 
 そして、すでに付いている ARIA の中の矛盾。フォーカスできない要素に付いた操作用の `role`（約束した操作に到達できません）、タブ順に残ったままの `aria-hidden`（フォーカスが当たるのに何も読み上げられません）、0 より大きい `tabindex`（文書全体のタブ順を組み替えます）。いずれもマークアップが二重に、食い違う主張をしているものです。
 
+そして、ブラウザが解釈できないインライン `style`——`colr` や `flexx` のような typo で、CSSOM が黙って落とすもの。SVG 書き出しの残骸は対象外です。
+
 各項目とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピーできます。入力欄・アイコン・無名のリンクは「呼び名が無いこと」自体が問題なので、各行はその要素が持っているもの——id、name、リンクなら遷移先、class、いずれも無ければ親のもの——から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもあるからです。
 
 一覧の行にカーソルを合わせると、ページ上の該当要素に枠が描かれます。クリックするとそこまでスクロールし、枠を残します。行に出る短い記述子は、これらのチェックが指摘する要素——自前の識別子を持たない要素——ではとりわけ弱いので、枠の方が確実に見つけられます。
 
-各パネルには再チェックのボタンがあり、Escape でいちばん上のパネルを閉じられます。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
+各パネルには再チェックのボタンがあり、Escape でいちばん上のパネルを閉じられます。パネルを開くとフォーカスが入り、閉じると元に戻ります。タイトルバーは矢印キーでも動かせます。チェックはボタンを押した時点のページを見るので、開閉したあとやスクロールしたあとに押し直せます。
 
 ### レビュー結果のコピー
 
@@ -162,7 +172,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### 画像チェッカー
 
-表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と height 属性の無い画像の数も出ます。読み込み中にレイアウトがずれる原因です。
+表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。ヒーローやセクションの CSS `background-image` も含め、無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と height 属性の無い画像も一覧にします。読み込み中にレイアウトがずれる原因です。
 
 高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意された画像は指摘しません。判定基準はお使いのモニタに左右されません。どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。行にカーソルを合わせるとページ上の画像に枠が描かれ、クリックするとそこまでスクロールします。
 
@@ -178,7 +188,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ページのランドマーク領域について機械が判断できることを報告します。読み手が飛べる `main` が無い、あるいは1つしか許されないのに複数ある、といったもの。そして、同じ役割のランドマークがスクリーンリーダーに同一に読み上げられる場合——名前が同じか、どちらも名前が無いか——です。名前の無い `nav` が2つあると、領域を飛び渡る一覧で同じ語が二度読まれます。
 
-ページが本来マークアップすべき領域を備えているかは、ソフトウェアには答えられません。`main` が1つだけで他に何も無いページは、正しいのかもしれませんし、ヘッダーやフッターがマークアップされていない div でできているのかもしれません。そこでランドマークを出現順に、入れ子にして、役割とアクセシブルな名前を添えて並べます。ページの地図として読んでご判断ください。誰にも見えない領域は集計から外します。地図全体はそのままの字下げでコピーできます。
+ページが本来マークアップすべき領域を備えているかは、ソフトウェアには答えられません。`main` が1つだけで他に何も無いページは、正しいのかもしれませんし、ヘッダーやフッターがマークアップされていない div でできているのかもしれません。そこでランドマークを出現順に、入れ子にして、役割とアクセシブルな名前を添えて並べます。ページの地図として読んでご判断ください。行にカーソルを合わせるとページ上の領域に枠が描かれ、クリックするとそこまでスクロールします。誰にも見えない領域は集計から外します。地図全体はそのままの字下げでコピーできます。
 
 ### トークンチェック
 
@@ -190,7 +200,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### alt チェッカー
 
-すべての画像の alt を表示します。alt が未設定の画像と、装飾目的として意図的に空の alt を指定した画像は区別して表示します。ブラウザ上ではまったく同じに見えるのに、意味は正反対だからです。
+すべての画像の alt を表示します。alt が未設定の画像と、装飾目的として意図的に空の alt を指定した画像は区別して表示します。ブラウザ上ではまったく同じに見えるのに、意味は正反対だからです。ラベルは計測で置き、画像の読み込みや表示領域への進入で取り直します。自動では拾えないリフローのあとは「再チェック」で合わせてください。
 
 ### 明度チェッカー
 
@@ -263,7 +273,10 @@ injects its CSS into every page and will otherwise skew the results.
 
 `test/support.js` builds the page and injects the checkers in the order the
 popup does. It is not a test file itself, which is why `npm test` matches
-`test/*.test.js` rather than the whole directory.
+`test/*.test.js` rather than the whole directory. Pass `https: true` (and
+optionally `host`) with `serve` to load over a self-signed fixture from
+`test/fixtures/https/` — that is how mixed content and the staging own-host
+exclusion are covered.
 
 Cases go through the HTML parser, so they must describe trees the parser
 actually produces. Writing `<p><div></div></p>` in a case would silently

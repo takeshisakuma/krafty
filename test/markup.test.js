@@ -149,13 +149,17 @@ test("markup checker", async (t) => {
 
   await t.test("reports a table whose cells have no headers", async () => {
     const result = await check(
-      `<table>
+      `<table id="cities">
          <tr><td>Tokyo</td><td>3</td></tr>
          <tr><td>Osaka</td><td>2</td></tr>
        </table>`
     );
 
     assert.strictEqual(matchingFindings(result, /header cells/).length, 1);
+    assert.ok(
+      result.rows.some((row) => /#cities/.test(row)),
+      "the headerless table is listed so it can be pointed at"
+    );
   });
 
   await t.test("wants a table's shape before it wants its headers", async () => {
@@ -802,23 +806,33 @@ test("markup checker", async (t) => {
           );
           return [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])]
             .filter((li) => !li.textContent?.includes("svg"))
-            .map((li) => li.classList.contains("kraftyLocatable"));
+            .map((li) => ({
+              locatable: li.classList.contains("kraftyLocatable"),
+              inert: li.classList.contains("kraftyInert"),
+            }));
         })
     );
 
     assert.deepStrictEqual(
       buttons,
-      [false, false, false, false, true],
+      [
+        { locatable: false, inert: true },
+        { locatable: false, inert: true },
+        { locatable: false, inert: true },
+        { locatable: false, inert: true },
+        { locatable: true, inert: false },
+      ],
       "opacity:0, display:none, opacity:0 ancestor, and overflow-clipped stay inert; the painted button points"
     );
   });
 
-  await t.test("does not offer to point at a row naming several elements", async () => {
-    /* A duplicated id names every element that carries it, so there is no
-       single thing to point at. The row stays inert. */
-    const locatable = await withPage(
+  await t.test("points aggregate rows at the first instance", async () => {
+    /* A duplicated id names several elements; the row keeps the count and
+       points at the first, so it stays findable without lying about "one". */
+    const state = await withPage(
       {
-        html: `<div id="d"></div><div id="d"></div>`,
+        html: `<div id="d" style="width:40px;height:40px"></div>
+               <div id="d" style="width:40px;height:40px"></div>`,
         checkers: ["markupCheck"],
       },
       async (page) =>
@@ -827,12 +841,32 @@ test("markup checker", async (t) => {
             document.getElementById("js-kraftyMarkupInformation")
           );
           return [...(root?.querySelectorAll(".kraftyPanelList li") ?? [])].map(
-            (li) => li.classList.contains("kraftyLocatable")
+            (li) => ({
+              locatable: li.classList.contains("kraftyLocatable"),
+              inert: li.classList.contains("kraftyInert"),
+              text: li.textContent ?? "",
+            })
           );
         })
     );
 
-    assert.deepStrictEqual(locatable, [false]);
+    assert.strictEqual(state.length, 1);
+    assert.strictEqual(state[0].locatable, true);
+    assert.strictEqual(state[0].inert, false);
+    assert.match(state[0].text, /×\s*2/);
+  });
+
+  await t.test("reports an iframe with nothing naming it", async () => {
+    const result = await check(
+      `<iframe src="about:blank" width="120" height="80"></iframe>
+       <iframe src="about:blank" title="Map" width="120" height="80"></iframe>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /iframe|embed/).length, 1);
+    assert.ok(
+      result.rows.some((row) => /iframe/i.test(row)),
+      "the nameless iframe is listed"
+    );
   });
 
   await t.test("checks again on demand, without being re-injected", async () => {
@@ -877,6 +911,52 @@ test("markup checker", async (t) => {
       "a scan does not follow the page; that is what the button is for"
     );
     assert.match(counts.fresh, /\b2\b/, "the second id should now be counted");
+  });
+
+  await t.test("reports invalid inline style declarations", async () => {
+    /* CSSOM drops what it cannot parse, so element.style.cssText would lie
+       and say only color: blue was there. getAttribute keeps the typos, and
+       CSS.supports is what judges them - no property list of our own. */
+    const result = await check(
+      `<div style="colr: red; display: flexx; color: blue">a</div>
+       <p style="display: flex">fine</p>
+       <span style="color:blue !important">also fine</span>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /style|inline/i).length, 1);
+    assert.match(result.findings[0], /\b2\b/, "two bad declarations");
+    assert.ok(
+      result.rows.some((row) => /colr:\s*red/i.test(row)),
+      "colr: red is listed"
+    );
+    assert.ok(
+      result.rows.some((row) => /display:\s*flexx/i.test(row)),
+      "display: flexx is listed"
+    );
+    assert.ok(
+      !result.rows.some((row) => /color:\s*blue/i.test(row)),
+      "a supported declaration is left alone"
+    );
+  });
+
+  await t.test("leaves SVG exporter style alone", async () => {
+    /* brainpad.co.jp: enable-background on inline icons. CSS.supports
+       rejects it, but it is not a hand-typed CSS typo. */
+    const result = await check(
+      `<svg style="enable-background: new 0 0 50 50" width="50" height="50">
+         <rect width="50" height="50"/>
+       </svg>
+       <div style="colr: red">typo</div>`
+    );
+
+    assert.ok(
+      !result.rows.some((row) => /enable-background/i.test(row)),
+      "SVG presentation leftovers are not listed"
+    );
+    assert.ok(
+      result.rows.some((row) => /colr:\s*red/i.test(row)),
+      "an HTML typo is still listed"
+    );
   });
 
   await t.test("leaves nothing behind when toggled off", async () => {

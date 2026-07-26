@@ -9,6 +9,7 @@
 
 const fs = require("node:fs");
 const http = require("node:http");
+const https = require("node:https");
 const path = require("node:path");
 const puppeteer = require("puppeteer");
 
@@ -18,6 +19,14 @@ const root = path.join(__dirname, "..");
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), "utf8");
 
 const css = read("code", "content.css");
+
+/* Self-signed pair for the https harness. Chrome accepts it under
+   acceptInsecureCerts; the SAN covers staging.example.com so Host mapping
+   and TLS agree. */
+const httpsCert = {
+  key: read("test", "fixtures", "https", "key.pem"),
+  cert: read("test", "fixtures", "https", "cert.pem"),
+};
 
 /* The injected scripts, in the order the popup injects them. */
 const SCRIPTS = {
@@ -33,6 +42,7 @@ const SCRIPTS = {
   landmarkCheck: read("code", "js", "landmarkCheck.js"),
   tokenCheck: read("code", "js", "tokenCheck.js"),
   altCheck: read("code", "js", "altCheck.js"),
+  outlineCheck: read("code", "js", "outlineCheck.js"),
   brightnessCheck: read("code", "js", "brightnessCheck.js"),
 };
 
@@ -89,15 +99,27 @@ function installI18n(table) {
  * That is how the self-referential canonical test came to assert nothing
  * for as long as it existed.
  *
+ * Pass `https: true` for the mixed-content / staging-own-host fixtures: a
+ * self-signed cert from test/fixtures/https, with Chrome told to accept it.
+ *
  * @param {string} body
- * @returns {Promise<import("node:http").Server>}
+ * @param {{ https?: boolean }} [options]
+ * @returns {Promise<import("node:http").Server | import("node:https").Server>}
  */
-function serveOnce(body) {
+function serveOnce(body, options = {}) {
   return new Promise((resolve) => {
-    const server = http.createServer((request, response) => {
+    /**
+     * @param {import("node:http").IncomingMessage} _request
+     * @param {import("node:http").ServerResponse} response
+     */
+    const handler = (_request, response) => {
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       response.end(body);
-    });
+    };
+
+    const server = options.https
+      ? https.createServer(httpsCert, handler)
+      : http.createServer(handler);
 
     server.listen(0, "127.0.0.1", () => resolve(server));
   });
@@ -111,18 +133,52 @@ function serveOnce(body) {
  * local port instead of setting it directly, which is what anything reading
  * location or resolving a relative URL needs.
  *
+ * Pass `https: true` with `serve` for an https origin (mixed content). Pass
+ * `host` (e.g. staging.example.com) to map that name to the local listener
+ * via Chrome's host-resolver-rules, so location.hostname is the staging
+ * label the leftovers checker reads.
+ *
  * @template T
- * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean, deviceScaleFactor?: number, serve?: string }} options
+ * @param {{ html: string, checkers?: (keyof typeof SCRIPTS)[], width?: number, height?: number, hasTouch?: boolean, deviceScaleFactor?: number, serve?: string, https?: boolean, host?: string }} options
  * @param {(page: import("puppeteer").Page) => Promise<T>} run
  * @returns {Promise<T>}
  */
 async function withPage(
-  { html, checkers = [], width, height, hasTouch, deviceScaleFactor, serve },
+  {
+    html,
+    checkers = [],
+    width,
+    height,
+    hasTouch,
+    deviceScaleFactor,
+    serve,
+    https: useHttps = false,
+    host,
+  },
   run
 ) {
-  const browser = await puppeteer.launch({ channel: "chrome" });
+  if ((useHttps || host) && !serve) {
+    throw new Error("withPage: https and host require serve");
+  }
 
-  /** @type {import("node:http").Server | null} */
+  /** @type {string[]} */
+  const args = [];
+
+  if (host && host !== "127.0.0.1" && host !== "localhost") {
+    args.push(`--host-resolver-rules=MAP ${host} 127.0.0.1`);
+  }
+
+  /* acceptInsecureCerts (not the older ignoreHTTPSErrors name) is what
+     current Puppeteer honours for a self-signed fixture. The flag is only
+     needed for https pages; leaving it false elsewhere keeps ordinary
+     runs strict. */
+  const browser = await puppeteer.launch({
+    channel: "chrome",
+    acceptInsecureCerts: useHttps,
+    args,
+  });
+
+  /** @type {import("node:http").Server | import("node:https").Server | null} */
   let server = null;
 
   try {
@@ -140,12 +196,14 @@ async function withPage(
     const document = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${html}</body></html>`;
 
     if (serve) {
-      server = await serveOnce(document);
+      server = await serveOnce(document, { https: useHttps });
 
       const address = server.address();
       const port = typeof address === "object" && address ? address.port : 0;
+      const hostname = host || "127.0.0.1";
+      const scheme = useHttps ? "https" : "http";
 
-      await page.goto(`http://127.0.0.1:${port}${serve}`);
+      await page.goto(`${scheme}://${hostname}:${port}${serve}`);
     } else {
       await page.setContent(document);
     }

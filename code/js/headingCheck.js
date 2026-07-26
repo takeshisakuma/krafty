@@ -11,10 +11,11 @@
    and the reason this exists. So the headings are drawn as an indented list
    for the reader to scan, the way the head checker draws its previews.
 
-   Nothing is written onto the page. The nest checker has to mark elements
-   because a finding is only meaningful next to the element it is about; a
-   heading outline is meaningful as a list, and leaving the page untouched
-   means there is nothing to restore when the panel closes. */
+   The nest checker has to mark elements because a finding is only meaningful
+   next to the element it is about. A heading outline is meaningful as a list,
+   so nothing is written onto the headings themselves; each row can still
+   point at its element the way the markup checker does (item 23), and the
+   pointer boxes clear when the panel closes. */
 
 (() => {
   const PANEL_ID = "js-kraftyHeadingInformation";
@@ -29,6 +30,7 @@
   }
 
   if (!document.body.classList.toggle(BODY_CLASS)) {
+    kraftyClearPointer();
     return;
   }
 
@@ -36,6 +38,9 @@
      which is why the toggle is not part of it. */
   const run = () => {
     document.getElementById(PANEL_ID)?.remove();
+    /* A pinned pointer box belongs to the last scan; the rows about to be
+       rebuilt are its only way home. */
+    kraftyClearPointer();
 
     /* --- reading the document --- */
 
@@ -111,7 +116,7 @@
       });
     };
 
-    /** @type {{ level: number, tag: string, label: string, skipped: boolean }[]} */
+    /** @type {{ level: number, tag: string, label: string, skipped: boolean, element: Element }[]} */
     const outline = [];
     let hidden = 0;
 
@@ -134,6 +139,7 @@
         tag: element.tagName.toLowerCase(),
         label: labelOf(element),
         skipped: false,
+        element,
       });
     }
 
@@ -146,6 +152,7 @@
       onRescan: run,
       onClose: () => {
         panel.remove();
+        kraftyClearPointer();
         /* Drop the class too, or the popup would keep showing this checker as
            active with nothing on screen. */
         document.body.classList.remove(BODY_CLASS);
@@ -226,7 +233,10 @@
         /* Indented inline rather than by a class per level, because aria-level
            is not capped at 6 and a table of six rules would quietly stop
            indenting past the last one it knew about. */
-        item.style.paddingLeft = `${Math.min(Math.max(entry.level - 1, 0), 8) * 14}px`;
+        const depth = Math.min(Math.max(entry.level - 1, 0), 8);
+        item.style.paddingLeft = `${depth * 14}px`;
+        /* Kept for the review paste, which cannot read padding as meaning. */
+        item.dataset.kraftyDepth = String(depth);
 
         if (entry.skipped) {
           item.classList.add("kraftyOutlineSkip");
@@ -249,6 +259,9 @@
         }
 
         item.appendChild(text);
+
+        kraftyPointAt(item, entry.element);
+
         list.appendChild(item);
       }
 

@@ -497,6 +497,7 @@
       image.addEventListener("error", () => {
         report("note", "checkOgImageFailed");
         cardImage.textContent = kraftyMessage("checkOgImageFailed");
+        cardImage.classList.add("kraftyCardImageEmpty");
       });
 
       cardImage.appendChild(image);
@@ -673,9 +674,31 @@
         if (source) {
           const thumbnail = document.createElement("img");
           thumbnail.className = `headImage ${image}`;
-          thumbnail.src = source;
           thumbnail.alt = "";
           line.appendChild(thumbnail);
+
+          /* A broken address used to leave a zero-size img beside the URL —
+             path visible, picture blank, nothing saying why. Same fact the
+             card already reports for og:image; say it on the row too. */
+          let failed = false;
+          const markFailed = () => {
+            if (failed) {
+              return;
+            }
+
+            failed = true;
+            const label = document.createElement("span");
+            label.className = "kraftyMissing kraftyHeadImageFailed";
+            label.textContent = kraftyMessage("headImageFailed");
+            thumbnail.replaceWith(label);
+          };
+
+          thumbnail.addEventListener("error", markFailed);
+          thumbnail.src = source;
+
+          if (thumbnail.complete && thumbnail.naturalWidth === 0) {
+            markFailed();
+          }
         }
 
         const target = url ? resolve(value) : null;
@@ -705,6 +728,13 @@
 
       referenceSection.appendChild(row);
     }
+
+    const scanned = document.createElement("div");
+    scanned.className = "kraftyPanelNote";
+    scanned.textContent = kraftyMessage("panelScannedAt", [
+      new Date().toLocaleTimeString(),
+    ]);
+    body.appendChild(scanned);
 
     document.body.appendChild(panel);
   };

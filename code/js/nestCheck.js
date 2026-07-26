@@ -205,6 +205,7 @@
   /** Undo everything this checker writes onto the page. */
   const clear = () => {
     document.getElementById(PANEL_ID)?.remove();
+    kraftyClearPointer();
 
     for (const marked of document.querySelectorAll(`.${ERROR_CLASS}`)) {
       marked.classList.remove(ERROR_CLASS);
@@ -236,7 +237,7 @@
   const run = () => {
     clear();
 
-    /** @type {Map<string, number>} */
+    /** @type {Map<string, { count: number, first: Element }>} */
     const totals = new Map();
 
     /* The judging sees the DOM as it is now, so elements a single page app
@@ -280,12 +281,18 @@
       element.setAttribute("title", lines.join("\n"));
 
       const key = `${parent} > ${child}`;
-      totals.set(key, (totals.get(key) ?? 0) + 1);
+      const entry = totals.get(key);
+
+      if (entry) {
+        entry.count += 1;
+      } else {
+        totals.set(key, { count: 1, first: element });
+      }
     }
 
     /* --- findings panel --- */
 
-    const total = [...totals.values()].reduce((sum, n) => sum + n, 0);
+    const total = [...totals.values()].reduce((sum, entry) => sum + entry.count, 0);
 
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
@@ -294,6 +301,7 @@
       onRescan: run,
       onClose: () => {
         clear();
+        kraftyClearPointer();
         document.body.classList.remove(BODY_CLASS);
       },
     });
@@ -319,8 +327,8 @@
           location.href,
           summary.textContent,
           ...[...totals]
-            .sort((a, b) => b[1] - a[1])
-            .map(([key, count]) => `- ${key} × ${count}`),
+            .sort((a, b) => b[1].count - a[1].count)
+            .map(([key, entry]) => `- ${key} × ${entry.count}`),
         ].join("\n")
       );
       copyAll.classList.add("kraftyCopyAll");
@@ -331,7 +339,9 @@
       const list = document.createElement("ul");
       list.className = "kraftyPanelList";
 
-      for (const [key, count] of [...totals].sort((a, b) => b[1] - a[1])) {
+      for (const [key, entry] of [...totals].sort(
+        (a, b) => b[1].count - a[1].count
+      )) {
         const item = document.createElement("li");
 
         const label = document.createElement("code");
@@ -340,8 +350,12 @@
 
         const times = document.createElement("span");
         times.className = "kraftyPanelCount";
-        times.textContent = `× ${count}`;
+        times.textContent = `× ${entry.count}`;
         item.appendChild(times);
+
+        /* Count stays; the first flagged element is the one the row points
+           at, so the breakdown is still findable from the panel. */
+        kraftyPointAt(item, entry.first);
 
         list.appendChild(item);
       }

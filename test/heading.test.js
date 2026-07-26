@@ -37,6 +37,7 @@ async function check(html) {
           text: item.textContent ?? "",
           indent: /** @type {HTMLElement} */ (item).style.paddingLeft,
           skipped: item.classList.contains("kraftyOutlineSkip"),
+          locatable: item.classList.contains("kraftyLocatable"),
         })),
         notes: [...(root?.querySelectorAll(".kraftyPanelNote") ?? [])].map(
           (note) => note.textContent ?? ""
@@ -108,6 +109,11 @@ test("heading checker", async (t) => {
        can be structurally perfect and still describe the wrong page. */
     assert.match(result.summary, /automatically/);
     assert.doesNotMatch(result.summary, /^No problems\.?$/i);
+
+    assert.ok(
+      result.outline.every((entry) => entry.locatable),
+      "each outline row points at its heading on the page"
+    );
   });
 
   await t.test("reports more than one level 1 heading", async () => {

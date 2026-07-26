@@ -42,6 +42,12 @@
    statement the page makes twice and disagrees with itself - decidable
    without a table of what should have been there.
 
+   An inline style with a property the browser will not take is the same
+   quiet: CSSOM drops it, the layout looks finished, and the typo sits in
+   the attribute unread. Only the raw attribute is honest for this - a
+   stylesheet has already lost the invalid rules - so the check reads
+   getAttribute("style") and asks CSS.supports, nothing else.
+
    And none of it shows. That is why it belongs in a tool used to review a
    page that looks finished, rather than being left to a validator nobody
    opens once the layout is right. */
@@ -261,11 +267,12 @@
 
     /* --- reading the document --- */
 
-    /** @type {Map<string, number>} */
+    /** @type {Map<string, { count: number, first: Element }>} */
     const seen = new Map();
 
     /* The whole document, not just the body: an id in the head is rarer but
-       collides exactly the same way. */
+       collides exactly the same way. The first element is kept so the row
+       can point at one instance while the count names several. */
     for (const element of document.querySelectorAll("[id]")) {
       /* Never report the checker's own UI. closest matches the element
          itself, so the panel's own id is covered by this too. */
@@ -279,13 +286,26 @@
         continue;
       }
 
-      seen.set(id, (seen.get(id) ?? 0) + 1);
+      const entry = seen.get(id);
+
+      if (entry) {
+        entry.count += 1;
+      } else {
+        seen.set(id, { count: 1, first: element });
+      }
     }
 
     /* Worst first: an id used five times is five places to look. */
     const duplicated = [...seen]
-      .filter(([, count]) => count > 1)
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+      .filter(([, entry]) => entry.count > 1)
+      .sort(
+        (a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0])
+      )
+      .map(([id, entry]) => ({
+        id,
+        count: entry.count,
+        element: entry.first,
+      }));
 
     /* A table whose cells have no headers to be announced with.
 
@@ -544,7 +564,7 @@
        warns of, and the raw attribute is what the author typed anyway. The
        nameless and the dead are the other findings' business, so both are
        left out of this one. */
-    /** @type {Map<string, { name: string, hrefs: Set<string> }>} */
+    /** @type {Map<string, { name: string, hrefs: Set<string>, first: Element }>} */
     const named = new Map();
 
     for (const link of document.querySelectorAll("a[href]")) {
@@ -560,7 +580,7 @@
       }
 
       const key = name.toLowerCase();
-      const entry = named.get(key) ?? { name, hrefs: new Set() };
+      const entry = named.get(key) ?? { name, hrefs: new Set(), first: link };
       entry.hrefs.add(href);
       named.set(key, entry);
     }
@@ -602,7 +622,7 @@
       "ここをクリック",
     ]);
 
-    /** @type {Map<string, { name: string, count: number }>} */
+    /** @type {Map<string, { name: string, count: number, first: Element }>} */
     const vague = new Map();
 
     for (const link of document.querySelectorAll("a[href]")) {
@@ -617,12 +637,29 @@
       }
 
       const key = name.toLowerCase();
-      const entry = vague.get(key) ?? { name, count: 0 };
+      const entry = vague.get(key) ?? { name, count: 0, first: link };
       entry.count += 1;
       vague.set(key, entry);
     }
 
     const vagueTexts = [...vague.values()].sort((a, b) => b.count - a.count);
+
+    /* An iframe or embed with nothing naming it. A screen reader announces
+       the bare role, the same defect as a nameless link - title, aria-label
+       or a resolving aria-labelledby is what names these. */
+    const namelessFrames = [
+      ...document.querySelectorAll("iframe, embed"),
+    ].filter((element) => {
+      if (element.closest(".kraftyPanel")) {
+        return false;
+      }
+
+      if (element.closest('[aria-hidden="true"]')) {
+        return false;
+      }
+
+      return accessibleName(element) === "";
+    });
 
     /* Contradictions in the ARIA already on the page - a statement the
        markup makes twice, differently. No table of what should have been
@@ -739,6 +776,135 @@
       return Number.isInteger(value) && value > 0;
     });
 
+    /* An inline style declaration the browser will not take.
+
+       Only getAttribute("style") is honest: element.style.cssText has already
+       dropped anything that failed to parse, and external stylesheets are
+       unreachable or post-parse. Semicolons inside url("...") or parentheses
+       are not declaration ends, so the split has to track quotes and depth.
+       !important is stripped before CSS.supports, which does not accept it.
+       No property database - the browser judges each pair. */
+    /**
+     * @param {string} style
+     * @returns {string[]}
+     */
+    const styleDeclarations = (style) => {
+      /** @type {string[]} */
+      const parts = [];
+      let current = "";
+      /** @type {string | null} */
+      let quote = null;
+      let depth = 0;
+
+      for (let i = 0; i < style.length; i += 1) {
+        const ch = style[i];
+
+        if (quote !== null) {
+          current += ch;
+
+          if (ch === "\\" && i + 1 < style.length) {
+            current += style[i + 1];
+            i += 1;
+            continue;
+          }
+
+          if (ch === quote) {
+            quote = null;
+          }
+
+          continue;
+        }
+
+        if (ch === '"' || ch === "'") {
+          quote = ch;
+          current += ch;
+          continue;
+        }
+
+        if (ch === "(") {
+          depth += 1;
+          current += ch;
+          continue;
+        }
+
+        if (ch === ")") {
+          depth = Math.max(0, depth - 1);
+          current += ch;
+          continue;
+        }
+
+        if (ch === ";" && depth === 0) {
+          parts.push(current);
+          current = "";
+          continue;
+        }
+
+        current += ch;
+      }
+
+      if (current.trim() !== "") {
+        parts.push(current);
+      }
+
+      return parts;
+    };
+
+    /** @type {{ element: Element, aside: string }[]} */
+    const invalidStyles = [];
+
+    for (const element of document.querySelectorAll("[style]")) {
+      if (element.closest(".kraftyPanel")) {
+        continue;
+      }
+
+      /* SVG exporters still write enable-background and friends into style.
+         CSS.supports correctly rejects them — they are not CSS — but they are
+         not a CMS typo either. The check is for hand-typed CSS on HTML. */
+      if (element instanceof SVGElement || element.closest("svg")) {
+        continue;
+      }
+
+      const style = element.getAttribute("style");
+
+      if (style === null || style.trim() === "") {
+        continue;
+      }
+
+      for (const raw of styleDeclarations(style)) {
+        const declaration = raw.trim();
+
+        if (declaration === "") {
+          continue;
+        }
+
+        const colon = declaration.indexOf(":");
+
+        if (colon === -1) {
+          invalidStyles.push({ element, aside: declaration });
+          continue;
+        }
+
+        const property = declaration.slice(0, colon).trim();
+        const value = declaration.slice(colon + 1).trim();
+
+        if (property === "") {
+          invalidStyles.push({ element, aside: declaration });
+          continue;
+        }
+
+        const tested = value.replace(/\s*!important\s*$/i, "").trim();
+
+        if (CSS.supports(property, tested)) {
+          continue;
+        }
+
+        invalidStyles.push({
+          element,
+          aside: `${property}: ${value}`,
+        });
+      }
+    }
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -771,6 +937,13 @@
 
     if (namelessLinks.length > 0) {
       reportText("alert", kraftyCount("markupLinkNoName", namelessLinks.length));
+    }
+
+    if (namelessFrames.length > 0) {
+      reportText(
+        "alert",
+        kraftyCount("markupFrameNoName", namelessFrames.length)
+      );
     }
 
     if (deadLinks.length > 0) {
@@ -816,14 +989,22 @@
       );
     }
 
+    if (invalidStyles.length > 0) {
+      reportText(
+        "note",
+        kraftyCount("markupStyleInvalid", invalidStyles.length)
+      );
+    }
+
     /** A titled section holding a list of rows, each a label and an optional
        aside. The ids list was the only one of these until the two
        accessibility checks arrived wanting the same shape; a third copy is
        what usually gets one of them subtly wrong.
 
-       A row that carries an `element` can point at it on the page (item 23);
-       one that names several - a duplicated id, a reused link text - leaves
-       it off, because there is no single thing to point at.
+       A row that carries an `element` can point at it on the page (item 23).
+       Aggregate findings - a duplicated id, a reused link text - keep the
+       count in the aside and point at the first instance, so the row stays
+       findable without pretending there is only one.
 
        @param {string} sectionKey
        @param {string} labelKey
@@ -862,6 +1043,9 @@
 
         if (row.element) {
           kraftyPointAt(item, row.element);
+        } else {
+          item.classList.add("kraftyInert");
+          item.title = kraftyMessage("panelRowNotLocatable");
         }
 
         list.appendChild(item);
@@ -874,9 +1058,21 @@
       listOf(
         "markupSectionIds",
         "markupIdListLabel",
-        duplicated.map(([id, count]) => ({
-          label: `#${id}`,
-          aside: `× ${count}`,
+        duplicated.map((entry) => ({
+          label: `#${entry.id}`,
+          aside: `× ${entry.count}`,
+          element: entry.element,
+        }))
+      );
+    }
+
+    if (headerless.length > 0) {
+      listOf(
+        "markupSectionTables",
+        "markupTableListLabel",
+        headerless.map((table) => ({
+          label: locate(table),
+          element: table,
         }))
       );
     }
@@ -924,6 +1120,21 @@
       );
     }
 
+    if (namelessFrames.length > 0) {
+      listOf(
+        "markupSectionFrames",
+        "markupFrameListLabel",
+        namelessFrames.map((element) => {
+          const label = locate(element);
+          const src = (element.getAttribute("src") ?? "").trim();
+          const aside =
+            src !== "" && !label.includes(src) ? src : undefined;
+
+          return { label, aside, asideClass: "kraftyPanelHint", element };
+        })
+      );
+    }
+
     if (deadLinks.length > 0) {
       listOf(
         "markupSectionDeadLinks",
@@ -950,6 +1161,7 @@
         reused.map((entry) => ({
           label: entry.name,
           aside: `× ${entry.hrefs.size}`,
+          element: entry.first,
         }))
       );
     }
@@ -961,6 +1173,7 @@
         vagueTexts.map((entry) => ({
           label: entry.name,
           aside: entry.count > 1 ? `× ${entry.count}` : undefined,
+          element: entry.first,
         }))
       );
     }
@@ -1012,6 +1225,19 @@
           aside: `tabindex=${element.getAttribute("tabindex")}`,
           asideClass: "kraftyPanelHint",
           element,
+        }))
+      );
+    }
+
+    if (invalidStyles.length > 0) {
+      listOf(
+        "markupSectionStyles",
+        "markupStyleListLabel",
+        invalidStyles.map((entry) => ({
+          label: locate(entry.element),
+          aside: entry.aside,
+          asideClass: "kraftyPanelHint",
+          element: entry.element,
         }))
       );
     }

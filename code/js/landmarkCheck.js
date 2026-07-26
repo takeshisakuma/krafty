@@ -17,9 +17,10 @@
    accessible name, for the reader to scan - the same treatment the heading
    checker gives its outline.
 
-   Nothing is written onto the page. A landmark is meaningful as a region in
-   a list, the way a heading is meaningful in an outline, and leaving the page
-   untouched means there is nothing to restore when the panel closes. */
+   A landmark is meaningful as a region in a list, the way a heading is
+   meaningful in an outline, so nothing is written onto the regions themselves;
+   each row can still point at its element the way the markup checker does
+   (item 23), and the pointer boxes clear when the panel closes. */
 
 (() => {
   const PANEL_ID = "js-kraftyLandmarkInformation";
@@ -34,6 +35,7 @@
   }
 
   if (!document.body.classList.toggle(BODY_CLASS)) {
+    kraftyClearPointer();
     return;
   }
 
@@ -62,6 +64,9 @@
      which is why the toggle is not part of it. */
   const run = () => {
     document.getElementById(PANEL_ID)?.remove();
+    /* A pinned pointer box belongs to the last scan; the rows about to be
+       rebuilt are its only way home. */
+    kraftyClearPointer();
 
     /* --- reading the document --- */
 
@@ -225,6 +230,7 @@
       tag: element.localName,
       name: nameOf(element),
       depth: depthOf(element),
+      element,
     }));
 
     /* --- the panel --- */
@@ -236,6 +242,7 @@
       onRescan: run,
       onClose: () => {
         panel.remove();
+        kraftyClearPointer();
         /* Drop the class too, or the popup would keep showing this checker as
            active with nothing on screen. */
         document.body.classList.remove(BODY_CLASS);
@@ -348,7 +355,10 @@
            fixed ceiling, and a table of rules would quietly stop indenting
            past the last one it knew. Capped so a deep tree cannot push the
            text off the panel. */
-        item.style.paddingLeft = `${Math.min(entry.depth, 8) * 14}px`;
+        const depth = Math.min(entry.depth, 8);
+        item.style.paddingLeft = `${depth * 14}px`;
+        /* Kept for the review paste, which cannot read padding as meaning. */
+        item.dataset.kraftyDepth = String(depth);
 
         const role = document.createElement("code");
         role.className = "kraftyOutlineLevel";
@@ -367,6 +377,9 @@
         }
 
         item.appendChild(text);
+
+        kraftyPointAt(item, entry.element);
+
         list.appendChild(item);
       }
 

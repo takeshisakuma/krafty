@@ -20,7 +20,8 @@
    there, and flagging them would be noise on the developer's own screen.
 
    Mixed content - an http resource on an https page. The browser blocks it,
-   so the page is already broken; there is nothing to weigh.
+   so the page is already broken; there is nothing to weigh. Covered by the
+   https harness in test/support.js.
 
    A placeholder image service - placehold.co, dummyimage.com and the like -
    an image nobody swapped for the real one. A closed list, no guessing.
@@ -167,13 +168,15 @@
   const MARKER = /\b(?:TODO|FIXME|XXX)\b|仮|後で|後日差し替え/i;
 
   /* Dummy copy left where the real text should be. Two shapes are distinctive
-     enough to match anywhere in a fragment: Lorem ipsum, and a run of one
-     letter (あああ, aaaa - three or more, so an ordinary double letter is
-     spared) or one placeholder mark (○○, ××, △△ - two or more of the *same*
-     mark, so a ○ / × comparison table is spared). The alternation carries two
-     capture groups because a placeholder mark repeats from two while a letter
-     needs three. */
-  const DUMMY_RUN = /lorem ipsum|([\p{L}])\1{2,}|([○◯×✕△▲□■])\2+/iu;
+     enough to match anywhere in a fragment: Lorem ipsum, a kana run (あああ -
+     three or more), a Latin run of four (aaaa - three is every WWW / AAA
+     acronym on a real page), or one placeholder mark (○○, ××, △△ - two or
+     more of the *same* mark, so a ○ / × comparison table is spared). */
+  /* Latin needs four of the same letter (aaaa): three is every acronym on a
+     real page (WWW, IIIR, AAA). Kana keeps three (あああ) — that shape is
+     filler in Japanese and almost never an acronym. Marks stay at two. */
+  const DUMMY_RUN =
+    /lorem ipsum|([\p{Script=Hiragana}\p{Script=Katakana}])\1{2,}|([a-zA-Z])\2{3,}|([○◯×✕△▲□■])\3+/iu;
 
   /* The rest are ordinary words as often as they are filler - "サンプル" is
      real copy inside "無料サンプル" - so they count only when they are the
@@ -453,12 +456,9 @@
         tag.textContent = row.element.localName;
         item.appendChild(tag);
 
-        /* Only a rendered element has a box to point at; a <script> or
-           <link> would light nothing, so it gets no locatable affordance. */
-        const rect = row.element.getBoundingClientRect();
-        if (rect.width > 0 || rect.height > 0) {
-          kraftyPointAt(item, row.element);
-        }
+        /* Only a painted element has a box to point at; a <script> or
+           <link> (and anything else isPointable rejects) is left inert. */
+        kraftyPointAt(item, row.element);
 
         list.appendChild(item);
       }
@@ -516,10 +516,7 @@
         tag.textContent = row.element.localName;
         item.appendChild(tag);
 
-        const rect = row.element.getBoundingClientRect();
-        if (rect.width > 0 || rect.height > 0) {
-          kraftyPointAt(item, row.element);
-        }
+        kraftyPointAt(item, row.element);
 
         list.appendChild(item);
       }
@@ -549,6 +546,11 @@
            text and must never be parsed as markup. */
         code.textContent = text;
         item.appendChild(code);
+
+        /* A comment is not an element on the page, so there is nothing to
+           point at - mark it inert so it does not look like a dead hover. */
+        item.classList.add("kraftyInert");
+        item.title = kraftyMessage("panelRowNotLocatable");
 
         list.appendChild(item);
       }

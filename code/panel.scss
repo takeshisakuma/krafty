@@ -20,7 +20,10 @@ $panelInset: 50px;
    a corner cascades off the one before it, far enough that the title bar
    underneath stays visible and grabbable.
 
-   Positioning stays on :host (the light-DOM element drag measures). Paint —
+   These :host insets are the source of truth for the numbers, but the
+   runtime dock is js/panel.js's PANEL_DOCKS + place(): document styles on
+   the host beat normal :host declarations, so a page-wide inset reset
+   would otherwise leave the panel at its static position. Paint —
    background, type, flex chrome — lives on .kraftyPanelShell inside the
    shadow. The host is still a `div` the page can select; timetechnologies.ltd
    resets `div { background: transparent }`, which would clear a white
@@ -216,6 +219,22 @@ code {
 
   &:hover {
     background-color: #f4f6f8;
+  }
+}
+
+/* A row that does not point at one painted element - several targets, or a
+   target with no box. Kept quieter than locatable rows so the missing hover
+   does not read as broken. */
+.kraftyInert {
+  color: #8a8a8a;
+
+  code {
+    color: inherit;
+  }
+
+  .kraftyPanelCount,
+  .kraftyPanelHint {
+    color: #9a9a9a;
   }
 }
 
@@ -507,6 +526,11 @@ hr {
     &.apple {
       width: 60px;
     }
+  }
+
+  .kraftyHeadImageFailed {
+    flex: none;
+    max-width: 200px;
   }
 
   .kraftyFallbackNote {
