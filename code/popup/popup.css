@@ -1,9 +1,19 @@
 @charset "UTF-8";
 
+/* Chrome sizes the action popup to the document's preferred width, up to
+   800px. Without a cap, a long tab URL under the QR (or a large font /
+   leftover popup zoom on one machine) can stretch the whole menu to that
+   ceiling. Constraining html is what shrinks the window; body alone only
+   narrows the content inside a still-wide frame. */
+html {
+  max-width: 280px;
+}
+
 body {
   margin: 0;
   padding: 8px 0;
   min-width: 160px;
+  max-width: 280px;
   font-family: system-ui, sans-serif;
 }
 
@@ -230,9 +240,13 @@ body {
 
 .qrUrl {
   margin: 6px 0 0;
+  max-width: 100%;
   font-size: 11px;
   line-height: 1.35;
   color: #555;
+  /* Soft wraps alone do not shrink the popup's preferred width; the html
+     max-width above does. This keeps the string inside that cap. */
+  overflow-wrap: anywhere;
   word-break: break-all;
 }
 

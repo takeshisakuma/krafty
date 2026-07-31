@@ -428,6 +428,7 @@ ready.
 | 0.15.0 | 25 QR of the current URL, for device testing — shipped (popup) |
 | 0.16.0 | 26 design-token audit (colours, fonts, radii, shadows) — shipped |
 | 0.17.0 | Hardening + small checks: panel dock against page CSS, outline `!important`, CSS `background-image` waste, unsupported inline `style`, og:image load failure, alt remeasure, https leftovers harness, panel focus/arrow keys — shipped |
+| 0.17.1 | Popup width cap: stop the toolbar menu hitting Chrome’s 800px ceiling (long QR URL / font zoom on some Macs) — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
