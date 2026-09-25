@@ -429,7 +429,7 @@ ready.
 | 0.16.0 | 26 design-token audit (colours, fonts, radii, shadows) — shipped |
 | 0.17.0 | Hardening + small checks: panel dock against page CSS, outline `!important`, CSS `background-image` waste, unsupported inline `style`, og:image load failure, alt remeasure, https leftovers harness, panel focus/arrow keys — shipped |
 | 0.17.1 | Popup width cap: stop the toolbar menu hitting Chrome’s 800px ceiling (long QR URL / font zoom on some Macs) — shipped |
-| 0.18.0 | 27 squint test — a blur lens beside Brightness; small, so it goes on its own |
+| 0.18.0 | 27 squint test — a blur lens beside Brightness · Nest Check content models brought current (hgroup, menu, search, slot, customizable `select`, `dl` div wrappers) — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -1282,7 +1282,7 @@ judgement. Soft-capped at 4000 visible elements so a huge DOM cannot freeze
 the tab. Not a popup utility: it has to read the page's computed styles, so
 it is a checker with a command like the others.
 
-### 27. The squint test — built, waiting for 0.18.0
+### 27. The squint test — done
 
 Asked 2026-09-25. The designer's old trick of narrowing the eyes at a layout
 until the text goes and only the masses are left: what stands out first,
@@ -1311,8 +1311,8 @@ heading or a button is still a shape; a strength control waits until
 someone asks for one. The cost worth watching is scrolling on a heavy page,
 since the whole viewport is re-blurred on every frame.
 
-Built 2026-09-25 as the Squint Check, in the "Show the page" group beside
-Brightness.
+Built 2026-09-25, in 0.18.0, as the Squint Check, in the "Show the page"
+group beside Brightness.
 
 ## Deferred, with reasons
 
