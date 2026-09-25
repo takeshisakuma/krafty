@@ -4,8 +4,8 @@
    service worker.
 
    `panelId` marks the checkers that report findings, which is what the
-   popup's review button collects. The three without one - outline, alt,
-   brightness - draw over the page and have nothing to say in text.
+   popup's review button collects. The four without one - outline, alt,
+   brightness, squint - draw over the page and have nothing to say in text.
 
    Keyboard shortcuts are handled in a service worker, which cannot see the
    popup's script. Keeping a second copy of this table there would drift the
@@ -115,6 +115,14 @@ globalThis.kraftyCheckers = [
     command: "brightness-check",
     file: "js/brightnessCheck.js",
     bodyClass: "kraftyBrightnessChecker",
+    allFrames: false,
+  },
+  {
+    id: "js-squintCheckButton",
+    command: "squint-check",
+    file: "js/squintCheck.js",
+    bodyClass: "kraftySquintChecker",
+    /* One screen over the top document blurs every frame under it. */
     allFrames: false,
   },
 ];

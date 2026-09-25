@@ -138,7 +138,7 @@ test("wiring", async (t) => {
   });
 
   await t.test("a checker without a panel is not asked for one", () => {
-    /* outline, alt and brightness draw over the page and have nothing to
+    /* outline, alt, brightness and squint draw over the page and have nothing to
        say in text. Giving one a panelId would put an empty heading in the
        review. */
     for (const checker of checkers.filter((one) => !one.panelId)) {

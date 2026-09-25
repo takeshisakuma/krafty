@@ -87,7 +87,7 @@
   },
   "checkerOutline": {
     "message": "アウトラインチェック",
-    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
+    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these four have no panel."
   },
   "checkerAlt": {
     "message": "alt チェック",
@@ -96,6 +96,10 @@
   "checkerBrightness": {
     "message": "明度チェック",
     "description": "Menu label for the checker that greys the page."
+  },
+  "checkerSquint": {
+    "message": "ぼかしチェック",
+    "description": "Menu label for the checker that blurs the page (the squint test)."
   },
   "popupGroupReports": {
     "message": "結果を報告する",
@@ -1245,6 +1249,10 @@
     "message": "明度チェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandSquintCheck": {
+    "message": "ぼかしチェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "manualTitle": {
     "message": "Krafty マニュアル",
     "description": "Heading and browser tab title of the manual page."
@@ -1335,6 +1343,14 @@
   },
   "manualBrightnessBody": {
     "message": "ページをモノクロ表示にします。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSquintTitle": {
+    "message": "ぼかしチェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSquintBody": {
+    "message": "文字が読めなくなるまでページをぼかし、目を細めて見たとき（スクイントテスト）に何が最初に目に入るか、主要なボタンが目立っているかを、文章に頼らず確かめられます。明度チェックと併用すると、モノクロでぼかした状態になります。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualShortcutsTitle": {

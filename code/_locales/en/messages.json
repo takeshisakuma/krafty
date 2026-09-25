@@ -87,7 +87,7 @@
   },
   "checkerOutline": {
     "message": "Outline Check",
-    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these three have no panel."
+    "description": "Menu label. The five that build a panel take their name from the panel's own title key, so the menu and the panel cannot disagree; these four have no panel."
   },
   "checkerAlt": {
     "message": "alt Check",
@@ -96,6 +96,10 @@
   "checkerBrightness": {
     "message": "Brightness Check",
     "description": "Menu label for the checker that greys the page."
+  },
+  "checkerSquint": {
+    "message": "Squint Check",
+    "description": "Menu label for the checker that blurs the page (the squint test)."
   },
   "popupGroupReports": {
     "message": "Report findings",
@@ -1245,6 +1249,10 @@
     "message": "Toggle Brightness Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandSquintCheck": {
+    "message": "Toggle Squint Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "manualTitle": {
     "message": "Krafty Manual",
     "description": "Heading and browser tab title of the manual page."
@@ -1335,6 +1343,14 @@
   },
   "manualBrightnessBody": {
     "message": "Make the page monochrome.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSquintTitle": {
+    "message": "Squint Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSquintBody": {
+    "message": "Blur the page until the text can no longer be read, so what stands out first — and whether the main action is it — can be judged without the words. Combine with Brightness to squint in monochrome.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualShortcutsTitle": {

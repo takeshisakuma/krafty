@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Eleven checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
+Twelve checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
@@ -104,6 +104,10 @@ Shows the alt text of every image, and separates an image with no alt attribute 
 
 Turns the page monochrome, which shows up anything that relies on colour alone to be understood.
 
+### Squint Checker
+
+The squint test, without the squinting. Blurs the page until the text can no longer be read, leaving only the masses: what the eye lands on first, and whether the main action is it. Krafty's own panels stay sharp. Turn Brightness on as well to squint in monochrome.
+
 ### Open on a phone
 
 Shows a QR code of the current tab's address in the toolbar menu, generated in your own browser — never by sending the URL to a QR service. Scan it once and the phone is on the same page, including staging URLs you would rather not type by hand.
@@ -114,7 +118,7 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。11のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。12のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
@@ -205,6 +209,10 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 ### 明度チェッカー
 
 ページをモノクロにします。色だけで情報を伝えている箇所が浮かび上がります。
+
+### ぼかしチェッカー
+
+目を細めてレイアウトを見る「スクイントテスト」を、目を細めずに行えます。文字が読めなくなるまでページをぼかし、面の強弱だけを残すので、最初に目に入るものは何か、それが主要なボタンになっているかを確かめられます。Krafty のパネルはぼかしません。明度チェックと併用すると、モノクロでぼかした状態になります。
 
 ### スマホで開く
 

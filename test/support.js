@@ -44,6 +44,7 @@ const SCRIPTS = {
   altCheck: read("code", "js", "altCheck.js"),
   outlineCheck: read("code", "js", "outlineCheck.js"),
   brightnessCheck: read("code", "js", "brightnessCheck.js"),
+  squintCheck: read("code", "js", "squintCheck.js"),
 };
 
 /* The real message file, so a mistyped key or a broken placeholder fails

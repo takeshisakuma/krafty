@@ -53,6 +53,9 @@
     },
     "brightness-check": {
       "description": "__MSG_commandBrightnessCheck__"
+    },
+    "squint-check": {
+      "description": "__MSG_commandSquintCheck__"
     }
   },
   "icons": {

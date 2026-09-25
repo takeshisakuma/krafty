@@ -429,6 +429,7 @@ ready.
 | 0.16.0 | 26 design-token audit (colours, fonts, radii, shadows) — shipped |
 | 0.17.0 | Hardening + small checks: panel dock against page CSS, outline `!important`, CSS `background-image` waste, unsupported inline `style`, og:image load failure, alt remeasure, https leftovers harness, panel focus/arrow keys — shipped |
 | 0.17.1 | Popup width cap: stop the toolbar menu hitting Chrome’s 800px ceiling (long QR URL / font zoom on some Macs) — shipped |
+| 0.18.0 | 27 squint test — a blur lens beside Brightness; small, so it goes on its own |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
@@ -1280,6 +1281,38 @@ metrics check against the stack's fallback, and lists the tokens for
 judgement. Soft-capped at 4000 visible elements so a huge DOM cannot freeze
 the tab. Not a popup utility: it has to read the page's computed styles, so
 it is a checker with a command like the others.
+
+### 27. The squint test — built, waiting for 0.18.0
+
+Asked 2026-09-25. The designer's old trick of narrowing the eyes at a layout
+until the text goes and only the masses are left: what stands out first,
+whether the primary action is the thing the eye lands on, whether the
+hierarchy survives without the words. A lens, not a check — the same kind
+of thing as the Brightness Checker, and built the same way.
+
+It fits the line this tool draws because it decides nothing. The judgement
+is the reviewer's; the tool only takes the detail away. The version that
+would not fit is the one that scores it — a "visual hierarchy" number is
+the single score declined below, and would be a guess presented as a
+measurement.
+
+The mechanism is the brightness screen with `blur()` in place of
+`grayscale()`: a fixed screen with `backdrop-filter`, below the panels and
+the alt labels, `pointer-events: none`. Everything item 17 learned carries
+over unchanged — no `filter` on `<body>`, so no fixed panel is re-anchored,
+and the tool's own panels stay sharp while the page blurs. Its own screen
+rather than a stronger brightness screen, so the two combine: squint is
+often done in monochrome too, and two stacked screens compose (the upper
+one's backdrop is what the lower one has already greyed) without either
+knowing about the other — the lesson of item 17 again.
+
+Blur is a fixed 6px. Enough that 16px body text stops being readable and a
+heading or a button is still a shape; a strength control waits until
+someone asks for one. The cost worth watching is scrolling on a heavy page,
+since the whole viewport is re-blurred on every frame.
+
+Built 2026-09-25 as the Squint Check, in the "Show the page" group beside
+Brightness.
 
 ## Deferred, with reasons
 

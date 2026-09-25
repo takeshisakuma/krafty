@@ -203,6 +203,32 @@ $alertColor: #f00;
   }
 }
 
+/* --- squint checker --- */
+
+#js-kraftySquintScreen.kraftySquintScreen {
+  display: none;
+}
+
+.kraftySquintChecker {
+  #js-kraftySquintScreen.kraftySquintScreen {
+    display: block;
+    position: fixed;
+    inset: 0;
+
+    /* Enough that body text stops being readable while a heading or a
+       button is still a shape. The brightness screen's reasoning applies
+       unchanged - see js/squintCheck.js. */
+    backdrop-filter: blur(6px);
+
+    /* The brightness screen's layer. With both on, whichever was added
+       later sits on top and works on what the other has already drawn, so
+       the page ends up blurred and grey in either order. */
+    z-index: 2147483645;
+
+    pointer-events: none;
+  }
+}
+
 /* --- pointing at a flagged element (item 23) --- */
 
 /* Drawn over the page, not inside a panel, so these are top-level rather than
