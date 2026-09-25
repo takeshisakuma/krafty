@@ -36,6 +36,9 @@ const CASES = [
 
   /* Exceptions that the generic rules would otherwise flag. */
   ["dl > div > dt is valid", false, `<dl><div><dt data-t>x</dt><dd>y</dd></div></dl>`],
+  ["dl > div > p is invalid", true, `<dl><div><p data-t>x</p></div></dl>`],
+  ["dl > div > nested div is invalid", true, `<dl><div><dt>x</dt><dd>y</dd><div data-t></div></div></dl>`],
+  ["dl mixing dt and div is invalid", true, `<dl><dt>x</dt><dd>y</dd><div data-t><dt>a</dt><dd>b</dd></div></dl>`],
   ["map > div > area is valid", false, `<map name="m"><div><area data-t></div></map>`],
   ["div > custom element is valid", false, `<div><my-widget data-t>x</my-widget></div>`],
   ["span > custom element is valid", false, `<span><my-widget data-t>x</my-widget></span>`],
@@ -43,6 +46,20 @@ const CASES = [
   ["div > link[rel=preload] is valid", false, `<div><link rel="preload" as="image" href="/x.png" data-t></div>`],
   ["div > meta is invalid", true, `<div><meta name="x" data-t></div>`],
   ["div > style is invalid", true, `<div><style data-t></style></div>`],
+
+  /* Newer elements that belong in flow / phrasing. */
+  ["div > search is valid", false, `<div><search data-t>x</search></div>`],
+  ["search > form is valid", false, `<search><form data-t>x</form></search>`],
+  ["div > hgroup is valid", false, `<div><hgroup data-t><h1>x</h1></hgroup></div>`],
+  ["hgroup > h1 is valid", false, `<hgroup><h1 data-t>x</h1></hgroup>`],
+  ["hgroup > div is invalid", true, `<hgroup><div data-t>x</div></hgroup>`],
+  ["div > menu is valid", false, `<div><menu data-t><li>x</li></menu></div>`],
+  ["menu > li is valid", false, `<menu><li data-t>x</li></menu>`],
+  ["menu > div is invalid", true, `<menu><div data-t>x</div></menu>`],
+  ["div > slot is valid", false, `<div><slot data-t>x</slot></div>`],
+  ["span > slot is valid", false, `<span><slot data-t>x</slot></span>`],
+  ["select > button is valid", false, `<select><button data-t type="button">x</button></select>`],
+  ["div > selectedcontent is invalid", true, `<div><selectedcontent data-t></selectedcontent></div>`],
 
   /* Foreign content. The walk covers every element in the body, including
      the inside of inline SVG and MathML, where several names collide with

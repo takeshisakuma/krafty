@@ -30,25 +30,29 @@
   const plus = (list, added) => list.concat(added);
 
   const FLOW = split(
-    "article section nav aside h1 h2 h3 h4 h5 h6 header footer address p hr" +
-      " pre blockquote ol ul dl figure div main a em strong small s cite q dfn" +
-      " abbr data time code var samp kbd sub sup i b u mark ruby bdi bdo span" +
-      " br wbr ins del picture img iframe embed object video audio map math" +
-      " svg table form label input button select datalist textarea keygen" +
-      " output progress meter fieldset details dialog script noscript" +
-      " template canvas"
+    "article section nav aside h1 h2 h3 h4 h5 h6 hgroup header footer address" +
+      " p hr pre blockquote ol ul menu dl figure search div main a em strong" +
+      " small s cite q dfn abbr data time code var samp kbd sub sup i b u mark" +
+      " ruby bdi bdo span br wbr ins del picture img iframe embed object video" +
+      " audio map math svg table form label input button select datalist" +
+      " textarea keygen output progress meter fieldset details dialog script" +
+      " noscript template canvas slot"
   );
 
   const PHRASING = split(
     "a em strong small s cite q dfn abbr data time code var samp kbd sub sup" +
       " i b u mark ruby bdi bdo span br wbr ins del picture img iframe embed" +
       " object video audio map math svg label input button select datalist" +
-      " textarea keygen output progress meter script noscript template canvas"
+      " textarea keygen output progress meter script noscript template canvas" +
+      " slot selectedcontent"
   );
 
   const HEADINGS = split("h1 h2 h3 h4 h5 h6");
+  /* Heading content includes hgroup; keep HEADINGS as the h1–h6 set used for
+     parents that only allow those, not the hgroup wrapper itself. */
+  const HEADING_CONTENT = plus(HEADINGS, ["hgroup"]);
   const SECTIONING = plus(
-    HEADINGS,
+    HEADING_CONTENT,
     split("article section nav aside header footer main")
   );
 
@@ -76,7 +80,7 @@
   model(
     split(
       "body article section nav aside main blockquote li dd figcaption div" +
-        " dialog td"
+        " dialog td search"
     ),
     FLOW
   );
@@ -92,11 +96,14 @@
     ),
     PHRASING
   );
-  model(split("ol ul"), split("li script template"));
+  /* Zero or more p, one h1–h6, zero or more p; flat table cannot enforce
+     the single heading, only the permitted child names. */
+  model(["hgroup"], plus(HEADINGS, split("p script template")));
+  model(split("ol ul menu"), split("li script template"));
   model(["dl"], split("dt dd div script template"));
   model(["figure"], plus(FLOW, ["figcaption"]));
   model(["details"], plus(FLOW, ["summary"]));
-  model(split("summary legend"), plus(PHRASING, HEADINGS));
+  model(split("summary legend"), plus(PHRASING, HEADING_CONTENT));
   model(["fieldset"], plus(FLOW, ["legend"]));
   model(["form"], without(FLOW, ["form"]));
   model(["label"], without(PHRASING, ["label"]));
@@ -112,15 +119,19 @@
   model(["colgroup"], split("col template"));
   model(split("thead tbody tfoot"), split("tr script template"));
   model(["tr"], split("th td script template"));
-  model(["select"], split("optgroup option hr script template"));
-  model(["optgroup"], split("option script template"));
+  /* Customizable <select> also allows a button, div wrappers, and noscript. */
+  model(
+    ["select"],
+    split("optgroup option hr script template button div noscript")
+  );
+  model(["optgroup"], split("option script template legend noscript div"));
   model(["datalist"], plus(PHRASING, ["option"]));
 
   /* Void and text-only elements: any child element is a markup error. */
   model(
     split(
       "hr br wbr img iframe embed param source track area col input textarea" +
-        " keygen option script"
+        " keygen option script selectedcontent"
     ),
     []
   );
@@ -142,13 +153,41 @@
     }
 
     const parent = parentElement.tagName.toLowerCase();
+    const child = element.tagName.toLowerCase();
+    const grandparent =
+      parentElement.parentElement?.tagName.toLowerCase() ?? "";
+
+    /* A div that is a direct child of dl may only wrap dt/dd groups (plus
+       script-supporting elements) — not ordinary flow content. */
+    if (parent === "div" && grandparent === "dl") {
+      const dlDivAllowed = split("dt dd script template");
+
+      if (dlDivAllowed.includes(child)) {
+        return null;
+      }
+
+      return { parent, child, allowed: dlDivAllowed };
+    }
+
     const allowed = MODELS[parent];
 
     if (!allowed) {
       return null;
     }
 
-    const child = element.tagName.toLowerCase();
+    /* dl is Either/Or: direct dt/dd groups, or div wrappers — not both.
+       When mixed, flag the div wrappers (the special mode) and leave the
+       classic dt/dd groups alone, so one conflict does not paint every term. */
+    if (parent === "dl" && child === "div") {
+      const hasDtDd = [...parentElement.children].some((el) => {
+        const name = el.tagName.toLowerCase();
+        return name === "dt" || name === "dd";
+      });
+
+      if (hasDtDd) {
+        return { parent, child, allowed: split("dt dd script template") };
+      }
+    }
 
     if (allowed.includes(child)) {
       return null;
@@ -157,15 +196,6 @@
     /* Autonomous custom elements are flow and phrasing content, so they are
        valid nearly anywhere. */
     if (child.includes("-")) {
-      return null;
-    }
-
-    /* A dl may wrap each dt/dd group in a div. */
-    if (
-      (child === "dt" || child === "dd") &&
-      parent === "div" &&
-      parentElement.parentElement?.tagName.toLowerCase() === "dl"
-    ) {
       return null;
     }
 

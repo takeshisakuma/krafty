@@ -789,6 +789,17 @@ links them, so a rename would have left the review quietly missing a
 checker. The three that only draw over the page have no `panelId`, and a
 test holds that they build no panel either.
 
+### Alerts-only review — recorded, not built
+
+Asked 2026-08-04. The toolbar menu has grown; a director sometimes wants
+only the high-severity findings in one place, not every note and not the
+overlays. The demand is real, but the shape is an extension of item 15
+above, not a new checker and not a score: each reporting panel already
+splits `alert` from `note`, so the review could offer alerts only (or a
+mode that copies those). A separate menu entry for an “important check”
+would make the menu problem worse. Wait until everyday use of the full
+review feels too noisy before building it.
+
 ### 16. Table header cells — done
 
 A `table` with no `th` at all, and a `th` with no `scope` where the table
