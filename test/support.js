@@ -127,6 +127,24 @@ function serveOnce(body, options = {}) {
 }
 
 /**
+ * Close the browser, tolerating Windows' refusal to delete the throwaway
+ * profile. Chrome can still hold a file in it for a moment after exit, and
+ * Puppeteer's cleanup then throws EPERM or EBUSY - which failed a leftovers
+ * test whose assertions had already passed. What is left behind is a temp
+ * directory, not a result, so it is not the test's to fail on.
+ *
+ * @param {import("puppeteer").Browser} browser
+ */
+async function closeBrowser(browser) {
+  try {
+    await browser.close();
+  } catch (error) {
+    const code = /** @type {NodeJS.ErrnoException} */ (error).code;
+    if (code !== "EPERM" && code !== "EBUSY") throw error;
+  }
+}
+
+/**
  * Open a page with the stylesheet and the named checkers already injected,
  * hand it to the caller, and close the browser afterwards.
  *
@@ -220,7 +238,7 @@ async function withPage(
        finally close the browser before it settles. */
     return await run(page);
   } finally {
-    await browser.close();
+    await closeBrowser(browser);
     server?.close();
   }
 }
@@ -282,4 +300,12 @@ async function clickShadow(page, hostSelector, innerSelector) {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
-module.exports = { withPage, SCRIPTS, messages, shadowBox, hoverShadow, clickShadow };
+module.exports = {
+  withPage,
+  closeBrowser,
+  SCRIPTS,
+  messages,
+  shadowBox,
+  hoverShadow,
+  clickShadow,
+};
