@@ -430,6 +430,7 @@ ready.
 | 0.17.0 | Hardening + small checks: panel dock against page CSS, outline `!important`, CSS `background-image` waste, unsupported inline `style`, og:image load failure, alt remeasure, https leftovers harness, panel focus/arrow keys — shipped |
 | 0.17.1 | Popup width cap: stop the toolbar menu hitting Chrome’s 800px ceiling (long QR URL / font zoom on some Macs) — shipped |
 | 0.18.0 | 27 squint test — a blur lens beside Brightness · Nest Check content models brought current (hgroup, menu, search, slot, customizable `select`, `dl` div wrappers) — shipped |
+| 0.18.1 | Fixes: alt labels no longer rebuilt under the pointer (a label open on hover snapped shut), alt watchers stopped on toggle-off (labels came back on scroll/load), popup QR moved to its own view so the menu fits Chrome’s 600px height — shipped |
 
 0.10.0 starts with a debt: item 19 was committed after 0.9.0 was submitted
 and is not in the build under review, so it ships whatever else does. The
