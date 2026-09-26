@@ -95,6 +95,9 @@ declare var kraftyEscapeBound: boolean | undefined;
 /** Generation token for the image checker's async background probes. */
 declare var kraftyImageScan: number | undefined;
 
+/** Stops the alt checker's watchers from the injection that started them. */
+declare var kraftyAltStop: (() => void) | undefined;
+
 /* checkers.js, shared by the popup and the service worker. */
 interface Checker {
   /** Element id of the popup button that toggles it. */

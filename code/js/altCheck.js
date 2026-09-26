@@ -52,7 +52,15 @@
   };
 
   clear();
-  stopWatching();
+
+  /* The watchers to stop are the last injection's, not this one's. Every
+     click injects this file again into a fresh scope, so a stopWatching
+     from here only ever saw its own nulls, and the observer and load
+     listener from turning on outlived turning off: scroll an image into
+     view or let one load, and its labels came back on a page with the
+     checker off. So the running injection leaves its stop behind. */
+  globalThis.kraftyAltStop?.();
+  globalThis.kraftyAltStop = undefined;
 
   if (!document.body.classList.toggle(BODY_CLASS)) {
     return;
@@ -74,14 +82,26 @@
     return { text: kraftyMessage("altPresent", [alt]), state: null };
   };
 
+  /* Each image's label, kept across re-measures.
+
+     A re-measure used to remove every label and build them again. The
+     IntersectionObserver below reports every image in view as soon as it is
+     told to watch them, so that happened 150ms after the checker came on,
+     and again on each scroll that brought an image in: a label being read
+     on hover was swapped for a fresh folded one under the pointer, and
+     snapped shut. So a re-measure moves and rewrites the label it already
+     has, and only adds or drops the ones whose image appeared or went. */
+  /** @type {Map<Element, HTMLElement>} */
+  const placed = new Map();
+
   /* Place every label from a fresh measurement of the page. The toggle stays
      outside this so pressing rescan does not turn the checker off - the same
      split the findings panels use (item 14). Lazy load and intersection also
      schedule a re-measure; the button remains for anything those miss. */
   const run = () => {
-    for (const label of document.querySelectorAll(`.${LABEL_CLASS}`)) {
-      label.remove();
-    }
+    /* A label kept for an image that is gone, hidden or clipped this time is
+       dropped at the end; anything still in this set then is stale. */
+    const stale = new Set(placed.values());
 
     const subjects = [
       ...document.querySelectorAll('img, input[type="image"]'),
@@ -226,17 +246,28 @@
       const { text, state } = describe(image);
       const fixed = ridesViewport(image);
 
-      const label = document.createElement("span");
+      const kept = placed.get(image);
+      const label =
+        kept && kept.isConnected ? kept : document.createElement("span");
+      stale.delete(label);
+
       label.className = state ? `${LABEL_CLASS} ${state}` : LABEL_CLASS;
       if (fixed) {
         label.classList.add("kraftyAltFixed");
       }
-      label.textContent = text;
+      if (label.textContent !== text) {
+        label.textContent = text;
+      }
 
       /* The label shows two lines and opens the rest on hover. The same text
          goes in a title so it is reachable without a pointer, and so it can
          be read at all where the stylesheet did not arrive. */
       label.title = text;
+
+      /* Back to the open width for the measurement below, which a kept label
+         was narrowed from last time. Read and rewritten in the same frame,
+         so nothing on screen sees it. */
+      label.style.removeProperty("--kraftyAltWidth");
 
       const box = places[index];
       if (fixed) {
@@ -254,9 +285,21 @@
       /* Appended to the body rather than beside the image, so the coordinates
          resolve against the document instead of whichever ancestor the page
          happens to have positioned. */
-      document.body.appendChild(label);
+      if (label !== kept) {
+        document.body.appendChild(label);
+        placed.set(image, label);
+      }
       labels.push({ label, box });
     });
+
+    for (const label of stale) {
+      label.remove();
+    }
+    for (const [image, label] of placed) {
+      if (stale.has(label)) {
+        placed.delete(image);
+      }
+    }
 
     /* Two numbers per label, handed to the stylesheet.
 
@@ -353,6 +396,7 @@
      are known. Not a MutationObserver - that is the Known limitation still
      declined for self-write loops. */
   document.addEventListener("load", onImageLoad, true);
+  globalThis.kraftyAltStop = stopWatching;
 
   intersection = new IntersectionObserver(
     (entries) => {

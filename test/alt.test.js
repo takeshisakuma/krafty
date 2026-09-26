@@ -118,33 +118,54 @@ test("alt checker", async (t) => {
             : "";
         });
 
-        await page.hover(".kraftyAltContent");
+        /* Listened for rather than looked up, and the listener is in place
+           before the pointer moves.
 
-        /* What is actually running, rather than a frame caught part way.
-
-           Sampling the height was tried and abandoned. A transition is
+           Sampling the height was tried first and abandoned. A transition is
            sampled once per rendered frame, so reading it in a tight loop
            starves the renderer and returns the same number for hundreds of
            reads and then the final one - indistinguishable from an
-           animation that never ran. Spacing the reads did not fix it
-           either: the growth here finishes inside about 60ms, and the
-           pointer can take longer than that to register. The code was right
-           and the measurement was wrong, twice.
+           animation that never ran.
 
-           getAnimations reports the transition itself, which is the thing
-           being claimed. It is present or it is not. */
-        const running = await page.evaluate(() => {
+           getAnimations after the hover came next, and failed the same way
+           from the other side under a busy suite: the growth finishes inside
+           about 60ms, and the evaluate after page.hover could arrive once it
+           was over and find nothing. The code was right and the measurement
+           was wrong, three times.
+
+           transitionrun is queued when the transition is created, so it is
+           reported however late the test gets round to asking. The event
+           names only the property, so the duration is read from the computed
+           style of the hover rule that started it. */
+        await page.evaluate(() => {
           const label = document.querySelector(".kraftyAltContent");
-          if (!label) return [];
+          if (!(label instanceof HTMLElement)) return;
 
-          return label.getAnimations().map((animation) => ({
-            property:
-              animation instanceof CSSTransition
-                ? animation.transitionProperty
-                : "",
-            duration: Number(animation.effect?.getTiming().duration ?? 0),
-          }));
+          /** @type {{ property: string, duration: number }[]} */
+          const seen = [];
+          /** @type {any} */ (window).kraftyTestTransitions = seen;
+
+          label.addEventListener("transitionrun", (event) => {
+            const style = getComputedStyle(label);
+            const properties = style.transitionProperty
+              .split(",")
+              .map((part) => part.trim());
+            const durations = style.transitionDuration
+              .split(",")
+              .map((part) => part.trim());
+            const index = Math.max(0, properties.indexOf(event.propertyName));
+            const raw = durations[index % durations.length] ?? "0s";
+
+            seen.push({
+              property: event.propertyName,
+              duration: raw.endsWith("ms")
+                ? parseFloat(raw)
+                : parseFloat(raw) * 1000,
+            });
+          });
         });
+
+        await page.hover(".kraftyAltContent");
 
         /* Waited out rather than slept through. A fixed pause was enough
            alone and not enough with the rest of the suite running beside
@@ -164,6 +185,11 @@ test("alt checker", async (t) => {
           previous = now;
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
+
+        /** @type {{ property: string, duration: number }[]} */
+        const running = await page.evaluate(
+          () => /** @type {any} */ (window).kraftyTestTransitions ?? []
+        );
 
         return { closed, target, running, open };
       }
@@ -489,5 +515,76 @@ test("alt checker", async (t) => {
     assert.strictEqual(after.labels, 0);
     assert.strictEqual(after.rescan, false);
     assert.strictEqual(after.bodyClass, false);
+  });
+
+  await t.test("stays off when an image loads after toggling off", async () => {
+    /* Each click injects the file into a fresh scope, so the watchers the
+       first click started were out of reach of the second: an image loading
+       or scrolling into view after "off" put its labels back. */
+    const after = await withPage(
+      {
+        html: `<img src="${PIXEL}" alt="first" width="80" height="80">`,
+        checkers: ["altCheck"],
+        width: 1280,
+        height: 900,
+      },
+      async (page) => {
+        await page.evaluate(SCRIPTS.altCheck);
+
+        await page.evaluate((src) => {
+          const image = document.createElement("img");
+          image.alt = "late";
+          image.width = 80;
+          image.height = 80;
+          document.body.appendChild(image);
+          image.src = src;
+        }, PIXEL);
+
+        await page.waitForFunction(() =>
+          [...document.images].every((image) => image.complete)
+        );
+        /* Past the 150ms debounce a stray re-measure would wait out. */
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        return page.evaluate(
+          () => document.querySelectorAll(".kraftyAltContent").length
+        );
+      }
+    );
+
+    assert.strictEqual(after, 0, "labels came back with the checker off");
+  });
+
+  await t.test("keeps the same label across a re-measure", async () => {
+    /* A re-measure used to rebuild every label, and one ran 150ms after
+       turning on because the IntersectionObserver reports what is in view
+       straight away. A label open under the pointer was replaced by a folded
+       one - it snapped shut while being read. */
+    const same = await withPage(
+      {
+        html: `<img src="${PIXEL}" alt="${LONG}" width="200" height="200">`,
+        checkers: ["altCheck"],
+        width: 640,
+        height: 480,
+      },
+      async (page) => {
+        await page.evaluate(() => {
+          /** @type {any} */ (window).kraftyTestLabel =
+            document.querySelector(".kraftyAltContent");
+        });
+
+        await page.click("#js-kraftyAltRescan");
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        return page.evaluate(
+          () =>
+            document.querySelectorAll(".kraftyAltContent").length === 1 &&
+            document.querySelector(".kraftyAltContent") ===
+              /** @type {any} */ (window).kraftyTestLabel
+        );
+      }
+    );
+
+    assert.ok(same, "the label was replaced rather than moved");
   });
 });
