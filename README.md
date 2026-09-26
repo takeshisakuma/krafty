@@ -110,7 +110,7 @@ The squint test, without the squinting. Blurs the page until the text can no lon
 
 ### Open on a phone
 
-Shows a QR code of the current tab's address in the toolbar menu, generated in your own browser — never by sending the URL to a QR service. Scan it once and the phone is on the same page, including staging URLs you would rather not type by hand.
+Press **Open on a phone** in the toolbar menu for a QR code of the current tab's address, generated in your own browser — never by sending the URL to a QR service. Scan it once and the phone is on the same page, including staging URLs you would rather not type by hand.
 
 ## Checkers (Japanese)
 
@@ -216,7 +216,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### スマホで開く
 
-ツールバーメニューに、いま見ているタブのアドレスの QR コードを出します。生成はブラウザ内だけで行い、URL を QR 画像サービスに送ることはありません。ステージングの長いアドレスも、手入力せずにスマホで開けます。
+ツールバーメニューの「スマホで開く」を押すと、いま見ているタブのアドレスの QR コードを出します。生成はブラウザ内だけで行い、URL を QR 画像サービスに送ることはありません。ステージングの長いアドレスも、手入力せずにスマホで開けます。
 
 ## Development
 

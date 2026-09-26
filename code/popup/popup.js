@@ -202,6 +202,31 @@ function showQr(url) {
   }
 }
 
+/* The QR is a view of its own rather than the foot of the menu. Chrome
+   stops an action popup at 600px tall, and the two together measured 700px
+   (760px with a long address), so the code meant for a phone camera came up
+   half behind a scrollbar. Bound before init so it works on a tab the
+   checkers cannot reach, where the QR is still worth having. */
+const menuView = element("js-menuView");
+const qrView = element("js-qrView");
+const qrOpenButton = button("js-qrOpenButton");
+const qrBackButton = button("js-qrBackButton");
+
+qrOpenButton.addEventListener("click", () => {
+  /* Held at the menu's width, so the popup only changes height. */
+  document.body.style.width = `${document.body.offsetWidth}px`;
+  menuView.hidden = true;
+  qrView.hidden = false;
+  qrBackButton.focus();
+});
+
+qrBackButton.addEventListener("click", () => {
+  qrView.hidden = true;
+  menuView.hidden = false;
+  document.body.style.width = "";
+  qrOpenButton.focus();
+});
+
 async function init() {
   /* The QR only needs the tab's address. Resolve it before any scripting so
      a restricted page still gets a code the phone can open (or not). */

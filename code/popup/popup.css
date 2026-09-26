@@ -224,6 +224,54 @@ body {
   outline-offset: -2px;
 }
 
+/* The views swap by the hidden attribute; stated so no display rule on a
+   class can bring a hidden view back. */
+[hidden] {
+  display: none !important;
+}
+
+.qrOpenRow,
+.qrBackRow {
+  margin: 6px 16px 0;
+}
+
+/* Quieter than the review button: it opens a view, it does not act on the
+   page. The arrow says it goes somewhere rather than doing something. */
+.qrOpenButton,
+.qrBackButton {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: #555;
+  cursor: pointer;
+}
+
+.qrOpenButton::after {
+  content: " ▸";
+}
+
+.qrBackButton::before {
+  content: "◂ ";
+}
+
+.qrOpenButton:hover,
+.qrBackButton:hover {
+  background-color: #f2f2f2;
+}
+
+.qrOpenButton:focus-visible,
+.qrBackButton:focus-visible {
+  outline: 2px solid #4d90fe;
+  outline-offset: -2px;
+}
+
 .status {
   margin: 8px 16px 0;
   font-size: 12px;
@@ -254,7 +302,12 @@ body {
   line-height: 1.35;
   color: #555;
   /* Soft wraps alone do not shrink the popup's preferred width; the html
-     max-width above does. This keeps the string inside that cap. */
+     max-width above does. This keeps the string inside that cap.
+
+     And the URL takes no part in the width at all: the QR view is locked
+     to the menu's width when it opens, so the popup does not jump sideways
+     when a long address would have asked for more. */
+  contain: inline-size;
   overflow-wrap: anywhere;
   word-break: break-all;
 }

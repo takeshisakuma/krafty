@@ -108,10 +108,13 @@ test("wiring", async (t) => {
       path.join(code, "popup", "popup.html"),
       "utf8"
     );
-    const ids = [...html.matchAll(/id="(js-\w+Button)"/g)]
-      .map((m) => m[1])
-      /* The review button runs every checker rather than being one. */
-      .filter((id) => id !== "js-reviewButton");
+    /* By class, not by id pattern: the review button runs every checker
+       rather than being one, and the QR view's buttons only switch views. */
+    const ids = [
+      ...html.matchAll(/id="(js-\w+Button)" class="checkerButton\b/g),
+    ].map((m) => m[1]);
+
+    assert.ok(ids.length > 0, "no checker buttons found in popup.html");
 
     assert.deepStrictEqual(
       ids.sort(),

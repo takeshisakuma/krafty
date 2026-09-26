@@ -16,6 +16,11 @@
        title key, so the menu and the panel cannot end up calling the same
        checker two different things. -->
 
+  <!-- Two views, one shown at a time. Chrome cuts an action popup off at
+       600px tall, and the menu with the QR under it measured 700px - the
+       code a phone was meant to scan sat behind a scrollbar. -->
+  <div id="js-menuView" class="view">
+
   <p class="checkerGroup" data-i18n="popupGroupReports">Report findings</p>
 
   <ul class="checkerList">
@@ -42,16 +47,28 @@
     <button type="button" id="js-reviewButton" class="reviewButton" data-i18n="popupReview">Copy the review</button>
   </p>
 
-  <!-- Item 25: not a checker. Needs only the tab URL, generated locally. -->
-  <p class="checkerGroup" data-i18n="popupGroupQr">Open on a phone</p>
-
-  <div class="qrBlock isEmpty" id="js-qrBlock">
-    <canvas id="js-qrCanvas" class="qrCanvas" width="128" height="128" data-i18n-aria="popupQrLabel" aria-label="QR code of this page's address"></canvas>
-    <p id="js-qrUrl" class="qrUrl"></p>
-    <p id="js-qrEmpty" class="qrEmpty" data-i18n="popupQrUnavailable">No address to encode on this tab.</p>
-  </div>
+  <p class="qrOpenRow">
+    <button type="button" id="js-qrOpenButton" class="qrOpenButton" data-i18n="popupGroupQr">Open on a phone</button>
+  </p>
 
   <p id="js-status" class="status" role="status" hidden></p>
+
+  </div>
+
+  <!-- Item 25: not a checker. Needs only the tab URL, generated locally. -->
+  <div id="js-qrView" class="view" hidden>
+    <p class="qrBackRow">
+      <button type="button" id="js-qrBackButton" class="qrBackButton" data-i18n="popupQrBack">Back</button>
+    </p>
+
+    <p class="checkerGroup" data-i18n="popupGroupQr">Open on a phone</p>
+
+    <div class="qrBlock isEmpty" id="js-qrBlock">
+      <canvas id="js-qrCanvas" class="qrCanvas" width="128" height="128" data-i18n-aria="popupQrLabel" aria-label="QR code of this page's address"></canvas>
+      <p id="js-qrUrl" class="qrUrl"></p>
+      <p id="js-qrEmpty" class="qrEmpty" data-i18n="popupQrUnavailable">No address to encode on this tab.</p>
+    </div>
+  </div>
 
   <script src="../checkers.js"></script>
   <script src="qr.js"></script>
