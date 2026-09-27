@@ -98,6 +98,9 @@ declare var kraftyImageScan: number | undefined;
 /** Stops the alt checker's watchers from the injection that started them. */
 declare var kraftyAltStop: (() => void) | undefined;
 
+/** Puts the dummy checker's originals back. The next injection is a fresh scope. */
+declare var kraftyDummyStop: (() => void) | undefined;
+
 /* checkers.js, shared by the popup and the service worker. */
 interface Checker {
   /** Element id of the popup button that toggles it. */

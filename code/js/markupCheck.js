@@ -48,6 +48,12 @@
    stylesheet has already lost the invalid rules - so the check reads
    getAttribute("style") and asks CSS.supports, nothing else.
 
+   A button with no type submits the form it belongs to. A lone one is the
+   ordinary submit control, and reporting it would flag every correct form,
+   so only an extra submitter is listed. A label whose for matches nothing
+   is a reference the document does not keep. A video with no caption track
+   is listed rather than asserted: burned-in captions leave no element.
+
    And none of it shows. That is why it belongs in a tool used to review a
    page that looks finished, rather than being left to a validator nobody
    opens once the layout is right. */
@@ -905,6 +911,104 @@
       }
     }
 
+    /* A button with no type is a submit button. One of them, alone, is how
+       a form is written; the finding is a second control that also submits
+       because nobody said type="button". .type cannot be read for this: a
+       button with no attribute reports its type as "submit". */
+    /** @type {HTMLButtonElement[]} */
+    const typelessSubmitters = [];
+
+    for (const form of document.querySelectorAll("form")) {
+      if (!(form instanceof HTMLFormElement) || form.closest(".kraftyPanel")) {
+        continue;
+      }
+
+      /** @type {HTMLButtonElement[]} */
+      const buttons = [];
+
+      for (const button of document.querySelectorAll("button")) {
+        if (button.closest(".kraftyPanel")) {
+          continue;
+        }
+
+        if (button.form !== form || button.hasAttribute("type")) {
+          continue;
+        }
+
+        buttons.push(button);
+      }
+
+      if (buttons.length === 0) {
+        continue;
+      }
+
+      let otherSubmitter = false;
+
+      for (const control of form.elements) {
+        if (control instanceof HTMLButtonElement) {
+          if (control.hasAttribute("type") && control.type === "submit") {
+            otherSubmitter = true;
+          }
+        } else if (
+          control instanceof HTMLInputElement &&
+          (control.type === "submit" || control.type === "image")
+        ) {
+          otherSubmitter = true;
+        }
+      }
+
+      if (buttons.length === 1 && !otherSubmitter) {
+        continue;
+      }
+
+      typelessSubmitters.push(...buttons);
+    }
+
+    /* for= that resolves to no labelable element. A label wrapped around
+       its control has no for and is not this finding; a duplicated id that
+       the for does hit is the id finding, and control points at the first. */
+    const danglingLabels = [...document.querySelectorAll("label")].filter(
+      (label) => {
+        if (!(label instanceof HTMLLabelElement)) {
+          return false;
+        }
+
+        if (label.closest(".kraftyPanel") || !label.hasAttribute("for")) {
+          return false;
+        }
+
+        return label.control === null;
+      }
+    );
+
+    /* No caption or subtitle track in the markup. kind defaults to
+       subtitles, so a track with no kind counts. Descriptions and chapters
+       do not. Hidden videos are the page as it will be after a rescan. */
+    const uncaptionedVideos = [...document.querySelectorAll("video")].filter(
+      (video) => {
+        if (video.closest(".kraftyPanel")) {
+          return false;
+        }
+
+        if (
+          !video.checkVisibility({
+            contentVisibilityAuto: true,
+            visibilityProperty: true,
+          })
+        ) {
+          return false;
+        }
+
+        return ![...video.querySelectorAll("track")].some((track) => {
+          const kind = (track.getAttribute("kind") ?? "subtitles")
+            .trim()
+            .toLowerCase();
+
+          return kind === "captions" || kind === "subtitles";
+        });
+      }
+    );
+
     /* --- the panel --- */
 
     const { panel, body } = kraftyPanel({
@@ -993,6 +1097,27 @@
       reportText(
         "note",
         kraftyCount("markupStyleInvalid", invalidStyles.length)
+      );
+    }
+
+    if (typelessSubmitters.length > 0) {
+      reportText(
+        "note",
+        kraftyCount("markupButtonSubmits", typelessSubmitters.length)
+      );
+    }
+
+    if (danglingLabels.length > 0) {
+      reportText(
+        "note",
+        kraftyCount("markupLabelDangling", danglingLabels.length)
+      );
+    }
+
+    if (uncaptionedVideos.length > 0) {
+      reportText(
+        "note",
+        kraftyCount("markupVideoNoTrack", uncaptionedVideos.length)
       );
     }
 
@@ -1239,6 +1364,53 @@
           asideClass: "kraftyPanelHint",
           element: entry.element,
         }))
+      );
+    }
+
+    if (typelessSubmitters.length > 0) {
+      listOf(
+        "markupSectionButtons",
+        "markupButtonListLabel",
+        typelessSubmitters.map((button) => ({
+          label: locate(button),
+          aside: accessibleName(button) || undefined,
+          asideClass: "kraftyPanelHint",
+          element: button,
+        }))
+      );
+    }
+
+    if (danglingLabels.length > 0) {
+      listOf(
+        "markupSectionLabels",
+        "markupLabelListLabel",
+        danglingLabels.map((label) => ({
+          label: locate(label),
+          aside: `for="${label.htmlFor}"`,
+          asideClass: "kraftyPanelHint",
+          element: label,
+        }))
+      );
+    }
+
+    if (uncaptionedVideos.length > 0) {
+      listOf(
+        "markupSectionVideos",
+        "markupVideoListLabel",
+        uncaptionedVideos.map((video) => {
+          const src = (
+            video.getAttribute("src") ??
+            video.querySelector("source")?.getAttribute("src") ??
+            ""
+          ).trim();
+
+          return {
+            label: locate(video),
+            aside: src === "" ? undefined : src,
+            asideClass: "kraftyPanelHint",
+            element: video,
+          };
+        })
       );
     }
 

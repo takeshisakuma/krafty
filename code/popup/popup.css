@@ -11,7 +11,8 @@ html {
 
 body {
   margin: 0;
-  padding: 8px 0;
+  /* Sixteen checkers have to stay inside Chrome's 600px popup cap. */
+  padding: 4px 0;
   min-width: 160px;
   max-width: 280px;
   font-family: system-ui, sans-serif;
@@ -28,8 +29,7 @@ body {
 }
 
 /* Which group a checker belongs to answers "which of these do I want"
-   better than the names do: five of them tell you something, three of them
-   show you the page. */
+   better than the names do: one group reports, the other shows the page. */
 .checkerGroup {
   margin: 10px 16px 4px;
   font-size: 11px;
@@ -42,7 +42,9 @@ body {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 6px 16px 6px 8px;
+  /* 3px rather than 6: sixteen checkers plus the review row has to stay
+     inside Chrome's 600px popup cap. See the QR test. */
+  padding: 3px 16px 3px 8px;
   border: 0;
   /* Each checker already had a colour, and it only appeared once the
      pointer was on the button or the checker was running - no help at all
@@ -188,6 +190,42 @@ body {
 .squintCheckButton:hover:not(:disabled),
 .squintCheckButton.active {
   color: #6b5b95;
+}
+
+.tabCheckButton {
+  border-left-color: #9f1239;
+}
+
+.tabCheckButton:hover:not(:disabled),
+.tabCheckButton.active {
+  color: #9f1239;
+}
+
+.targetCheckButton {
+  border-left-color: #a16207;
+}
+
+.targetCheckButton:hover:not(:disabled),
+.targetCheckButton.active {
+  color: #a16207;
+}
+
+.spacingCheckButton {
+  border-left-color: #0369a1;
+}
+
+.spacingCheckButton:hover:not(:disabled),
+.spacingCheckButton.active {
+  color: #0369a1;
+}
+
+.dummyCheckButton {
+  border-left-color: #1d4ed8;
+}
+
+.dummyCheckButton:hover:not(:disabled),
+.dummyCheckButton.active {
+  color: #1d4ed8;
 }
 
 .reviewRow {

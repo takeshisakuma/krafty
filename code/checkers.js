@@ -4,8 +4,10 @@
    service worker.
 
    `panelId` marks the checkers that report findings, which is what the
-   popup's review button collects. The four without one - outline, alt,
-   brightness, squint - draw over the page and have nothing to say in text.
+   popup's review button collects. The six without one - outline, alt,
+   brightness, squint, spacing, dummy - draw over the page and have nothing
+   to say in text. Dummy is among them on purpose: a review must not
+   replace the page it is describing.
 
    Keyboard shortcuts are handled in a service worker, which cannot see the
    popup's script. Keeping a second copy of this table there would drift the
@@ -97,6 +99,24 @@ globalThis.kraftyCheckers = [
     allFrames: false,
   },
   {
+    id: "js-tabCheckButton",
+    panelId: "js-kraftyTabInformation",
+    command: "tab-check",
+    file: "js/tabCheck.js",
+    bodyClass: "kraftyTabChecker",
+    /* A subframe's tab order is a different document's. */
+    allFrames: false,
+  },
+  {
+    id: "js-targetCheckButton",
+    panelId: "js-kraftyTargetInformation",
+    command: "target-check",
+    file: "js/targetCheck.js",
+    bodyClass: "kraftyTargetChecker",
+    /* Sizes belong to the layout of this document. */
+    allFrames: false,
+  },
+  {
     id: "js-outlineCheckButton",
     command: "outline-check",
     file: "js/outlineCheck.js",
@@ -124,6 +144,24 @@ globalThis.kraftyCheckers = [
     bodyClass: "kraftySquintChecker",
     /* One screen over the top document blurs every frame under it. */
     allFrames: false,
+  },
+  {
+    id: "js-spacingCheckButton",
+    command: "spacing-check",
+    file: "js/spacingCheck.js",
+    bodyClass: "kraftySpacingChecker",
+    /* Each frame has its own text, so the stress has to be applied in it. */
+    allFrames: true,
+  },
+  {
+    id: "js-dummyCheckButton",
+    command: "dummy-check",
+    file: "js/dummyCheck.js",
+    bodyClass: "kraftyDummyChecker",
+    /* Each frame has its own text and pictures. A frame this cannot be
+       injected into is covered from the outside, which is the one case
+       the script can see and not edit. */
+    allFrames: true,
   },
 ];
 

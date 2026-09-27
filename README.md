@@ -8,11 +8,11 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Twelve checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
+Sixteen checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
-Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, an og:image smaller than sharing platforms want, and an og:image URL that does not load.
+Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a viewport that asks the browser not to zoom, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, an og:image smaller than sharing platforms want, and an og:image URL that does not load.
 
 On a multilingual site it checks the hreflang set too: whether it names the page it is on, since one that does not is ignored entirely, and whether the codes are language codes at all — `jp` and `cn` are countries, and Japanese and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported; one language needs none.
 
@@ -51,6 +51,8 @@ And links or buttons with no accessible name at all: an icon `<button>` or an `<
 And contradictions in the ARIA already on the page: an interactive `role` on an element that cannot take focus, so the control it promises cannot be reached; `aria-hidden` on something still in the tab order, which takes focus and is then announced as nothing; a `tabindex` above zero, which reorders the whole document's tab sequence. Each is a statement the markup makes twice and disagrees with itself.
 
 And inline `style` attributes with declarations the browser does not support — typos such as `colr` or `flexx` that CSSOM drops silently. SVG exporter leftovers are left alone.
+
+And a `button` in a form with no `type`, when it is not that form's only submitter — a button with no type submits, and a lone one is the ordinary submit control, so it is not reported. A `label` whose `for` matches no control. And `video` elements with no caption track in the markup, listed rather than asserted, because captions burned into the picture leave no element to find.
 
 Each finding is listed underneath as well as counted, and each list copies in one go. The fields, the icons and the nameless links have nothing to be called — that is the defect — so each row is built from whatever the element does carry: its id, its name, a link's address, its class, or the parent's where it has none of its own. An unlabelled field shows its placeholder beside it, which is both the quickest way to find it on the page and, usually, the reason the label was left off.
 
@@ -108,6 +110,24 @@ Turns the page monochrome, which shows up anything that relies on colour alone t
 
 The squint test, without the squinting. Blurs the page until the text can no longer be read, leaving only the masses: what the eye lands on first, and whether the main action is it. Krafty's own panels stay sharp. Turn Brightness on as well to squint in monochrome.
 
+### Tab Checker
+
+Lists every control Tab reaches, in that order, with its role and name. Whether the order matches the page is not something software can answer, so the list is there to read. A `tabindex` above zero is already reported by the Markup Checker; here it only shows up as a change in the order. Hover a row to box the control on the page, and click to scroll to it.
+
+### Target Checker
+
+Lists buttons and links whose box is smaller than 24 CSS pixels on a side, with the measured size on the row. The size is a fact. It is not a verdict: space around a control can still make a smaller one fine, and that space is not measured. Links sitting in a sentence are left out, because their box is the line of text. Hover a row to box the control, and click to scroll to it.
+
+### Spacing Checker
+
+Widens line, letter, word and paragraph spacing to the point a reader's own stylesheet is allowed to push it, so clipping and overlap can be seen on the page. Krafty does not count them. The panels keep their own spacing.
+
+### Dummy Checker
+
+Replaces the text, field values and pictures on the page with stand-ins of a similar size, so a screenshot does not carry a name, a line of copy or a picture that was not meant to be shared. Spaces are kept, and a wide character stays wide, so lines wrap where they did. Turn it off and the originals come back; they never leave the browser.
+
+A canvas, a video and a frame Krafty cannot open still paint their own pixels, so each is covered with a labelled patch of the same size. An inline drawing is left as drawn. Do not send a form while this is on: the fields are holding stand-ins. Krafty does not count any of it, and its own panels are left alone.
+
 ### Open on a phone
 
 Press **Open on a phone** in the toolbar menu for a QR code of the current tab's address, generated in your own browser — never by sending the URL to a QR service. Scan it once and the phone is on the same page, including staging URLs you would rather not type by hand.
@@ -118,11 +138,11 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。12のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。16のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
-head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image、読み込めない og:image。
+head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、拡大を禁じる viewport、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image、読み込めない og:image。
 
 多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその指定はすべて無視されます）、そして値が言語コードとして成立しているか。`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が無いこと自体は報告しません。単一言語のサイトには不要だからです。
 
@@ -161,6 +181,8 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 そして、すでに付いている ARIA の中の矛盾。フォーカスできない要素に付いた操作用の `role`（約束した操作に到達できません）、タブ順に残ったままの `aria-hidden`（フォーカスが当たるのに何も読み上げられません）、0 より大きい `tabindex`（文書全体のタブ順を組み替えます）。いずれもマークアップが二重に、食い違う主張をしているものです。
 
 そして、ブラウザが解釈できないインライン `style`——`colr` や `flexx` のような typo で、CSSOM が黙って落とすもの。SVG 書き出しの残骸は対象外です。
+
+そして、フォーム内の `button` に `type` が無いもの。type の無い button は送信になります。ただし、そのフォームの送信がそれだけのときは、普通の送信ボタンなので報告しません。`for` がどの操作対象も指していない `label`。そして、キャプション用の `track` が無い `video`——焼き込み字幕は要素に残らないので、断定せず一覧にします。
 
 各項目とも、件数だけでなく該当箇所を一覧にします。各一覧はまとめてコピーできます。入力欄・アイコン・無名のリンクは「呼び名が無いこと」自体が問題なので、各行はその要素が持っているもの——id、name、リンクなら遷移先、class、いずれも無ければ親のもの——から組み立てます。入力欄にはプレースホルダを併記します。ページ上で探す手がかりとして最も速く、そしてたいてい、それがラベルを省いた理由でもあるからです。
 
@@ -213,6 +235,24 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 ### ぼかしチェッカー
 
 目を細めてレイアウトを見る「スクイントテスト」を、目を細めずに行えます。文字が読めなくなるまでページをぼかし、面の強弱だけを残すので、最初に目に入るものは何か、それが主要なボタンになっているかを確かめられます。Krafty のパネルはぼかしません。明度チェックと併用すると、モノクロでぼかした状態になります。
+
+### タブ順チェッカー
+
+Tab が辿る操作対象を、その順に、役割と名前つきで並べます。その順がページの意味と合うかは、ソフトウェアには答えられません。一覧として読んでご判断ください。`tabindex` が 0 より大きいものはマークアップチェッカーが既に指摘します。ここでは、順番が入れ替わることとして見えます。行にカーソルを合わせるとページ上の要素に枠が描かれ、クリックするとそこまでスクロールします。
+
+### 操作対象チェッカー
+
+ボタンとリンクのうち、一辺が 24 CSS ピクセルより小さいものを、測った寸法つきで並べます。寸法は事実です。合否ではありません。周囲の間隔で足りていることもあるので、間隔は測りません。文中のリンクは対象外です。枠は行の高さそのものだからです。行にカーソルを合わせると操作対象に枠が描かれ、クリックするとそこまでスクロールします。
+
+### 文字間隔チェッカー
+
+行間・字間・語間・段落間を、利用者がスタイルを上書きした状態まで広げます。はみ出しや重なりは、その画面を見れば分かります。件数は出しません。Krafty のパネルは自身の間隔のままです。
+
+### ダミーチェッカー
+
+キャプチャに名前や文章、画像が写り込まないよう、テキストと入力値と画像を、近い大きさの仮のものに差し替えます。空白はそのまま、全角は全角のままなので、折り返しは動きません。もう一度押すと元に戻ります。差し替え前の中身はブラウザの外に出ません。
+
+キャンバス、動画、開けないフレームは、中の画素を書き換えられないので、同じ大きさのラベル付きパッチで覆います。インラインの図形はそのままです。入力欄は仮の値になるので、フォームは戻してから送信してください。件数は出さず、Krafty のパネルには手を付けません。
 
 ### スマホで開く
 

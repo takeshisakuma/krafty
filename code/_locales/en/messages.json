@@ -101,6 +101,38 @@
     "message": "Squint Check",
     "description": "Menu label for the checker that blurs the page (the squint test)."
   },
+  "checkerTab": {
+    "message": "Tab Check",
+    "description": "Heading of the tab order panel, and its menu label."
+  },
+  "checkerTarget": {
+    "message": "Target Check",
+    "description": "Heading of the small-target panel, and its menu label."
+  },
+  "checkerSpacing": {
+    "message": "Spacing Check",
+    "description": "Menu label for the checker that widens text spacing. It has no panel."
+  },
+  "checkerDummy": {
+    "message": "Dummy Check",
+    "description": "Menu label for the checker that swaps page content for stand-ins. It has no panel."
+  },
+  "dummyCoverCanvas": {
+    "message": "canvas",
+    "description": "Label on the patch that covers a canvas while Dummy Check is on."
+  },
+  "dummyCoverVideo": {
+    "message": "video",
+    "description": "Label on the patch that covers a video while Dummy Check is on."
+  },
+  "dummyCoverFrame": {
+    "message": "frame",
+    "description": "Label on the patch that covers a frame Dummy Check cannot open."
+  },
+  "dummyCoverFile": {
+    "message": "file",
+    "description": "Label on the patch that covers a file input's chosen name while Dummy Check is on."
+  },
   "popupGroupReports": {
     "message": "Report findings",
     "description": "Heading over the checkers that open a panel and say what they found."
@@ -496,6 +528,72 @@
   "markupStyleListLabel": {
     "message": "Not supported as written",
     "description": "Label above the list of invalid inline style declarations. Each row shows the bad property: value."
+  },
+  "markupButtonSubmits": {
+    "message": "$count$ buttons in a form have no type, so each one submits",
+    "description": "Only when the form has another submitter. A lone submit button with no type is the ordinary case and is not reported.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupButtonSubmitsOne": {
+    "message": "1 button in a form has no type, so it submits",
+    "description": "Used when exactly one extra button submits because it has no type."
+  },
+  "markupSectionButtons": {
+    "message": "Buttons that submit",
+    "description": "Heading of the section listing buttons that submit because they have no type."
+  },
+  "markupButtonListLabel": {
+    "message": "No type, so they submit",
+    "description": "Label above the list of buttons with no type attribute in a form that already has a submitter."
+  },
+  "markupLabelDangling": {
+    "message": "$count$ labels point at no control",
+    "description": "A label's for attribute matches no labelable element.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupLabelDanglingOne": {
+    "message": "1 label points at no control",
+    "description": "Used when exactly one label's for attribute matches nothing."
+  },
+  "markupSectionLabels": {
+    "message": "Labels pointing nowhere",
+    "description": "Heading of the section listing labels whose for attribute matches nothing."
+  },
+  "markupLabelListLabel": {
+    "message": "for matches nothing",
+    "description": "Label above the list of labels whose for attribute does not match a control. Each row shows the for value."
+  },
+  "markupVideoNoTrack": {
+    "message": "$count$ videos have no caption track in the markup. Burned-in captions would not show up here",
+    "description": "Listed, not asserted: a video can carry captions burned into the picture.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "markupVideoNoTrackOne": {
+    "message": "1 video has no caption track in the markup. Burned-in captions would not show up here",
+    "description": "Used when exactly one video has no captions or subtitles track."
+  },
+  "markupSectionVideos": {
+    "message": "Videos",
+    "description": "Heading of the section listing videos with no caption track."
+  },
+  "markupVideoListLabel": {
+    "message": "No caption track",
+    "description": "Label above the list of videos that have no captions or subtitles track in the markup."
   },
   "checkerImage": {
     "message": "Image Check",
@@ -1029,6 +1127,52 @@
     "message": "Copy the landmarks",
     "description": "Copy button label for the nested landmark list."
   },
+  "tabReviewNote": {
+    "message": "This is the order Tab walks, with each control's role and name. Whether that order matches the page is for you to read.",
+    "description": "Explains why the tab order is drawn rather than judged."
+  },
+  "tabOutlineLabel": {
+    "message": "The tab order",
+    "description": "Label above the list of focusable controls."
+  },
+  "tabNoName": {
+    "message": "(no name)",
+    "description": "Shown for a focusable control that carries no accessible name."
+  },
+  "tabNone": {
+    "message": "Nothing on this page can be reached with Tab",
+    "description": "No element is in the sequential focus order."
+  },
+  "copyTabOrder": {
+    "message": "Copy the tab order",
+    "description": "Copy button label for the tab order list."
+  },
+  "targetUndersized": {
+    "message": "$count$ controls are smaller than 24 CSS pixels on a side",
+    "description": "A measurement, not a verdict: the control's box is under 24px on at least one side. Spacing around it is not judged.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "targetUndersizedOne": {
+    "message": "1 control is smaller than 24 CSS pixels on a side",
+    "description": "Used when exactly one control is under 24px on a side."
+  },
+  "targetSectionList": {
+    "message": "The small controls",
+    "description": "Heading of the section listing controls under 24 CSS pixels."
+  },
+  "targetListLabel": {
+    "message": "Smaller than 24px on a side",
+    "description": "Label above the list of small controls. Each row shows the measured size."
+  },
+  "targetReviewNote": {
+    "message": "Links sitting in a sentence are left out. Space around a control is not measured, so a small one can still be fine.",
+    "description": "Why the list is not a pass or fail against the target-size rule."
+  },
   "checkNoindex": {
     "message": "robots contains noindex: this page asks not to be listed in search results",
     "description": "The most consequential thing to find on a production page."
@@ -1056,6 +1200,10 @@
   "checkViewportMissing": {
     "message": "No viewport: the page will not scale on phones",
     "description": "Meta viewport absent."
+  },
+  "checkViewportLocksZoom": {
+    "message": "viewport asks the browser not to zoom",
+    "description": "user-scalable=no, user-scalable=0, or maximum-scale of 1 or less. The page requests it; some browsers ignore the request."
   },
   "checkCanonicalMissing": {
     "message": "No canonical",
@@ -1257,6 +1405,22 @@
     "message": "Toggle Squint Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
   },
+  "commandTabCheck": {
+    "message": "Toggle Tab Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandTargetCheck": {
+    "message": "Toggle Target Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandSpacingCheck": {
+    "message": "Toggle Spacing Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandDummyCheck": {
+    "message": "Toggle Dummy Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
   "manualTitle": {
     "message": "Krafty Manual",
     "description": "Heading and browser tab title of the manual page."
@@ -1266,7 +1430,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualHeadBody": {
-    "message": "Report what can be checked automatically, preview how the page appears in search results and when shared, and list every value in the head.",
+    "message": "Report what can be checked automatically, including a viewport that asks the browser not to zoom. Preview how the page appears in search results and when shared, and list every value in the head.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualNestTitle": {
@@ -1290,7 +1454,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualMarkupBody": {
-    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, iframes and embeds with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Hover a finding to box an element on the page and click to scroll to it — aggregate findings point at the first instance.",
+    "message": "Report markup that is wrong in ways the page does not show: ids used more than once, tables with no header cells, form fields and links and buttons with nothing naming them, iframes and embeds with nothing naming them, inline SVGs that are neither named nor hidden, and contradictions in a page's ARIA. Also a form button with no type when it is not the only submitter, a label whose for points nowhere, and videos with no caption track — that last one listed rather than asserted, because burned-in captions leave no element. Hover a finding to box an element on the page and click to scroll to it — aggregate findings point at the first instance.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageTitle": {
@@ -1355,6 +1519,38 @@
   },
   "manualSquintBody": {
     "message": "Blur the page until the text can no longer be read, so what stands out first — and whether the main action is it — can be judged without the words. Combine with Brightness to squint in monochrome.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTabTitle": {
+    "message": "Tab Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTabBody": {
+    "message": "List every control Tab reaches, in that order, with its role and name. Whether the order matches the page is for you to read. Hover a row to box the control and click to scroll to it.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTargetTitle": {
+    "message": "Target Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualTargetBody": {
+    "message": "List buttons and links whose box is smaller than 24 CSS pixels on a side, with the measured size. Inline links in a sentence are left out, and the size is not a verdict — space around a control can still make it fine.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSpacingTitle": {
+    "message": "Spacing Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualSpacingBody": {
+    "message": "Widen line, letter, word and paragraph spacing to the point where a reader's own stylesheet would, so clipping and overlap can be seen. Krafty does not count them.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualDummyTitle": {
+    "message": "Dummy Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualDummyBody": {
+    "message": "Swap text, field values and pictures for stand-ins of a similar size, so a screenshot does not carry a name, a line or a picture you did not mean to share. Spaces stay, and wide characters stay wide, so the lines wrap where they did. Canvas, video and a frame Krafty cannot open are covered with a labelled patch of the same size, because those pixels cannot be edited. An inline drawing is left as it is. Turn it off before sending a form: the fields hold stand-ins until you do, and then the page is as it was. Krafty does not count any of this.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualShortcutsTitle": {

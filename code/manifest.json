@@ -1,6 +1,6 @@
 {
   "name": "__MSG_extensionName__",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -56,6 +56,18 @@
     },
     "squint-check": {
       "description": "__MSG_commandSquintCheck__"
+    },
+    "tab-check": {
+      "description": "__MSG_commandTabCheck__"
+    },
+    "target-check": {
+      "description": "__MSG_commandTargetCheck__"
+    },
+    "spacing-check": {
+      "description": "__MSG_commandSpacingCheck__"
+    },
+    "dummy-check": {
+      "description": "__MSG_commandDummyCheck__"
     }
   },
   "icons": {

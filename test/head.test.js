@@ -982,6 +982,38 @@ test("head checker", async (t) => {
     assert.strictEqual(state.brokenImg, false, "no blank broken img left in the row");
   });
 
+  await t.test("reports a viewport that asks not to be zoomed", async () => {
+    const locked = await check(
+      `${SOUND_HEAD.replace(
+        'content="width=device-width, initial-scale=1"',
+        'content="width=device-width, initial-scale=1, user-scalable=no"'
+      )}`
+    );
+    const scaled = await check(
+      `${SOUND_HEAD.replace(
+        'content="width=device-width, initial-scale=1"',
+        'content="width=device-width, initial-scale=1, maximum-scale=1"'
+      )}`
+    );
+    const open = await check(SOUND_HEAD);
+
+    assert.strictEqual(matching(locked.findings, /not to zoom/).length, 1);
+    assert.strictEqual(locked.findings.find((f) => /zoom/.test(f.text))?.level, "note");
+    assert.strictEqual(matching(scaled.findings, /not to zoom/).length, 1);
+    assert.strictEqual(matching(open.findings, /not to zoom/).length, 0);
+  });
+
+  await t.test("leaves a viewport that still allows zoom", async () => {
+    const { findings } = await check(
+      `${SOUND_HEAD.replace(
+        'content="width=device-width, initial-scale=1"',
+        'content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"'
+      )}`
+    );
+
+    assert.strictEqual(matching(findings, /not to zoom/).length, 0);
+  });
+
   await t.test("prefers og values on the card when present", async () => {
     const result = await check(
       `${SOUND_HEAD}

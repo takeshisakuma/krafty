@@ -243,8 +243,52 @@
     if (description === null) {
       report("note", "checkDescriptionMissing");
     }
-    if (metaByName("viewport") === null) {
+    const viewport = metaByName("viewport");
+
+    /* user-scalable=no and maximum-scale of 1 or less are the page asking
+       not to be zoomed. A missing viewport is the other finding; this one
+       only runs when a viewport is there to read. */
+    /** @param {string} content */
+    const viewportLocksZoom = (content) => {
+      /** @type {Record<string, string>} */
+      const directives = {};
+
+      for (const part of content.split(",")) {
+        const index = part.indexOf("=");
+
+        if (index === -1) {
+          continue;
+        }
+
+        const key = part.slice(0, index).trim().toLowerCase();
+        const value = part.slice(index + 1).trim().toLowerCase();
+
+        if (key !== "") {
+          directives[key] = value;
+        }
+      }
+
+      const scalable = directives["user-scalable"];
+
+      if (scalable === "no" || scalable === "0") {
+        return true;
+      }
+
+      const max = directives["maximum-scale"];
+
+      if (max === undefined || max === "") {
+        return false;
+      }
+
+      const scale = Number(max);
+
+      return Number.isFinite(scale) && scale <= 1;
+    };
+
+    if (viewport === null) {
       report("note", "checkViewportMissing");
+    } else if (viewportLocksZoom(viewport)) {
+      report("note", "checkViewportLocksZoom");
     }
     if (!documentLang || documentLang.trim() === "") {
       report("note", "checkLangMissing");

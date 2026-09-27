@@ -3,9 +3,10 @@ $alertColor: #f00;
 
 /* This stylesheet only presents what the injected scripts decide on the
    page itself: outline marks, nest highlights, alt labels, the brightness
-   screen, and the pointer boxes. Panel chrome lives in panel.scss and is
-   delivered into each panel's shadow root (item 24), so page CSS cannot
-   restyle it.
+   and squint screens, the spacing stress, the dummy patches, and the
+   pointer boxes. Panel
+   chrome lives in panel.scss and is delivered into each panel's shadow
+   root (item 24), so page CSS cannot restyle it.
 
    The nest checker used to do its own judging here, generating one rule per
    element from a content model map. That is gone: the checker has to explain
@@ -226,6 +227,92 @@ $alertColor: #f00;
     z-index: 2147483645;
 
     pointer-events: none;
+  }
+}
+
+/* --- spacing checker --- */
+
+/* The values WCAG 1.4.12 lets a reader force. !important because a page
+   reset of the same kind is what would make the stress look like a no-op,
+   the same reason the outline rule carries it. The panel host is excluded
+   and then pinned back to normal: line-height and letter-spacing inherit
+   into the shadow tree, and the panel's own stylesheet only sets them on
+   some of its elements. */
+.kraftySpacingChecker {
+  *:not(
+    .kraftyPanel,
+    .kraftyPanel *,
+    .kraftyAltContent,
+    .kraftyAltRescan,
+    .kraftyPointerBox,
+    .kraftyBrightnessScreen,
+    .kraftySquintScreen
+  ) {
+    line-height: 1.5 !important;
+    letter-spacing: 0.12em !important;
+    word-spacing: 0.16em !important;
+  }
+
+  .kraftyPanel {
+    line-height: normal !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+  }
+
+  p {
+    margin-bottom: 2em !important;
+  }
+}
+
+/* --- dummy checker --- */
+
+/* Patches over pixels this script cannot rewrite, and the stand-in text
+   that generated content was showing. The stripe is the signal that the
+   box is a cover, not a grey part of the design. Below the panels, which
+   have to stay usable, and above the page, including a modal that would
+   otherwise paint its canvas over a lower layer. */
+.kraftyDummyMask {
+  position: fixed;
+  z-index: 2147483646;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #e6e6e6;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #e6e6e6,
+    #e6e6e6 8px,
+    #d0d0d0 8px,
+    #d0d0d0 16px
+  );
+
+  &::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    padding: 0 4px;
+    background: #e6e6e6;
+    color: #333;
+    font: 11px/1.4 system-ui, sans-serif;
+  }
+}
+
+.kraftyDummyChecker {
+  [data-krafty-dummy-before]::before {
+    content: var(--krafty-dummy-before) !important;
+  }
+
+  [data-krafty-dummy-after]::after {
+    content: var(--krafty-dummy-after) !important;
+  }
+
+  [data-krafty-dummy-before-image]::before {
+    background-image: var(--krafty-dummy-swatch) !important;
+  }
+
+  [data-krafty-dummy-after-image]::after {
+    background-image: var(--krafty-dummy-swatch) !important;
   }
 }
 

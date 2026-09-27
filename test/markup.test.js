@@ -959,6 +959,72 @@ test("markup checker", async (t) => {
     );
   });
 
+  await t.test("leaves a lone submit button with no type", async () => {
+    const result = await check(`<form><button>Send</button></form>`);
+
+    assert.ok(!result.findings.some((text) => /type/.test(text)));
+    assert.ok(!result.rows.some((row) => /Send/.test(row)));
+  });
+
+  await t.test("lists an extra button that submits because it has no type", async () => {
+    const result = await check(
+      `<form><button type="submit">Send</button><button>Back</button></form>`
+    );
+
+    assert.strictEqual(matchingFindings(result, /no type/).length, 1);
+    assert.ok(result.rows.some((row) => /Back/.test(row)));
+    assert.ok(!result.rows.some((row) => /Send/.test(row)));
+  });
+
+  await t.test("lists every typeless button when several of them submit", async () => {
+    const result = await check(
+      `<form><button>Save</button><button>Cancel</button></form>`
+    );
+
+    assert.match(result.findings.join(" "), /2 buttons/);
+    assert.ok(result.rows.some((row) => /Save/.test(row)));
+    assert.ok(result.rows.some((row) => /Cancel/.test(row)));
+  });
+
+  await t.test("lists a label whose for matches nothing", async () => {
+    const result = await check(`<label for="missing">Name</label>`);
+
+    assert.strictEqual(matchingFindings(result, /points at no control/).length, 1);
+    assert.ok(result.rows.some((row) => /for="missing"/.test(row)));
+  });
+
+  await t.test("leaves a label that reaches its control", async () => {
+    const result = await check(
+      `<label for="name">Name</label><input id="name">`
+    );
+
+    assert.strictEqual(matchingFindings(result, /points at no control/).length, 0);
+  });
+
+  await t.test("lists a video with no caption track, and not one that has one", async () => {
+    const result = await check(`
+      <video id="bare" width="160" height="90"></video>
+      <video id="captioned" width="160" height="90">
+        <track kind="captions" src="c.vtt">
+      </video>
+      <video id="hidden" width="160" height="90" style="display:none"></video>
+    `);
+
+    assert.strictEqual(matchingFindings(result, /caption track/).length, 1);
+    assert.match(result.findings.join(" "), /Burned-in/);
+    assert.ok(result.rows.some((row) => /video#bare/.test(row)));
+    assert.ok(!result.rows.some((row) => /captioned/.test(row)));
+    assert.ok(!result.rows.some((row) => /hidden/.test(row)));
+  });
+
+  await t.test("counts a track with no kind as subtitles", async () => {
+    const result = await check(`
+      <video width="160" height="90"><track src="s.vtt"></video>
+    `);
+
+    assert.strictEqual(matchingFindings(result, /caption track/).length, 0);
+  });
+
   await t.test("leaves nothing behind when toggled off", async () => {
     const after = await withPage(
       { html: `<div id="d"></div><div id="d"></div>`, checkers: ["markupCheck"] },
