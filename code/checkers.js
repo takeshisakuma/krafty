@@ -4,10 +4,11 @@
    service worker.
 
    `panelId` marks the checkers that report findings, which is what the
-   popup's review button collects. The six without one - outline, alt,
-   brightness, squint, spacing, dummy - draw over the page and have nothing
-   to say in text. Dummy is among them on purpose: a review must not
-   replace the page it is describing.
+   popup's review button collects. Five without one - outline, brightness,
+   squint, spacing, dummy - draw over the page and have nothing to say in
+   text. Alt draws too, and has no panel, but the review still asks it for
+   counts. Dummy is left out on purpose: a review must not replace the
+   page it is describing.
 
    Keyboard shortcuts are handled in a service worker, which cannot see the
    popup's script. Keeping a second copy of this table there would drift the

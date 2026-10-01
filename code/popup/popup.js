@@ -147,6 +147,21 @@ function collectReview(panels) {
     lines.push("");
   }
 
+  /* Alt draws on the page and has no panel, so it is not in the list above.
+     The counts are the same images its labels would cover. No images means
+     no heading: a heading with nothing under it would read as a verdict. */
+  const alt = typeof kraftyAltCensus === "function" ? kraftyAltCensus() : null;
+
+  if (alt && alt.total > 0) {
+    lines.push(alt.title);
+
+    for (const line of alt.lines) {
+      lines.push(`  - ${line}`);
+    }
+
+    lines.push("");
+  }
+
   return lines.join("\n");
 }
 
@@ -267,9 +282,10 @@ async function init() {
 
   /* One pass, one block to paste.
 
-     A delivery review means turning seven checkers on in turn and copying
-     as many panels. This runs the ones that report, waits for their panels,
-     and puts what they say in one place.
+     A delivery review means turning the reporting checkers on in turn and
+     copying their panels. This runs the ones that are off, waits for their
+     panels, and puts what they say in one place. Alt has no panel; its
+     counts are read afterwards, without drawing the labels.
 
      There is deliberately no total. "12 issues" reads as a verdict on the
      page, including the parts nothing looked at, which is the single score
@@ -295,6 +311,30 @@ async function init() {
         if (!active.has(checker.bodyClass)) {
           await kraftyRunChecker(tabId, checker);
         }
+      }
+
+      /* Count alts without toggling the overlay. The flag makes this
+         injection define kraftyAltCensus and return, so labels that are
+         already up stay up, and a review does not cover the pictures. */
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          globalThis.kraftyAltCensusOnly = true;
+        },
+      });
+
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          files: ["js/i18n.js", "js/altCheck.js"],
+        });
+      } finally {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => {
+            globalThis.kraftyAltCensusOnly = false;
+          },
+        });
       }
 
       const [review] = await chrome.scripting.executeScript({

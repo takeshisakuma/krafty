@@ -51,21 +51,6 @@
     document.getElementById(RESCAN_ID)?.remove();
   };
 
-  clear();
-
-  /* The watchers to stop are the last injection's, not this one's. Every
-     click injects this file again into a fresh scope, so a stopWatching
-     from here only ever saw its own nulls, and the observer and load
-     listener from turning on outlived turning off: scroll an image into
-     view or let one load, and its labels came back on a page with the
-     checker off. So the running injection leaves its stop behind. */
-  globalThis.kraftyAltStop?.();
-  globalThis.kraftyAltStop = undefined;
-
-  if (!document.body.classList.toggle(BODY_CLASS)) {
-    return;
-  }
-
   /**
    * @param {Element} image
    * @returns {{ text: string, state: string | null }}
@@ -82,27 +67,13 @@
     return { text: kraftyMessage("altPresent", [alt]), state: null };
   };
 
-  /* Each image's label, kept across re-measures.
-
-     A re-measure used to remove every label and build them again. The
-     IntersectionObserver below reports every image in view as soon as it is
-     told to watch them, so that happened 150ms after the checker came on,
-     and again on each scroll that brought an image in: a label being read
-     on hover was swapped for a fresh folded one under the pointer, and
-     snapped shut. So a re-measure moves and rewrites the label it already
-     has, and only adds or drops the ones whose image appeared or went. */
-  /** @type {Map<Element, HTMLElement>} */
-  const placed = new Map();
-
-  /* Place every label from a fresh measurement of the page. The toggle stays
-     outside this so pressing rescan does not turn the checker off - the same
-     split the findings panels use (item 14). Lazy load and intersection also
-     schedule a re-measure; the button remains for anything those miss. */
-  const run = () => {
-    /* A label kept for an image that is gone, hidden or clipped this time is
-       dropped at the end; anything still in this set then is stale. */
-    const stale = new Set(placed.values());
-
+  /**
+   * The images a label would be drawn on. Hidden and clipped ones stay in
+   * the list, marked, so a count and the labels are one decision.
+   *
+   * @returns {{ image: Element, box: DOMRect, hidden: boolean, fixed: boolean }[]}
+   */
+  const survey = () => {
     const subjects = [
       ...document.querySelectorAll('img, input[type="image"]'),
       /* Skip the head checker's own preview images. */
@@ -124,16 +95,6 @@
        like everything else here - a page that reflows underneath leaves the
        labels where they were, which is why the panels say what time they
        scanned. */
-    const bodyIsPositioned =
-      getComputedStyle(document.body).position !== "static";
-    const bodyBox = bodyIsPositioned
-      ? document.body.getBoundingClientRect()
-      : null;
-
-    const originX =
-      window.scrollX - (bodyBox ? bodyBox.left + window.scrollX : 0);
-    const originY =
-      window.scrollY - (bodyBox ? bodyBox.top + window.scrollY : 0);
 
     /* Appending to the body took the labels out of whatever clipped them,
        which a carousel relies on: its off-screen items stay in the document
@@ -235,16 +196,119 @@
 
     const places = subjects.map((image) => image.getBoundingClientRect());
 
+    return subjects.map((image, index) => ({
+      image,
+      box: places[index],
+      hidden: outOfSight(image, places[index]),
+      fixed: ridesViewport(image),
+    }));
+  };
+
+  /* The review paste asks for counts and must not draw. Same images as the
+     labels, so the two cannot disagree about what was looked at. */
+  globalThis.kraftyAltCensus = () => {
+    let missing = 0;
+    let empty = 0;
+    let present = 0;
+
+    for (const { image, hidden } of survey()) {
+      if (hidden) {
+        continue;
+      }
+
+      const { state } = describe(image);
+
+      if (state === "kraftyAltMissing") {
+        missing += 1;
+      } else if (state === "kraftyAltEmpty") {
+        empty += 1;
+      } else {
+        present += 1;
+      }
+    }
+
+    const total = missing + empty + present;
+
+    return {
+      missing,
+      empty,
+      present,
+      total,
+      title: kraftyMessage("checkerAlt"),
+      lines:
+        total === 0
+          ? []
+          : [
+              kraftyCount("altReviewMissing", missing),
+              kraftyCount("altReviewEmpty", empty),
+              kraftyCount("altReviewPresent", present),
+            ],
+    };
+  };
+
+  /* Set by the review before this file is injected. Defining the census is
+     the whole visit: clearing here would take the labels down, and toggling
+     would turn the checker off if it was already on. */
+  if (globalThis.kraftyAltCensusOnly) {
+    return;
+  }
+
+  clear();
+
+  /* The watchers to stop are the last injection's, not this one's. Every
+     click injects this file again into a fresh scope, so a stopWatching
+     from here only ever saw its own nulls, and the observer and load
+     listener from turning on outlived turning off: scroll an image into
+     view or let one load, and its labels came back on a page with the
+     checker off. So the running injection leaves its stop behind. */
+  globalThis.kraftyAltStop?.();
+  globalThis.kraftyAltStop = undefined;
+
+  if (!document.body.classList.toggle(BODY_CLASS)) {
+    return;
+  }
+
+  /* Each image's label, kept across re-measures.
+
+     A re-measure used to remove every label and build them again. The
+     IntersectionObserver below reports every image in view as soon as it is
+     told to watch them, so that happened 150ms after the checker came on,
+     and again on each scroll that brought an image in: a label being read
+     on hover was swapped for a fresh folded one under the pointer, and
+     snapped shut. So a re-measure moves and rewrites the label it already
+     has, and only adds or drops the ones whose image appeared or went. */
+  /** @type {Map<Element, HTMLElement>} */
+  const placed = new Map();
+
+  /* Place every label from a fresh measurement of the page. The toggle stays
+     outside this so pressing rescan does not turn the checker off - the same
+     split the findings panels use (item 14). Lazy load and intersection also
+     schedule a re-measure; the button remains for anything those miss. */
+  const run = () => {
+    /* A label kept for an image that is gone, hidden or clipped this time is
+       dropped at the end; anything still in this set then is stale. */
+    const stale = new Set(placed.values());
+
+    const bodyIsPositioned =
+      getComputedStyle(document.body).position !== "static";
+    const bodyBox = bodyIsPositioned
+      ? document.body.getBoundingClientRect()
+      : null;
+
+    const originX =
+      window.scrollX - (bodyBox ? bodyBox.left + window.scrollX : 0);
+    const originY =
+      window.scrollY - (bodyBox ? bodyBox.top + window.scrollY : 0);
+
     /** @type {{ label: HTMLElement, box: DOMRect }[]} */
     const labels = [];
 
-    subjects.forEach((image, index) => {
-      if (outOfSight(image, places[index])) {
-        return;
+    for (const { image, box, hidden, fixed } of survey()) {
+      if (hidden) {
+        continue;
       }
 
       const { text, state } = describe(image);
-      const fixed = ridesViewport(image);
 
       const kept = placed.get(image);
       const label =
@@ -269,7 +333,6 @@
          so nothing on screen sees it. */
       label.style.removeProperty("--kraftyAltWidth");
 
-      const box = places[index];
       if (fixed) {
         /* Viewport coordinates with no scroll origin added, and position:
            fixed from the stylesheet, so the label keeps its place on screen
@@ -290,7 +353,7 @@
         placed.set(image, label);
       }
       labels.push({ label, box });
-    });
+    }
 
     for (const label of stale) {
       label.remove();
@@ -375,9 +438,9 @@
     }, 150);
   };
 
-  /* A control without a findings panel: alt draws on the page and has
-     nothing to paste into a review, so it must not take a panelId. The
-     button is the half of item 14 the panels get for free. */
+  /* No findings panel, so no panelId. The review reads kraftyAltCensus
+     instead, which counts the same images and draws nothing. The button is
+     the half of item 14 the panels get for free. */
   const rescan = document.createElement("button");
   rescan.id = RESCAN_ID;
   rescan.type = "button";

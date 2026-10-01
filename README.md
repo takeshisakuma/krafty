@@ -66,7 +66,7 @@ in.
 
 ### The review
 
-One button under the checker list runs everything that reports and copies the result as one block, ready for a ticket: the address, then each checker with what it found underneath.
+One button under the checker list runs everything that reports and copies the result as one block, ready for a ticket: the address, then each checker with what it found underneath. The alt checker has no panel, so the same block adds its counts: images with no alt, images marked decorative, and images with alt text. Those are the images its labels would cover, and copying the review does not draw the labels.
 
 There is no total, on purpose. A single number would be a verdict on the whole page, including everything nothing looked at. Each checker says what it checked and nothing more.
 
@@ -192,7 +192,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### レビュー結果のコピー
 
-チェッカー一覧の下のボタンを押すと、報告を行うチェッカーをまとめて実行し、結果を1ブロックでコピーします。アドレスがあり、その下にチェッカーごとの結果が並ぶ形で、そのまま不具合票に貼れます。
+チェッカー一覧の下のボタンを押すと、報告を行うチェッカーをまとめて実行し、結果を1ブロックでコピーします。アドレスがあり、その下にチェッカーごとの結果が並ぶ形で、そのまま不具合票に貼れます。alt チェッカーはパネルを持たないので、同じブロックに件数だけ足します。alt が無い画像、装飾として空の画像、alt がある画像です。ラベルが付く画像と同じ範囲で、コピーしてもラベルは出ません。
 
 **合計は出しません。意図的です。** 1つの数字は、何も見ていない部分まで含めたページ全体への判定として読まれてしまうからです。各チェッカーは、自分が確認した範囲だけを述べます。
 

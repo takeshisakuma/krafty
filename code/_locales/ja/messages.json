@@ -1357,6 +1357,48 @@
     "message": "alt: (空)",
     "description": "Label for an image with alt=\"\", i.e. marked decorative."
   },
+  "altReviewMissing": {
+    "message": "alt が無い画像が $count$ 件",
+    "description": "Review line. An image with no alt attribute at all.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "altReviewMissingOne": {
+    "message": "alt が無い画像が 1 件",
+    "description": "Review line when exactly one image has no alt attribute."
+  },
+  "altReviewEmpty": {
+    "message": "装飾として空の画像が $count$ 件",
+    "description": "Review line. An image with alt=\"\", empty on purpose.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "altReviewEmptyOne": {
+    "message": "装飾として空の画像が 1 件",
+    "description": "Review line when exactly one image has an empty alt."
+  },
+  "altReviewPresent": {
+    "message": "alt がある画像が $count$ 件",
+    "description": "Review line. An image whose alt attribute has text.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "altReviewPresentOne": {
+    "message": "alt がある画像が 1 件",
+    "description": "Review line when exactly one image has alt text."
+  },
   "popupReviewCopied": {
     "message": "レビュー結果をコピーしました。",
     "description": "Shown after the popup has put every panel's findings on the clipboard."

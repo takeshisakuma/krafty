@@ -233,3 +233,150 @@ test("the review includes heading and landmark outlines", async () => {
     `landmark roles belong in it, got:\n${review}`
   );
 });
+
+test("the review includes alt counts and does not label the page", async () => {
+  /* Alt has no panel, so the paste used to omit it. The counts are the
+     images its labels would cover — a hidden one is in neither — and asking
+     for them must not draw the labels. */
+  const review = await withPage(
+    {
+      html: `<img src="${imageSource(40, 40)}" alt="cat" width="40" height="40">
+             <img src="${imageSource(40, 40)}" alt="" width="40" height="40">
+             <img src="${imageSource(40, 40)}" width="40" height="40">
+             <img src="${imageSource(40, 40)}" width="40" height="40" style="display:none">`,
+      checkers: [],
+      width: 1280,
+      height: 900,
+    },
+    async (page) => {
+      await page.waitForFunction(() =>
+        [...document.images].every((image) => image.complete)
+      );
+      await page.evaluate(() => {
+        globalThis.kraftyAltCensusOnly = true;
+      });
+      await page.evaluate(SCRIPTS.altCheck);
+      await page.evaluate(() => {
+        globalThis.kraftyAltCensusOnly = false;
+      });
+
+      const labels = await page.evaluate(
+        () => document.querySelectorAll(".kraftyAltContent").length
+      );
+      assert.strictEqual(labels, 0, "the review must not draw alt labels");
+
+      return page.evaluate(
+        ([source]) =>
+          new Function(`${source}; return collectReview([]);`)(),
+        /** @type {[string]} */ ([collectReview])
+      );
+    }
+  );
+
+  assert.match(review, /^alt Check$/m, `alt Check is named, got:\n${review}`);
+  assert.match(review, /^ {2}- 1 image with no alt$/m);
+  assert.match(review, /^ {2}- 1 image marked decorative$/m);
+  assert.match(review, /^ {2}- 1 image with alt text$/m);
+
+  const altAt = review.split("\n").indexOf("alt Check");
+  const under = review.split("\n").slice(altAt + 1, altAt + 4);
+
+  for (const line of under) {
+    assert.ok(line.startsWith("  - "), "the counts belong to alt Check");
+  }
+});
+
+test("a page with no images adds no alt heading", async () => {
+  const review = await withPage(
+    { html: "<p>No pictures</p>", checkers: [] },
+    async (page) => {
+      await page.evaluate(() => {
+        globalThis.kraftyAltCensusOnly = true;
+      });
+      await page.evaluate(SCRIPTS.altCheck);
+
+      return page.evaluate(
+        ([source]) =>
+          new Function(`${source}; return collectReview([]);`)(),
+        /** @type {[string]} */ ([collectReview])
+      );
+    }
+  );
+
+  assert.ok(
+    !review.includes("alt Check"),
+    `no images is not a verdict, got:\n${review}`
+  );
+});
+
+test("counting alts leaves labels that are already up", async () => {
+  const counted = await withPage(
+    {
+      html: `<img src="${imageSource(40, 40)}" alt="cat" width="40" height="40">
+             <img src="${imageSource(40, 40)}" alt="" width="40" height="40">
+             <img src="${imageSource(40, 40)}" width="40" height="40">
+             <img src="${imageSource(40, 40)}" width="40" height="40" style="display:none">`,
+      checkers: ["altCheck"],
+      width: 1280,
+      height: 900,
+    },
+    async (page) => {
+      await page.waitForFunction(() =>
+        [...document.images].every((image) => image.complete)
+      );
+
+      await page.evaluate(() => {
+        globalThis.kraftyAltCensusOnly = true;
+      });
+      await page.evaluate(SCRIPTS.altCheck);
+      await page.evaluate(() => {
+        globalThis.kraftyAltCensusOnly = false;
+      });
+
+      return page.evaluate(() => {
+        const labels = [...document.querySelectorAll(".kraftyAltContent")];
+        const census = kraftyAltCensus?.();
+
+        if (!census) {
+          throw new Error("alt census was not defined");
+        }
+
+        return {
+          on: document.body.classList.contains("kraftyAltChecker"),
+          labels: labels.length,
+          missing: labels.filter((label) =>
+            label.classList.contains("kraftyAltMissing")
+          ).length,
+          empty: labels.filter((label) =>
+            label.classList.contains("kraftyAltEmpty")
+          ).length,
+          present: labels.filter(
+            (label) =>
+              !label.classList.contains("kraftyAltMissing") &&
+              !label.classList.contains("kraftyAltEmpty")
+          ).length,
+          census,
+        };
+      });
+    }
+  );
+
+  assert.strictEqual(counted.on, true, "counting must not toggle the checker off");
+  assert.strictEqual(counted.labels, 3, "a hidden image is not labelled");
+  assert.deepStrictEqual(
+    {
+      missing: counted.census.missing,
+      empty: counted.census.empty,
+      present: counted.census.present,
+    },
+    {
+      missing: counted.missing,
+      empty: counted.empty,
+      present: counted.present,
+    },
+    "the paste counts the images the labels cover"
+  );
+  assert.strictEqual(counted.census.missing, 1);
+  assert.strictEqual(counted.census.empty, 1);
+  assert.strictEqual(counted.census.present, 1);
+});

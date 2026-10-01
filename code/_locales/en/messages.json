@@ -1357,6 +1357,48 @@
     "message": "alt: (empty)",
     "description": "Label for an image with alt=\"\", i.e. marked decorative."
   },
+  "altReviewMissing": {
+    "message": "$count$ images with no alt",
+    "description": "Review line. An image with no alt attribute at all.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "altReviewMissingOne": {
+    "message": "1 image with no alt",
+    "description": "Review line when exactly one image has no alt attribute."
+  },
+  "altReviewEmpty": {
+    "message": "$count$ images marked decorative",
+    "description": "Review line. An image with alt=\"\", empty on purpose.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "altReviewEmptyOne": {
+    "message": "1 image marked decorative",
+    "description": "Review line when exactly one image has an empty alt."
+  },
+  "altReviewPresent": {
+    "message": "$count$ images with alt text",
+    "description": "Review line. An image whose alt attribute has text.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "altReviewPresentOne": {
+    "message": "1 image with alt text",
+    "description": "Review line when exactly one image has alt text."
+  },
   "popupReviewCopied": {
     "message": "Review copied.",
     "description": "Shown after the popup has put every panel's findings on the clipboard."

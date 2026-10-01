@@ -141,8 +141,9 @@ test("wiring", async (t) => {
   });
 
   await t.test("a checker without a panel is not asked for one", () => {
-    /* outline, alt, brightness, squint, spacing and dummy draw over the page
-       and have nothing to say in text. Giving one a panelId would put an
+    /* outline, brightness, squint, spacing and dummy draw over the page and
+       have nothing to say in text. Alt draws too, and its counts reach the
+       review without a panel. Giving any of them a panelId would put an
        empty heading in the review, and for dummy would redact the page the
        review is about. */
     for (const checker of checkers.filter((one) => !one.panelId)) {

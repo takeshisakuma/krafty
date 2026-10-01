@@ -98,6 +98,23 @@ declare var kraftyImageScan: number | undefined;
 /** Stops the alt checker's watchers from the injection that started them. */
 declare var kraftyAltStop: (() => void) | undefined;
 
+/* Set by the review before it injects altCheck.js, so that visit only
+   defines the census and does not toggle the overlay. */
+declare var kraftyAltCensusOnly: boolean | undefined;
+
+/* Counts the images the alt labels would cover. Absent until altCheck.js
+   has been injected. */
+declare var kraftyAltCensus:
+  | (() => {
+      missing: number;
+      empty: number;
+      present: number;
+      total: number;
+      title: string;
+      lines: string[];
+    })
+  | undefined;
+
 /** Puts the dummy checker's originals back. The next injection is a fresh scope. */
 declare var kraftyDummyStop: (() => void) | undefined;
 
