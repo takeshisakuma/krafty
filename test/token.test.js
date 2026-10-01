@@ -132,6 +132,45 @@ test("token checker", async (t) => {
     );
   });
 
+  await t.test("leaves a colour painted at several opacities as one colour", async () => {
+    const result = await check(`
+      <style>
+        .a { color: rgb(8, 19, 26); }
+        .b { color: rgba(8, 19, 26, 0.66); }
+        .c { color: rgba(8, 19, 26, 0.5); }
+      </style>
+      <p class="a">a</p><p class="b">b</p><p class="c">c</p>
+    `);
+
+    assert.ok(
+      result.findings.every((item) => !/near-identical|ほぼ同じ色/.test(item.text)),
+      `opacity variants became a cluster: ${JSON.stringify(result.findings)}`
+    );
+    assert.ok(
+      result.colours.length >= 3,
+      `the list should still show each opacity, got ${result.colours.join("; ")}`
+    );
+  });
+
+  await t.test("counts colours in a cluster without the extra opacities", async () => {
+    const result = await check(`
+      <style>
+        .g1 { color: rgb(100, 100, 100); }
+        .g2 { color: rgb(105, 105, 105); }
+        .g3 { color: rgb(110, 110, 110); }
+        .g4 { color: rgba(100, 100, 100, 0.4); }
+      </style>
+      <p class="g1">a</p><p class="g2">b</p><p class="g3">c</p><p class="g4">d</p>
+    `);
+
+    const note = result.findings.find(
+      (item) => item.level === "note" && /near-identical/.test(item.text)
+    );
+
+    assert.ok(note, `expected a sprawl note, got ${JSON.stringify(result.findings)}`);
+    assert.match(note.text, /^3 near-identical colours/);
+  });
+
   await t.test("lists radii and shadows, and notes near sprawl", async () => {
     const result = await check(`
       <style>

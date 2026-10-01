@@ -31,7 +31,51 @@ async function check(html) {
 }
 
 test("target checker", async (t) => {
-  await t.test("lists buttons and links under 24px on a side", async () => {
+  await t.test("leaves out a control whose only short side is its line", async () => {
+    const result = await check(`
+      <a href="/news" style="display:inline-block;width:120px;height:18px">News</a>
+      <a id="icon" href="/x" style="display:inline-block;width:16px;height:16px"></a>
+    `);
+
+    assert.match(result.findings.join(" "), /1 control/);
+    assert.ok(result.rows.some((row) => /a#icon/.test(row)));
+    assert.ok(!result.rows.some((row) => /News/.test(row)));
+  });
+
+  await t.test("puts the same wording on one row, with a count", async () => {
+    const box =
+      "display:inline-block;box-sizing:border-box;padding:0;border:0;min-width:0;width:16px;height:16px";
+    const result = await check(`
+      <a id="one" href="/a" style="${box}">Jump</a>
+      <a id="two" href="/b" style="${box}">Jump</a>
+      <a id="three" href="/c" style="${box}">Jump</a>
+      <button style="${box}">Close</button>
+    `);
+
+    assert.match(result.findings.join(" "), /4 controls/);
+    assert.strictEqual(result.rows.length, 2);
+    assert.ok(result.rows.some((row) => /Jump/.test(row) && / ×3/.test(row)));
+    assert.ok(result.rows.some((row) => /Close/.test(row) && !/ ×/.test(row)));
+    assert.ok(!result.rows.some((row) => /#one|#two|#three/.test(row)));
+  });
+
+  await t.test("groups an unnamed control only when the size matches", async () => {
+    /** @param {number} size */
+    const bare = (size) =>
+      `<button style="box-sizing:border-box;padding:0;border:0;min-width:0;width:${size}px;height:${size}px"></button>`;
+    const result = await check(`
+      ${bare(10)}
+      ${bare(10)}
+      ${bare(16)}
+    `);
+
+    assert.match(result.findings.join(" "), /3 controls/);
+    assert.strictEqual(result.rows.length, 2);
+    assert.ok(result.rows.some((row) => /10×10/.test(row) && / ×2/.test(row)));
+    assert.ok(result.rows.some((row) => /16×16/.test(row) && !/×2/.test(row)));
+  });
+
+  await t.test("lists buttons and links under 24px on both sides", async () => {
     const result = await check(`
       <a id="icon" href="/x" style="display:inline-block;width:16px;height:16px"></a>
       <p>Read the <a href="/docs">docs</a> now.</p>

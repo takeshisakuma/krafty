@@ -168,11 +168,15 @@ test("image checker", async (t) => {
   });
 
   await t.test("reports missing width and height separately", async () => {
+    /* Width alone still leaves the height to the file. Both dimensions
+       written on the element would reserve the box, which is a different
+       test. */
     const result = await check(
-      `<img src="${source(400, 300)}" style="width:200px;height:150px">`
+      `<img src="${source(400, 300)}" style="width:200px">`
     );
 
     assert.strictEqual(matching(result.findings, /width and height/).length, 1);
+    assert.strictEqual(matching(result.findings, /jumps/).length, 0);
 
     /* 400 into a 200px box is exactly the 2x allowance, so the size finding
        must not appear alongside it. */
@@ -183,6 +187,24 @@ test("image checker", async (t) => {
       1,
       "the dimensionless image is listed so it can be pointed at"
     );
+  });
+
+  await t.test("leaves out an image whose box is already reserved", async () => {
+    const ratio = await check(
+      `<img src="${source(400, 300)}" style="width:200px;aspect-ratio:4/3">`
+    );
+    const inline = await check(
+      `<img src="${source(400, 300)}" style="width:200px;height:150px">`
+    );
+    const parent = await check(
+      `<div style="width:200px;aspect-ratio:4/3;position:relative">
+         <img src="${source(400, 300)}" style="position:absolute;width:100%">
+       </div>`
+    );
+
+    assert.deepStrictEqual(ratio.findings, []);
+    assert.deepStrictEqual(inline.findings, []);
+    assert.deepStrictEqual(parent.findings, []);
   });
 
   await t.test("says nothing about an image it cannot see", async () => {
@@ -265,6 +287,32 @@ test("image checker", async (t) => {
     assert.strictEqual(result.rows.length, 1);
     assert.match(result.rows[0], /3000×2000/);
     assert.match(result.rows[0], /300×200/);
+  });
+
+  await t.test("leaves a sprite sheet out of the background list", async () => {
+    const picture = source(800, 400);
+    const result = await check(`
+      <div style="width:40px;height:40px;background-image:url('${picture}');background-position:0 0"></div>
+      <div style="width:40px;height:40px;background-image:url('${picture}');background-position:-40px 0"></div>
+    `);
+
+    assert.strictEqual(matching(result.findings, /background/).length, 0);
+    assert.strictEqual(result.rows.length, 0);
+  });
+
+  await t.test("counts repeated uses of the same background on one row", async () => {
+    const picture = source(800, 400);
+    const box = `width:40px;height:40px;background-image:url('${picture}');background-position:0 0`;
+    const result = await check(`
+      <div style="${box}"></div>
+      <div style="${box}"></div>
+      <div style="${box}"></div>
+    `);
+
+    assert.strictEqual(matching(result.findings, /3 background images/).length, 1);
+    assert.strictEqual(result.rows.length, 1);
+    assert.match(result.rows[0], /3 places/);
+    assert.match(result.rows[0], /800×400/);
   });
 
   await t.test("leaves a correctly sized background image alone", async () => {

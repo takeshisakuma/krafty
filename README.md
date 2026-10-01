@@ -12,7 +12,7 @@ Sixteen checks you can turn on over any page, from the toolbar or from a keyboar
 
 ### Head Checker
 
-Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a viewport that asks the browser not to zoom, a missing doctype, a canonical pointing at a different page, duplicated tags, text long enough to be cut off, an og:image smaller than sharing platforms want, and an og:image URL that does not load.
+Reports the problems in a page's head that software can actually decide: a robots tag asking search engines to ignore the page, a missing viewport, title, description or lang, a viewport that asks the browser not to zoom, a missing doctype, a canonical pointing at a different page, duplicated tags, a title or description past 60 or 160 characters, an og:image smaller than sharing platforms want, an og:image URL that does not load, and a JSON-LD block that is not valid JSON. A page with no JSON-LD is not reported; structured data is not required.
 
 On a multilingual site it checks the hreflang set too: whether it names the page it is on, since one that does not is ignored entirely, and whether the codes are language codes at all — `jp` and `cn` are countries, and Japanese and Chinese are `ja` and `zh`. A page declaring no hreflang is not reported; one language needs none.
 
@@ -72,7 +72,7 @@ There is no total, on purpose. A single number would be a verdict on the whole p
 
 ### Image Checker
 
-Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — including CSS `background-image` on heroes and sections, and lists them worst first, with the file name and the address ready to copy. Also lists images with no width and height attributes, which is what makes a layout jump while it loads.
+Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — including CSS `background-image` on heroes and sections, and lists them worst first, with the file name and the address ready to copy. A sprite sheet, the same file with a different position in each box, is left off that list. The same file shown the same way more than once is one row, with a count. Also lists images with no width and height attributes. An image whose box is already reserved — by an aspect-ratio, by both dimensions on the element, or by a parent ratio it is positioned into — is left off that list.
 
 High-density displays are allowed for, so an image correctly built at twice the displayed size is never reported, and the allowance does not depend on the monitor you happen to be checking on. The panel states the basis it judged against, and each row carries its own ratio. Hover a row to box the image on the page, and click to scroll to it.
 
@@ -92,7 +92,7 @@ Whether the page marks up the regions it ought to is not something software can 
 
 ### Token Check
 
-Lists the colours, fonts, border radii and box shadows the page actually renders with, led by the counts that say whether the tokens look disciplined. Near-identical colours, radii or shadows, and a typeface whose first named face never loaded, are noted for you to judge — Krafty does not know the design system, so it does not assert that anything is off-system.
+Lists the colours, fonts, border radii and box shadows the page actually renders with, led by the counts that say whether the tokens look disciplined. Near-identical colours, radii or shadows, and a typeface whose first named face never loaded, are noted for you to judge — Krafty does not know the design system, so it does not assert that anything is off-system. The same red, green and blue at another opacity is one colour in that note.
 
 ### Outline Checker
 
@@ -116,7 +116,7 @@ Lists every control Tab reaches, in that order, with its role and name. Whether 
 
 ### Target Checker
 
-Lists buttons and links whose box is smaller than 24 CSS pixels on a side, with the measured size on the row. The size is a fact. It is not a verdict: space around a control can still make a smaller one fine, and that space is not measured. Links sitting in a sentence are left out, because their box is the line of text. Hover a row to box the control, and click to scroll to it.
+Lists buttons and links under 24 CSS pixels on both sides, with the measured size on the row. The same wording is one row, with a count, even when the ids differ. A control with no wording shares a row only when the measured size matches. A control whose only short side is its line is left out, along with a link sitting in a sentence: that box is the line of text. The size is a fact. It is not a verdict: space around a control can still make a smaller one fine, and that space is not measured. Hover a row to box the first control, and click to scroll to it.
 
 ### Spacing Checker
 
@@ -142,7 +142,7 @@ Krafty はページの構造とメタデータを確認するためのブラウ�
 
 ### ヘッドチェッカー
 
-head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、拡大を禁じる viewport、DOCTYPE の不備、canonical が別ページを指している、タグの重複、省略されそうな文字数、SNS で使うには小さすぎる og:image、読み込めない og:image。
+head の中で機械が判断できる問題を報告します。検索避けの robots 指定、viewport や title、description、lang の欠落、拡大を禁じる viewport、DOCTYPE の不備、canonical が別ページを指している、タグの重複、60字・160字を超える title と description、SNS で使うには小さすぎる og:image、読み込めない og:image、JSON として読めない JSON-LD。JSON-LD が無いこと自体は報告しません。構造化データは必須ではないからです。
 
 多言語サイトでは hreflang も見ます。自身を指す指定があるか（無ければその指定はすべて無視されます）、そして値が言語コードとして成立しているか。`jp` や `cn` は国コードで、日本語と中国語は `ja` と `zh` です。hreflang が無いこと自体は報告しません。単一言語のサイトには不要だからです。
 
@@ -198,7 +198,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### 画像チェッカー
 
-表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。ヒーローやセクションの CSS `background-image` も含め、無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。width と height 属性の無い画像も一覧にします。読み込み中にレイアウトがずれる原因です。
+表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。ヒーローやセクションの CSS `background-image` も含め、無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。同じファイルで位置だけが箱ごとに違うスプライトは、その一覧に入れません。同じ見え方で繰り返すファイルは1行にまとめ、件数を添えます。width と height 属性の無い画像も一覧にします。aspect-ratio や、要素に書いた幅と高さ、重ね先の親の比率で枠が既にある画像は、その一覧に入れません。
 
 高精細ディスプレイ向けの画像は考慮済みで、表示サイズの2倍で正しく用意された画像は指摘しません。判定基準はお使いのモニタに左右されません。どの基準で判定したかはパネルに明記し、各行にその超過倍率を添えます。行にカーソルを合わせるとページ上の画像に枠が描かれ、クリックするとそこまでスクロールします。
 
@@ -218,7 +218,7 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 ### トークンチェック
 
-ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ色・角丸・影や、先頭の書体が読み込まれていないスタックは断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。
+ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ色・角丸・影や、先頭の書体が読み込まれていないスタックは断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。同じ赤・緑・青で透明度だけが違う色は、その指摘では1色です。
 
 ### アウトラインチェッカー
 
@@ -242,7 +242,7 @@ Tab が辿る操作対象を、その順に、役割と名前つきで並べま�
 
 ### 操作対象チェッカー
 
-ボタンとリンクのうち、一辺が 24 CSS ピクセルより小さいものを、測った寸法つきで並べます。寸法は事実です。合否ではありません。周囲の間隔で足りていることもあるので、間隔は測りません。文中のリンクは対象外です。枠は行の高さそのものだからです。行にカーソルを合わせると操作対象に枠が描かれ、クリックするとそこまでスクロールします。
+ボタンとリンクのうち、幅も高さも 24 CSS ピクセルより小さいものを、測った寸法つきで並べます。同じ文言は1行にまとめ、件数を添えます。id が違っても同じ行です。名前が無いものは、測った寸法が同じときだけまとめます。寸法は事実です。合否ではありません。周囲の間隔で足りていることもあるので、間隔は測りません。文中のリンクと、行の高さだけが短い操作は対象外です。枠は行の高さそのものだからです。行にカーソルを合わせると、そのうちの1件に枠が描かれ、クリックするとそこまでスクロールします。
 
 ### 文字間隔チェッカー
 

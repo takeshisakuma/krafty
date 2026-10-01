@@ -7,7 +7,13 @@
    left out: its box is the line, and listing every one would be the page's
    prose reported back as a finding.
 
-   The number on the row is the measurement. The judgement is the reader's. */
+   The number on the row is the measurement. The judgement is the reader's.
+   A wide control whose only short side is the line is left out, the same
+   way a link in a sentence is: that box is the line, and listing it was
+   the page's nav reported back as a finding. The list is controls under
+   24 CSS pixels on both sides. The same wording is one row, with a count,
+   and an id does not split it. A control with no wording shares a row
+   only when the measured size is the same. */
 
 (() => {
   const PANEL_ID = "js-kraftyTargetInformation";
@@ -94,8 +100,21 @@
   };
 
   /**
-   * Something to find the control again. The box on the page is the sure
-   * way; this is what a copied row still has once the page is gone.
+   * The words a reader sees. An id is not part of this: two controls
+   * with the same words are the same row even when their ids differ.
+   *
+   * @param {Element} element
+   */
+  const wordsOf = (element) => {
+    const named = (element.getAttribute("aria-label") ?? "").trim();
+    const text = (element.textContent ?? "").replace(/\s+/g, " ").trim();
+
+    return (named || text).slice(0, 40);
+  };
+
+  /**
+   * Something to find one control again. A grouped row uses the shared
+   * words instead, because an id would split the group apart.
    *
    * @param {Element} element
    */
@@ -160,7 +179,9 @@
         continue;
       }
 
-      if (box.width >= MIN_SIDE && box.height >= MIN_SIDE) {
+      /* Both sides. A control at 24 or over on either side is left out,
+         including one whose only short side is the line. */
+      if (box.width >= MIN_SIDE || box.height >= MIN_SIDE) {
         continue;
       }
 
@@ -172,6 +193,89 @@
         Math.min(a.width, a.height) - Math.min(b.width, b.height) ||
         a.width * a.height - b.width * b.height
     );
+
+    /**
+     * @typedef {{
+     *   words: string,
+     *   items: { element: Element, width: number, height: number }[],
+     * }} TargetGroup
+     */
+
+    /** @type {TargetGroup[]} */
+    const groups = [];
+    /** @type {Map<string, TargetGroup>} */
+    const byKey = new Map();
+
+    for (const entry of small) {
+      const words = wordsOf(entry.element);
+      const key =
+        words !== ""
+          ? `w:${words}`
+          : `s:${entry.element.localName}:${px(entry.width)}×${px(entry.height)}`;
+      const known = byKey.get(key);
+
+      if (known) {
+        known.items.push(entry);
+        continue;
+      }
+
+      const group = { words, items: [entry] };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+
+    /**
+     * @param {TargetGroup} group
+     */
+    const sameSize = (group) => {
+      const size = `${px(group.items[0].width)}×${px(group.items[0].height)}`;
+
+      return group.items.every(
+        (entry) => `${px(entry.width)}×${px(entry.height)}` === size
+      );
+    };
+
+    /**
+     * @param {TargetGroup} group
+     */
+    const rowLabel = (group) => {
+      if (group.items.length === 1) {
+        return labelOf(group.items[0].element);
+      }
+
+      if (group.words !== "") {
+        return group.words;
+      }
+
+      return group.items[0].element.localName;
+    };
+
+    /**
+     * @param {TargetGroup} group
+     */
+    const rowSize = (group) => {
+      if (!sameSize(group)) {
+        return "";
+      }
+
+      const first = group.items[0];
+
+      return `${px(first.width)}×${px(first.height)}`;
+    };
+
+    /**
+     * @param {TargetGroup} group
+     */
+    const rowCount = (group) =>
+      group.items.length > 1
+        ? kraftyMessage("targetGroupCount", [String(group.items.length)])
+        : "";
+
+    /**
+     * @param {TargetGroup} group
+     */
+    const rowAside = (group) =>
+      [rowSize(group), rowCount(group)].filter(Boolean).join(" ");
 
     const { panel, body } = kraftyPanel({
       id: PANEL_ID,
@@ -206,9 +310,8 @@
         () =>
           [
             location.href,
-            ...small.map(
-              (entry) =>
-                `- ${labelOf(entry.element)} ${px(entry.width)}×${px(entry.height)}`
+            ...groups.map((group) =>
+              ["-", rowLabel(group), rowAside(group)].filter(Boolean).join(" ")
             ),
           ].join("\n")
       );
@@ -216,19 +319,19 @@
       const list = document.createElement("ul");
       list.className = "kraftyPanelList";
 
-      for (const entry of small) {
+      for (const group of groups) {
         const item = document.createElement("li");
 
         const label = document.createElement("code");
-        label.textContent = labelOf(entry.element);
+        label.textContent = rowLabel(group);
         item.appendChild(label);
 
         const aside = document.createElement("span");
         aside.className = "kraftyPanelCount";
-        aside.textContent = `${px(entry.width)}×${px(entry.height)}`;
+        aside.textContent = rowAside(group);
         item.appendChild(aside);
 
-        kraftyPointAt(item, entry.element);
+        kraftyPointAt(item, group.items[0].element);
         list.appendChild(item);
       }
 

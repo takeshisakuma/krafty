@@ -18,7 +18,9 @@
 
   /* How close two colours have to be to count as the same token gone
      sprawling. Measured in sRGB; ~18 catches the "forty-seven greys"
-     case without collapsing distinct brand colours into one pile. */
+     case without collapsing distinct brand colours into one pile.
+     Another opacity of the same red, green and blue is that colour
+     again, so it does not add a member to the cluster. */
   const NEAR_COLOUR = 18;
 
   /* Radii within this many px of each other count as the same corner
@@ -437,8 +439,21 @@
       (a, b) => b.count - a.count || a.shadow.key.localeCompare(b.shadow.key)
     );
 
+    /* Most-used first, one entry per RGB. The list further down still
+       shows every opacity; only the cluster treats them as one colour. */
+    /** @type {Map<string, { r: number, g: number, b: number, a: number, key: string }>} */
+    const coloursByRgb = new Map();
+
+    for (const row of colourRows) {
+      const id = `${row.colour.r},${row.colour.g},${row.colour.b}`;
+
+      if (!coloursByRgb.has(id)) {
+        coloursByRgb.set(id, row.colour);
+      }
+    }
+
     const colourClusters = nearClusters(
-      colourRows.map((row) => row.colour),
+      [...coloursByRgb.values()],
       (a, b) => colourDistance(a, b) <= NEAR_COLOUR
     );
     const radiusClusters = nearClusters(

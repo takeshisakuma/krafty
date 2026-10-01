@@ -1014,6 +1014,91 @@ test("head checker", async (t) => {
     assert.strictEqual(matching(findings, /not to zoom/).length, 0);
   });
 
+  await t.test("reports a long title as a count, without saying it will be cut off", async () => {
+    const { findings } = await check(
+      `<title>${"A".repeat(61)}</title>
+       <meta name="description" content="${"B".repeat(161)}">
+       <meta name="viewport" content="width=device-width, initial-scale=1">
+       <link rel="canonical" href="/">`
+    );
+
+    const title = matching(findings, /^title is 61 characters$/);
+    const description = matching(findings, /^description is 161 characters$/);
+
+    assert.strictEqual(title.length, 1);
+    assert.strictEqual(title[0].level, "note");
+    assert.strictEqual(description.length, 1);
+    assert.strictEqual(matching(findings, /cut off/).length, 0);
+  });
+
+  await t.test("says nothing when the page has no JSON-LD", async () => {
+    const { findings } = await check(SOUND_HEAD);
+
+    assert.strictEqual(matching(findings, /JSON-LD/).length, 0);
+  });
+
+  await t.test("says nothing about JSON-LD that parses", async () => {
+    const { findings } = await check(
+      `${SOUND_HEAD}
+       <script type="application/ld+json">
+         {"@context":"https://schema.org","@type":"WebPage"}
+       </script>
+       <script type="application/ld+json">
+         [{"@context":"https://schema.org","@type":"BreadcrumbList"}]
+       </script>`
+    );
+
+    assert.strictEqual(matching(findings, /JSON-LD/).length, 0);
+  });
+
+  await t.test("reads JSON-LD wrapped in an HTML comment", async () => {
+    /* The wrapper used to hide the block from old browsers. The JSON
+       inside is what gets read, so the wrapper alone is not a finding. */
+    const { findings } = await check(
+      `${SOUND_HEAD}
+       <script type="application/ld+json">
+         <!--{"@context":"https://schema.org","@type":"WebPage"}-->
+       </script>`
+    );
+
+    assert.strictEqual(matching(findings, /JSON-LD/).length, 0);
+  });
+
+  await t.test("reports JSON-LD that does not parse", async () => {
+    const { findings } = await check(
+      `${SOUND_HEAD}
+       <script type="application/ld+json">{"@type":"WebPage",}</script>`
+    );
+
+    const broken = matching(findings, /not valid JSON/);
+
+    assert.strictEqual(broken.length, 1);
+    assert.strictEqual(broken[0].level, "alert");
+  });
+
+  await t.test("names which JSON-LD block failed", async () => {
+    const { findings } = await check(
+      `${SOUND_HEAD}
+       <script type="application/ld+json">{"@type":"WebPage"}</script>
+       <script type="application/ld+json">{</script>`
+    );
+
+    const broken = matching(findings, /JSON-LD block/);
+
+    assert.strictEqual(broken.length, 1);
+    assert.match(broken[0].text, /2 of 2/);
+    assert.strictEqual(broken[0].level, "alert");
+  });
+
+  await t.test("leaves a broken JSON-LD block inside a template", async () => {
+    const { findings } = await check(
+      `${SOUND_HEAD}
+       <template><script type="application/ld+json">{</script></template>`
+    );
+
+    assert.strictEqual(matching(findings, /JSON-LD/).length, 0);
+  });
+
   await t.test("prefers og values on the card when present", async () => {
     const result = await check(
       `${SOUND_HEAD}

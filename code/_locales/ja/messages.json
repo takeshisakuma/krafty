@@ -651,6 +651,16 @@
     "message": "表示領域より大きく配信されている背景",
     "description": "Label above the list of oversized background images."
   },
+  "imageBgRepeat": {
+    "message": "$count$ 箇所",
+    "description": "How many boxes share this background row. A sprite sheet, the same file at a different position in each box, is not listed.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "19"
+      }
+    }
+  },
   "imageBgUnmeasured": {
     "message": "計測できなかった背景画像が $count$ 個あります",
     "description": "A background url() that failed to load has no natural size.",
@@ -666,8 +676,8 @@
     "description": "Used when exactly one background image was not measurable."
   },
   "imageNoSize": {
-    "message": "width と height の無い画像が $count$ 個あります。読み込み中にレイアウトがずれます",
-    "description": "Without the attributes the browser cannot reserve the space.",
+    "message": "width と height の無い画像が $count$ 個あります",
+    "description": "The attributes only. A box already reserved — aspect-ratio, both dimensions on the element, or a parent ratio — is not listed, and the finding does not say the layout will jump.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -676,7 +686,7 @@
     }
   },
   "imageNoSizeOne": {
-    "message": "width と height の無い画像が 1 個あります。読み込み中にレイアウトがずれます",
+    "message": "width と height の無い画像が 1 個あります",
     "description": "Used when exactly one image is missing its dimensions."
   },
   "imageSizeComparison": {
@@ -1023,7 +1033,7 @@
   },
   "tokenPaletteSprawl": {
     "message": "ほぼ同じ色が $colours$ 個、$clusters$ グループにまとまっています。パレットがより少ないトークンを想定していたか、ご自身で判断してください",
-    "description": "Listed rather than asserted: Krafty does not know the design system.",
+    "description": "Listed rather than asserted: Krafty does not know the design system. The same red, green and blue at another opacity is one colour, so it is not counted again in a cluster.",
     "placeholders": {
       "colours": {
         "content": "$1",
@@ -1148,8 +1158,8 @@
     "description": "Copy button label for the tab order list."
   },
   "targetUndersized": {
-    "message": "$count$ 件の操作対象が、一辺 24 CSS ピクセルより小さい",
-    "description": "A measurement, not a verdict: the control's box is under 24px on at least one side. Spacing around it is not judged.",
+    "message": "$count$ 件の操作対象が、幅も高さも 24 CSS ピクセルより小さい",
+    "description": "A measurement, not a verdict: both sides of the box are under 24px. A control short only by its line is left out. Spacing is not judged.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -1158,20 +1168,30 @@
     }
   },
   "targetUndersizedOne": {
-    "message": "1 件の操作対象が、一辺 24 CSS ピクセルより小さい",
-    "description": "Used when exactly one control is under 24px on a side."
+    "message": "1 件の操作対象が、幅も高さも 24 CSS ピクセルより小さい",
+    "description": "Used when exactly one control is under 24px on both sides."
   },
   "targetSectionList": {
     "message": "小さい操作対象",
     "description": "Heading of the section listing controls under 24 CSS pixels."
   },
   "targetListLabel": {
-    "message": "一辺が 24px 未満",
+    "message": "幅も高さも 24px 未満",
     "description": "Label above the list of small controls. Each row shows the measured size."
   },
   "targetReviewNote": {
-    "message": "文中のリンクは含みません。周囲の間隔は測っていないので、小さくても問題ないことがあります。",
+    "message": "文中のリンクと、行の高さだけが短い操作は含みません。同じ文言は1行です。周囲の間隔は測っていないので、小さくても問題ないことがあります。",
     "description": "Why the list is not a pass or fail against the target-size rule."
+  },
+  "targetGroupCount": {
+    "message": "$count$ 件",
+    "description": "How many controls share this row. Same wording, or the same measured size when there is no wording.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "42"
+      }
+    }
   },
   "checkNoindex": {
     "message": "robots に noindex が指定されています。このページは検索結果に載らないよう要求しています",
@@ -1272,8 +1292,8 @@
     }
   },
   "checkTooLong": {
-    "message": "$tag$ が $count$ 文字あり、省略される可能性があります",
-    "description": "Length only - whether the text is right is a human question.",
+    "message": "$tag$ が $count$ 文字あります",
+    "description": "The count only. Search results cut by width, which differs by script, so the finding does not say the text will be cut off.",
     "placeholders": {
       "tag": {
         "content": "$1",
@@ -1288,6 +1308,24 @@
   "checkRefresh": {
     "message": "meta http-equiv=refresh により別ページへ転送されます",
     "description": "A redirect hidden in the markup."
+  },
+  "checkJsonLd": {
+    "message": "JSON-LD が JSON として読めません",
+    "description": "A script type=application/ld+json whose text does not parse. Absence of JSON-LD is not reported."
+  },
+  "checkJsonLdAt": {
+    "message": "$count$ 件中 $index$ 件目の JSON-LD が JSON として読めません",
+    "description": "Which block failed, when the page has more than one.",
+    "placeholders": {
+      "index": {
+        "content": "$1",
+        "example": "2"
+      },
+      "count": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
   },
   "checkOgImageSmall": {
     "message": "og:image が $width$x$height$ です。多くのサービスが推奨する 1200x630 を下回ります",
@@ -1504,7 +1542,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageBody": {
-    "message": "表示領域よりかなり大きく配信されている画像（CSS の background-image を含む）と、width / height 属性の無い画像を見つけ、どちらも一覧にしてページ上で指せます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
+    "message": "表示領域よりかなり大きく配信されている画像（CSS の background-image を含む）と、width / height 属性が無く枠もまだ無い画像を見つけ、どちらも一覧にしてページ上で指せます。高精細ディスプレイ向けの画像は正しく作られていれば指摘しません。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversTitle": {
@@ -1528,7 +1566,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualTokenBody": {
-    "message": "ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ値や、読み込まれていない書体は断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。",
+    "message": "ページが実際に描いている色・フォント・角丸・影を一覧にし、先頭に「トークンが締まっているか」が分かる件数を出します。ほぼ同じ値や、読み込まれていない書体は断定せず一覧で示します。デザインシステムは Krafty が知らないので、システム外かどうかは主張しません。同じ色で透明度だけが違うものは、その指摘では1色です。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
@@ -1576,7 +1614,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualTargetBody": {
-    "message": "ボタンとリンクのうち、一辺が 24 CSS ピクセルより小さいものを、測った寸法つきで並べます。文中のリンクは含めません。寸法は事実で、周囲の間隔まで含めた合否は出しません。",
+    "message": "ボタンとリンクのうち、幅も高さも 24 CSS ピクセルより小さいものを、測った寸法つきで並べます。同じ文言は1行にまとめ、件数を添えます。文中のリンクと、行の高さだけが短い操作は含めません。寸法は事実で、周囲の間隔まで含めた合否は出しません。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualSpacingTitle": {

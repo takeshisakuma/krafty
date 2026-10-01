@@ -651,6 +651,16 @@
     "message": "Served larger than the box",
     "description": "Label above the list of oversized background images."
   },
+  "imageBgRepeat": {
+    "message": "$count$ places",
+    "description": "How many boxes share this background row. A sprite sheet, the same file at a different position in each box, is not listed.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "19"
+      }
+    }
+  },
   "imageBgUnmeasured": {
     "message": "$count$ background images could not be measured",
     "description": "A background url() that failed to load has no natural size.",
@@ -666,8 +676,8 @@
     "description": "Used when exactly one background image was not measurable."
   },
   "imageNoSize": {
-    "message": "$count$ images have no width and height: the layout jumps as they load",
-    "description": "Without the attributes the browser cannot reserve the space.",
+    "message": "$count$ images have no width and height",
+    "description": "The attributes only. A box already reserved — aspect-ratio, both dimensions on the element, or a parent ratio — is not listed, and the finding does not say the layout will jump.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -676,7 +686,7 @@
     }
   },
   "imageNoSizeOne": {
-    "message": "1 image has no width and height: the layout jumps as it loads",
+    "message": "1 image has no width and height",
     "description": "Used when exactly one image is missing its dimensions."
   },
   "imageSizeComparison": {
@@ -1023,7 +1033,7 @@
   },
   "tokenPaletteSprawl": {
     "message": "$colours$ near-identical colours sit in $clusters$ clusters — weigh whether the palette meant fewer tokens",
-    "description": "Listed rather than asserted: Krafty does not know the design system.",
+    "description": "Listed rather than asserted: Krafty does not know the design system. The same red, green and blue at another opacity is one colour, so it is not counted again in a cluster.",
     "placeholders": {
       "colours": {
         "content": "$1",
@@ -1148,8 +1158,8 @@
     "description": "Copy button label for the tab order list."
   },
   "targetUndersized": {
-    "message": "$count$ controls are smaller than 24 CSS pixels on a side",
-    "description": "A measurement, not a verdict: the control's box is under 24px on at least one side. Spacing around it is not judged.",
+    "message": "$count$ controls are smaller than 24 CSS pixels on both sides",
+    "description": "A measurement, not a verdict: both sides of the box are under 24px. A control short only by its line is left out. Spacing is not judged.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -1158,20 +1168,30 @@
     }
   },
   "targetUndersizedOne": {
-    "message": "1 control is smaller than 24 CSS pixels on a side",
-    "description": "Used when exactly one control is under 24px on a side."
+    "message": "1 control is smaller than 24 CSS pixels on both sides",
+    "description": "Used when exactly one control is under 24px on both sides."
   },
   "targetSectionList": {
     "message": "The small controls",
     "description": "Heading of the section listing controls under 24 CSS pixels."
   },
   "targetListLabel": {
-    "message": "Smaller than 24px on a side",
+    "message": "Under 24px on both sides",
     "description": "Label above the list of small controls. Each row shows the measured size."
   },
   "targetReviewNote": {
-    "message": "Links sitting in a sentence are left out. Space around a control is not measured, so a small one can still be fine.",
+    "message": "Links sitting in a sentence are left out, and so is a control whose only short side is its line. The same wording is one row. Space around a control is not measured, so a small one can still be fine.",
     "description": "Why the list is not a pass or fail against the target-size rule."
+  },
+  "targetGroupCount": {
+    "message": "×$count$",
+    "description": "How many controls share this row. Same wording, or the same measured size when there is no wording.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "42"
+      }
+    }
   },
   "checkNoindex": {
     "message": "robots contains noindex: this page asks not to be listed in search results",
@@ -1272,8 +1292,8 @@
     }
   },
   "checkTooLong": {
-    "message": "$tag$ is $count$ characters, long enough to be cut off",
-    "description": "Length only - whether the text is right is a human question.",
+    "message": "$tag$ is $count$ characters",
+    "description": "The count only. Search results cut by width, which differs by script, so the finding does not say the text will be cut off.",
     "placeholders": {
       "tag": {
         "content": "$1",
@@ -1288,6 +1308,24 @@
   "checkRefresh": {
     "message": "meta http-equiv=refresh sends visitors elsewhere",
     "description": "A redirect hidden in the markup."
+  },
+  "checkJsonLd": {
+    "message": "JSON-LD is not valid JSON",
+    "description": "A script type=application/ld+json whose text does not parse. Absence of JSON-LD is not reported."
+  },
+  "checkJsonLdAt": {
+    "message": "JSON-LD block $index$ of $count$ is not valid JSON",
+    "description": "Which block failed, when the page has more than one.",
+    "placeholders": {
+      "index": {
+        "content": "$1",
+        "example": "2"
+      },
+      "count": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
   },
   "checkOgImageSmall": {
     "message": "og:image is $width$x$height$, smaller than the 1200x630 most platforms want",
@@ -1504,7 +1542,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualImageBody": {
-    "message": "Find images — including CSS background-image — served much larger than the space they are shown in, and images with no width and height attributes — both listed so you can point at them on the page. Allows for high-density displays, so a correctly built retina image is not reported.",
+    "message": "Find images — including CSS background-image — served much larger than the space they are shown in, and images with no width and height attributes when the box is not already reserved — both listed so you can point at them on the page. Allows for high-density displays, so a correctly built retina image is not reported.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualLeftoversTitle": {
@@ -1528,7 +1566,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualTokenBody": {
-    "message": "List the colours, fonts, border radii and box shadows the page actually renders with, led by counts that show whether the tokens look disciplined. Near-identical values and a typeface that never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert off-system.",
+    "message": "List the colours, fonts, border radii and box shadows the page actually renders with, led by counts that show whether the tokens look disciplined. Near-identical values and a typeface that never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert off-system. The same colour at another opacity is one colour in that note.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualOutlineTitle": {
@@ -1576,7 +1614,7 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualTargetBody": {
-    "message": "List buttons and links whose box is smaller than 24 CSS pixels on a side, with the measured size. Inline links in a sentence are left out, and the size is not a verdict — space around a control can still make it fine.",
+    "message": "List buttons and links under 24 CSS pixels on both sides, with the measured size. The same wording is one row, with a count. Inline links in a sentence are left out, and so is a control whose only short side is its line. The size is not a verdict — space around a control can still make it fine.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualSpacingTitle": {

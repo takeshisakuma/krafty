@@ -430,8 +430,61 @@
       }
     }
 
-    /* Length only. Whether the words are the right words is the reader's
-       call, which is what the previews below are for. */
+    /* JSON-LD, only when a block is there and does not parse. A page with
+       none is not a defect: structured data is not required, so reporting
+       its absence would fire on most of the web.
+
+       A block wrapped in an HTML comment is unwrapped first. That used to
+       be how the block was hidden from old browsers, and the JSON inside
+       is what a consumer reads. The wrapper alone is not the break. */
+
+    /**
+     * @param {string} raw
+     */
+    const jsonLdText = (raw) => {
+      const text = raw.trim().replace(/^\uFEFF/, "");
+      const wrapped = text.match(/^<!--([\s\S]*)-->$/);
+
+      return (wrapped ? wrapped[1] : text).trim();
+    };
+
+    const jsonLd = [...document.querySelectorAll("script")].filter((script) => {
+      if (script.closest("template")) {
+        return false;
+      }
+
+      const type = (script.getAttribute("type") ?? "").trim().toLowerCase();
+
+      return (
+        type === "application/ld+json" ||
+        type.startsWith("application/ld+json;")
+      );
+    });
+
+    jsonLd.forEach((script, index) => {
+      try {
+        JSON.parse(jsonLdText(script.textContent ?? ""));
+      } catch (error) {
+        if (!(error instanceof SyntaxError)) {
+          throw error;
+        }
+
+        if (jsonLd.length === 1) {
+          report("alert", "checkJsonLd");
+        } else {
+          report("alert", "checkJsonLdAt", [
+            String(index + 1),
+            String(jsonLd.length),
+          ]);
+        }
+      }
+    });
+
+    /* The count only. 60 and 160 are the conventional character budgets.
+       A search result cuts by width, and a Japanese string is cut sooner
+       than an English one of the same length, so the finding does not say
+       that this text will be cut off. Whether the words are the right words
+       is the reader's call, which is what the previews below are for. */
     if (length(pageTitle) > 60) {
       report("note", "checkTooLong", ["title", String(length(pageTitle))]);
     }

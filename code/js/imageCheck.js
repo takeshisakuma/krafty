@@ -7,10 +7,17 @@
    page off is the one asked why it is slow. The same waste happens when the
    photograph is a CSS background-image on a hero — those are measured too,
    after loading each url() into an Image so the natural size is known.
+   A sprite sheet is left out: the same file with a different position in
+   each box is one icon cut from a sheet, not a photograph too big for its
+   slot. The same file shown the same way more than once is one row, with
+   a count.
 
-   No width and height attributes: the browser cannot reserve the space, so
-   the layout jumps as each image arrives. Backgrounds have no attributes to
-   miss, so that half stays on <img> only.
+   No width and height attributes. The finding says that and nothing about
+   what the layout will do, which this walk does not watch. An image whose
+   box is already reserved is left out: an aspect-ratio of its own, both
+   dimensions set on the element, or an absolutely positioned image in a
+   parent that has an aspect-ratio. Backgrounds have no attributes to miss,
+   so that half stays on <img> only.
 
    The trap is high density displays. A correctly built page serves roughly
    twice the CSS size so the image is sharp on a retina screen, and a flat
@@ -126,6 +133,84 @@
     return urls;
   };
 
+  /**
+   * Comma-separated layer lists. A comma inside parentheses, as in a
+   * gradient, is not a layer boundary.
+   *
+   * @param {string} value
+   * @returns {string[]}
+   */
+  const layersOf = (value) => {
+    if (!value || value === "none") {
+      return [];
+    }
+
+    /** @type {string[]} */
+    const parts = [];
+    let current = "";
+    let depth = 0;
+
+    for (const char of value) {
+      if (char === "(") {
+        depth += 1;
+      } else if (char === ")") {
+        depth -= 1;
+      }
+
+      if (char === "," && depth === 0) {
+        parts.push(current.trim());
+        current = "";
+        continue;
+      }
+
+      current += char;
+    }
+
+    if (current.trim() !== "") {
+      parts.push(current.trim());
+    }
+
+    return parts;
+  };
+
+  /**
+   * Whether the page has already given this image a box, so a missing
+   * width or height attribute is not the thing to report.
+   *
+   * @param {HTMLImageElement} image
+   */
+  const boxReserved = (image) => {
+    /** @param {string} value */
+    const reserved = (value) =>
+      Boolean(value) && value !== "auto" && !value.startsWith("auto");
+
+    const style = getComputedStyle(image);
+
+    if (reserved(style.aspectRatio)) {
+      return true;
+    }
+
+    const inlineWidth = image.style.width;
+    const inlineHeight = image.style.height;
+
+    if (
+      inlineWidth !== "" &&
+      inlineWidth !== "auto" &&
+      inlineHeight !== "" &&
+      inlineHeight !== "auto"
+    ) {
+      return true;
+    }
+
+    const parent = image.parentElement;
+
+    return (
+      (style.position === "absolute" || style.position === "fixed") &&
+      parent !== null &&
+      reserved(getComputedStyle(parent).aspectRatio)
+    );
+  };
+
   /* Everything below runs again when the panel's rescan button is pressed,
      which is why the toggle is not part of it. */
   const run = async () => {
@@ -153,7 +238,7 @@
 
     /** @type {{ src: string, natural: string, shown: string, ratio: number, element: Element }[]} */
     const oversized = [];
-    /** @type {{ src: string, natural: string, shown: string, ratio: number, element: Element }[]} */
+    /** @type {{ src: string, natural: string, shown: string, ratio: number, element: Element, position: string }[]} */
     const oversizedBackgrounds = [];
     /** @type {HTMLImageElement[]} */
     const missingDimensions = [];
@@ -177,7 +262,13 @@
         continue;
       }
 
-      if (!image.hasAttribute("width") || !image.hasAttribute("height")) {
+      /* The attributes are the fact. A box the page has already reserved is
+         not that fact told twice: the ratio, or both dimensions written on
+         the element, or a parent ratio the image is positioned into. */
+      if (
+        (!image.hasAttribute("width") || !image.hasAttribute("height")) &&
+        !boxReserved(image)
+      ) {
         missingDimensions.push(image);
       }
 
@@ -209,7 +300,7 @@
     /* Background images: same waste rule against the element's box. cover /
        contain and multi-layer stacks are not modelled - the box is what the
        layout reserved, which is the honest half of the comparison. */
-    /** @type {{ element: Element, src: string, shownWidth: number, shownHeight: number }[]} */
+    /** @type {{ element: Element, src: string, shownWidth: number, shownHeight: number, position: string }[]} */
     const backgroundJobs = [];
 
     for (const element of document.body.querySelectorAll("*")) {
@@ -224,10 +315,18 @@
         continue;
       }
 
-      const urls = backgroundUrls(getComputedStyle(element).backgroundImage);
+      const style = getComputedStyle(element);
+      const urls = backgroundUrls(style.backgroundImage);
+      const positions = layersOf(style.backgroundPosition);
 
-      for (const src of urls) {
-        backgroundJobs.push({ element, src, shownWidth, shownHeight });
+      for (const [index, src] of urls.entries()) {
+        backgroundJobs.push({
+          element,
+          src,
+          shownWidth,
+          shownHeight,
+          position: positions[index] ?? "",
+        });
       }
     }
 
@@ -256,6 +355,7 @@
           shown: `${job.shownWidth}×${job.shownHeight}`,
           ratio,
           element: job.element,
+          position: job.position,
         });
       }
     }
@@ -264,9 +364,52 @@
       return;
     }
 
-    /* Largest waste first: that is the order they are worth fixing in. */
+    /* Largest waste first: that is the order they are worth fixing in.
+       A sprite is the same file parked at a different position in each
+       box, so the sheet's size is not the size of the icon. The same
+       file shown the same way is one row, and the count is how many
+       boxes it fills. */
     oversized.sort((a, b) => b.ratio - a.ratio);
     oversizedBackgrounds.sort((a, b) => b.ratio - a.ratio);
+
+    /** @type {Map<string, { src: string, natural: string, shown: string, ratio: number, element: Element, position: string }[]>} */
+    const backgroundsBySrc = new Map();
+
+    for (const entry of oversizedBackgrounds) {
+      const group = backgroundsBySrc.get(entry.src);
+
+      if (group) {
+        group.push(entry);
+      } else {
+        backgroundsBySrc.set(entry.src, [entry]);
+      }
+    }
+
+    /** @type {{ src: string, natural: string, shown: string, ratio: number, element: Element, count: number }[]} */
+    const backgroundRows = [];
+
+    for (const group of backgroundsBySrc.values()) {
+      const positions = new Set(group.map((entry) => entry.position));
+
+      if (positions.size > 1) {
+        continue;
+      }
+
+      backgroundRows.push({
+        src: group[0].src,
+        natural: group[0].natural,
+        shown: group[0].shown,
+        ratio: group[0].ratio,
+        element: group[0].element,
+        count: group.length,
+      });
+    }
+
+    backgroundRows.sort((a, b) => b.ratio - a.ratio);
+    const backgroundCount = backgroundRows.reduce(
+      (sum, row) => sum + row.count,
+      0
+    );
 
     /* --- the panel --- */
 
@@ -293,10 +436,10 @@
       reportText("note", kraftyCount("imageOversized", oversized.length));
     }
 
-    if (oversizedBackgrounds.length > 0) {
+    if (backgroundCount > 0) {
       reportText(
         "note",
-        kraftyCount("imageBgOversized", oversizedBackgrounds.length)
+        kraftyCount("imageBgOversized", backgroundCount)
       );
     }
 
@@ -326,7 +469,7 @@
     /**
      * @param {string} sectionKey
      * @param {string} labelKey
-     * @param {{ src: string, natural: string, shown: string, ratio: number, element: Element }[]} rows
+     * @param {{ src: string, natural: string, shown: string, ratio: number, element: Element, count?: number }[]} rows
      * @param {boolean} withBasis
      */
     const listOversized = (sectionKey, labelKey, rows, withBasis) => {
@@ -339,10 +482,14 @@
         () =>
           [
             location.href,
-            ...rows.map(
-              (entry) =>
-                `- ${entry.natural} → ${entry.shown} (×${entry.ratio.toFixed(1)}) ${entry.src}`
-            ),
+            ...rows.map((entry) => {
+              const count =
+                entry.count !== undefined && entry.count > 1
+                  ? ` ${kraftyMessage("imageBgRepeat", [String(entry.count)])}`
+                  : "";
+
+              return `- ${entry.natural} → ${entry.shown} (×${entry.ratio.toFixed(1)})${count} ${entry.src}`;
+            }),
           ].join("\n")
       );
 
@@ -366,6 +513,15 @@
         times.className = "kraftyImageRatio";
         times.textContent = `×${entry.ratio.toFixed(1)}`;
         sizes.appendChild(times);
+
+        if (entry.count !== undefined && entry.count > 1) {
+          const repeat = document.createElement("span");
+          repeat.className = "kraftyImageRatio";
+          repeat.textContent = kraftyMessage("imageBgRepeat", [
+            String(entry.count),
+          ]);
+          sizes.appendChild(repeat);
+        }
 
         item.appendChild(sizes);
 
@@ -403,15 +559,15 @@
         "imageSectionList",
         "imageListLabel",
         oversized,
-        oversizedBackgrounds.length === 0
+        backgroundRows.length === 0
       );
     }
 
-    if (oversizedBackgrounds.length > 0) {
+    if (backgroundRows.length > 0) {
       listOversized(
         "imageSectionBackgrounds",
         "imageBgListLabel",
-        oversizedBackgrounds,
+        backgroundRows,
         true
       );
     }
