@@ -75,22 +75,10 @@
    * @param {HTMLElement} element
    */
   const nameOf = (element) => {
-    const labelledBy = (element.getAttribute("aria-labelledby") ?? "").trim();
+    const named = kraftyTextByIds(element.getAttribute("aria-labelledby") ?? "");
 
-    if (labelledBy !== "") {
-      const named = labelledBy
-        .split(/\s+/)
-        .map((id) =>
-          (document.getElementById(id)?.textContent ?? "")
-            .replace(/\s+/g, " ")
-            .trim()
-        )
-        .filter(Boolean)
-        .join(" ");
-
-      if (named !== "") {
-        return named;
-      }
+    if (named !== "") {
+      return named;
     }
 
     const label = (element.getAttribute("aria-label") ?? "").trim();
@@ -292,12 +280,7 @@
       reviewSection.appendChild(list);
     }
 
-    const scanned = document.createElement("div");
-    scanned.className = "kraftyPanelNote";
-    scanned.textContent = kraftyMessage("panelScannedAt", [
-      new Date().toLocaleTimeString(),
-    ]);
-    body.appendChild(scanned);
+    kraftyScannedNote(body);
 
     document.body.appendChild(panel);
   };

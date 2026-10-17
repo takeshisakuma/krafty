@@ -230,22 +230,12 @@
 
      @param {Element} element */
   const accessibleName = (element) => {
-    const labelledBy = (element.getAttribute("aria-labelledby") ?? "").trim();
+    const named = kraftyTextByIds(
+      element.getAttribute("aria-labelledby") ?? "",
+    );
 
-    if (labelledBy !== "") {
-      const named = labelledBy
-        .split(/\s+/)
-        .map((id) =>
-          (document.getElementById(id)?.textContent ?? "")
-            .replace(/\s+/g, " ")
-            .trim()
-        )
-        .filter(Boolean)
-        .join(" ");
-
-      if (named !== "") {
-        return named;
-      }
+    if (named !== "") {
+      return named;
     }
 
     const label = (element.getAttribute("aria-label") ?? "").trim();
@@ -390,21 +380,12 @@
 
     /** @param {Element} field */
     const isNamed = (field) => {
-      const labelledBy = (field.getAttribute("aria-labelledby") ?? "").trim();
-
-      if (labelledBy !== "") {
-        /* Only if it resolves. A reference to an id that is not on the page
-           names nothing, which is the failure this check exists to find. */
-        const named = labelledBy
-          .split(/\s+/)
-          .some(
-            (id) =>
-              (document.getElementById(id)?.textContent ?? "").trim() !== ""
-          );
-
-        if (named) {
-          return true;
-        }
+      /* Only if it resolves. A reference to an id that is not on the page
+         names nothing, which is the failure this check exists to find. */
+      if (
+        kraftyTextByIds(field.getAttribute("aria-labelledby") ?? "") !== ""
+      ) {
+        return true;
       }
 
       if ((field.getAttribute("aria-label") ?? "").trim() !== "") {
@@ -1414,12 +1395,7 @@
       );
     }
 
-    const scanned = document.createElement("div");
-    scanned.className = "kraftyPanelNote";
-    scanned.textContent = kraftyMessage("panelScannedAt", [
-      new Date().toLocaleTimeString(),
-    ]);
-    body.appendChild(scanned);
+    kraftyScannedNote(body);
 
     document.body.appendChild(panel);
   };

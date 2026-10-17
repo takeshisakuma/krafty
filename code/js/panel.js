@@ -454,6 +454,54 @@
     };
   };
 
+  /**
+   * The line a reporting panel ends on: when this scan ran.
+   *
+   * The default is what every panel but the token one prints, a div and the
+   * time of day. The token panel already shipped a paragraph carrying the
+   * date as well, and passing those in keeps that line what it was.
+   *
+   * @param {HTMLElement} into
+   * @param {{ tag?: "div" | "p", time?: string }} [options]
+   */
+  globalThis.kraftyScannedNote = (into, options = {}) => {
+    const scanned = document.createElement(options.tag ?? "div");
+    scanned.className = "kraftyPanelNote";
+    scanned.textContent = kraftyMessage("panelScannedAt", [
+      options.time ?? new Date().toLocaleTimeString(),
+    ]);
+    into.appendChild(scanned);
+  };
+
+  /**
+   * The text an aria-labelledby value resolves to, or "" when it resolves
+   * to nothing.
+   *
+   * Ids are split on whitespace. Each one's text is collapsed and joined,
+   * and an id that is not on the page, or whose element has no text,
+   * contributes nothing. A reference that names nothing therefore comes
+   * back empty and the caller falls through, which is the failure the
+   * field check exists to find.
+   *
+   * Only this step is shared. What counts as a name after it is not: a
+   * landmark must not read its own text, a link must, a field reads the
+   * label it is wired to. Those stay in the checker that decided them.
+   *
+   * @param {string} labelledBy
+   * @returns {string}
+   */
+  globalThis.kraftyTextByIds = (labelledBy) =>
+    labelledBy
+      .trim()
+      .split(/\s+/)
+      .map((id) =>
+        (document.getElementById(id)?.textContent ?? "")
+          .replace(/\s+/g, " ")
+          .trim(),
+      )
+      .filter(Boolean)
+      .join(" ");
+
   /* Point at the flagged element on the page (item 23).
 
      A row shows the descriptor `locate()` builds - `a > svg`,

@@ -826,12 +826,7 @@
       referenceSection.appendChild(row);
     }
 
-    const scanned = document.createElement("div");
-    scanned.className = "kraftyPanelNote";
-    scanned.textContent = kraftyMessage("panelScannedAt", [
-      new Date().toLocaleTimeString(),
-    ]);
-    body.appendChild(scanned);
+    kraftyScannedNote(body);
 
     document.body.appendChild(panel);
   };

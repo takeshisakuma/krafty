@@ -687,12 +687,12 @@
       );
     }
 
-    const scanned = document.createElement("p");
-    scanned.className = "kraftyPanelNote";
-    scanned.textContent = kraftyMessage("panelScannedAt", [
-      new Date().toLocaleString(),
-    ]);
-    body.appendChild(scanned);
+    /* A paragraph, and the date with the time. The other panels use a div
+       and the time alone; this one already prints the longer stamp. */
+    kraftyScannedNote(body, {
+      tag: "p",
+      time: new Date().toLocaleString(),
+    });
 
     document.body.appendChild(panel);
   };

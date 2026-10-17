@@ -60,6 +60,18 @@ declare var kraftyFindings: (into: HTMLElement) => {
   reportText: (level: "alert" | "note", text: string) => void;
 };
 
+/* The "scanned at" line a reporting panel ends on. Defaults to a div and
+   the time of day; the token panel passes a paragraph and the date too. */
+declare var kraftyScannedNote: (
+  into: HTMLElement,
+  options?: { tag?: "div" | "p"; time?: string }
+) => void;
+
+/* Text an aria-labelledby value resolves to, or "" when none of the ids
+   name an element that has text. The rest of each checker's name rules
+   stay in that checker. */
+declare var kraftyTextByIds: (labelledBy: string) => string;
+
 /* A button that copies what its callback returns, with a fallback for
    http:// pages where navigator.clipboard does not exist. */
 declare var kraftyCopyButton: (
