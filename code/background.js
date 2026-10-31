@@ -13,14 +13,6 @@
 importScripts("checkers.js");
 
 chrome.commands.onCommand.addListener(async (command) => {
-  const checker = globalThis.kraftyCheckers.find(
-    (candidate) => candidate.command === command
-  );
-
-  if (!checker) {
-    return;
-  }
-
   const tabId = await globalThis.kraftyActiveTabId();
 
   if (tabId === null) {
@@ -28,6 +20,21 @@ chrome.commands.onCommand.addListener(async (command) => {
   }
 
   try {
+    /* Reset is not a checker. It re-runs whichever checkers are on, so it
+       cannot live in the table a command looks a checker up in. */
+    if (command === "reset") {
+      await globalThis.kraftyReset(tabId);
+      return;
+    }
+
+    const checker = globalThis.kraftyCheckers.find(
+      (candidate) => candidate.command === command
+    );
+
+    if (!checker) {
+      return;
+    }
+
     await globalThis.kraftyRunChecker(tabId, checker);
   } catch (error) {
     /* chrome:// pages, the web store, PDFs. Expected, not worth reporting. */

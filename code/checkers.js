@@ -4,11 +4,12 @@
    service worker.
 
    `panelId` marks the checkers that report findings, which is what the
-   popup's review button collects. Five without one - outline, brightness,
-   squint, spacing, dummy - draw over the page and have nothing to say in
+   popup's review button collects. Outline, brightness, squint, spacing,
+   dummy and manuscript draw over the page and have nothing to say in
    text. Alt draws too, and has no panel, but the review still asks it for
    counts. Dummy is left out on purpose: a review must not replace the
-   page it is describing.
+   page it is describing. Manuscript is left out for the same shape of
+   reason: it restyles the page and reports nothing.
 
    Keyboard shortcuts are handled in a service worker, which cannot see the
    popup's script. Keeping a second copy of this table there would drift the
@@ -164,6 +165,15 @@ globalThis.kraftyCheckers = [
        the script can see and not edit. */
     allFrames: true,
   },
+  {
+    id: "js-manuscriptCheckButton",
+    command: "manuscript-check",
+    file: "js/manuscriptCheck.js",
+    bodyClass: "kraftyManuscriptChecker",
+    /* Each frame has its own text. A frame this cannot be injected into
+       keeps the styles it was served with. */
+    allFrames: true,
+  },
 ];
 
 /**
@@ -215,6 +225,34 @@ globalThis.kraftyRunChecker = async (tabId, checker) => {
        the shell is built. i18n.js stays ahead of both for localised strings. */
     files: ["js/i18n.js", "js/panelCss.js", "js/panel.js", checker.file],
   });
+};
+
+/**
+ * Turn off every checker the top document currently has on.
+ *
+ * Re-runs each one rather than stripping its class. Dummy puts the original
+ * text back from the closure the first injection left behind, and a panel
+ * checker removes its panel on the way out. A class removed from outside
+ * would leave both in place. The body class on the top document is the same
+ * signal the popup uses to draw a button as active. An all-frames checker is
+ * injected the same way it was turned on, so a frame it reached is turned
+ * off with it.
+ *
+ * @param {number} tabId
+ */
+globalThis.kraftyReset = async (tabId) => {
+  const [injection] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: () => (document.body ? Array.from(document.body.classList) : []),
+  });
+
+  const active = new Set(injection?.result ?? []);
+
+  for (const checker of globalThis.kraftyCheckers) {
+    if (active.has(checker.bodyClass)) {
+      await globalThis.kraftyRunChecker(tabId, checker);
+    }
+  }
 };
 
 /**

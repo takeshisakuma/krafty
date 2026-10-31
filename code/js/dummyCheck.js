@@ -10,7 +10,10 @@
 
    A canvas, a video frame and a document this script cannot open still
    paint their real pixels, so each is covered with a patch of the same
-   box. The patch is labelled: a plain grey rectangle would look like the
+   box. The patch is the next sibling of that box and takes the same layer.
+   A full-viewport video painted behind the page then stays behind it: a
+   patch appended to the body, above every layer, would hide the words in
+   front. The patch is labelled: a plain grey rectangle would look like the
    design, and the point of the mode is that a person can see what was not
    rewritten. An inline drawing is left. It is paths, not a photograph, and
    blanking every icon would throw the layout's chrome away.
@@ -660,6 +663,203 @@
     };
 
     /**
+     * Parent in the flat tree. A shadow root is not an element, so the walk
+     * steps out to the host; that host is the containing block when it is
+     * the thing a fixed descendant positions against.
+     *
+     * @param {Element} element
+     * @returns {Element | null}
+     */
+    const ancestor = (element) => {
+      if (element.parentElement) {
+        return element.parentElement;
+      }
+
+      const root = element.getRootNode();
+
+      return root instanceof ShadowRoot ? root.host : null;
+    };
+
+    /**
+     * Transform, filter, perspective and a few containment values make an
+     * ancestor the containing block for a fixed descendant. The patch has
+     * to be measured against that box, or a translated hero video lands
+     * the patch on the viewport's origin instead of on the video.
+     *
+     * @param {CSSStyleDeclaration} style
+     */
+    const trapsFixed = (style) => {
+      if (style.transform !== "none") {
+        return true;
+      }
+
+      if (style.filter !== "none") {
+        return true;
+      }
+
+      if (style.perspective !== "none") {
+        return true;
+      }
+
+      if (style.backdropFilter !== "none") {
+        return true;
+      }
+
+      if (style.translate !== "none" || style.rotate !== "none" || style.scale !== "none") {
+        return true;
+      }
+
+      if (style.contain && /\b(paint|layout|strict|content)\b/.test(style.contain)) {
+        return true;
+      }
+
+      if (style.containerType && style.containerType !== "normal") {
+        return true;
+      }
+
+      return style.willChange !== "auto" && /(transform|perspective|filter|contain)/.test(style.willChange);
+    };
+
+    /**
+     * @param {Element} element
+     * @param {(style: CSSStyleDeclaration) => boolean} match
+     * @returns {Element | null}
+     */
+    const findAncestor = (element, match) => {
+      let node = ancestor(element);
+
+      while (node) {
+        if (match(getComputedStyle(node))) {
+          return node;
+        }
+
+        if (node === document.documentElement) {
+          return null;
+        }
+
+        node = ancestor(node);
+      }
+
+      return null;
+    };
+
+    /**
+     * Author styles on a div inside the page beat a normal inline
+     * declaration. The patch's box and layer are written important so a
+     * reset on every element cannot pull it back into the flow or up
+     * above the page.
+     *
+     * @param {HTMLElement} element
+     * @param {string} name
+     * @param {string} value
+     */
+    const paint = (element, name, value) => {
+      element.style.setProperty(name, value, "important");
+    };
+
+    /**
+     * Keep the patch immediately after the box. Tree order is what puts it
+     * above that box when they share a layer. Appending it to the body
+     * would leave the ancestor that pushed a background video behind the
+     * page, and the patch would paint over the words.
+     *
+     * @param {Element} element
+     * @param {HTMLElement} mask
+     */
+    const beside = (element, mask) => {
+      if (!element.parentNode) {
+        return;
+      }
+
+      if (mask.parentNode === element.parentNode && mask.previousElementSibling === element) {
+        return;
+      }
+
+      element.after(mask);
+    };
+
+    /**
+     * @param {HTMLElement} mask
+     * @param {number} left
+     * @param {number} top
+     * @param {number} width
+     * @param {number} height
+     * @param {"absolute" | "fixed"} position
+     */
+    const box = (mask, left, top, width, height, position) => {
+      paint(mask, "position", position);
+      paint(mask, "left", `${left}px`);
+      paint(mask, "top", `${top}px`);
+      paint(mask, "width", `${width}px`);
+      paint(mask, "height", `${height}px`);
+    };
+
+    /**
+     * @param {Element} element
+     * @param {HTMLElement} mask
+     */
+    const pin = (element, mask) => {
+      const style = getComputedStyle(element);
+
+      /* Including "auto". A page rule with a higher index would otherwise
+         lift the patch out of this box's layer. */
+      paint(mask, "z-index", style.zIndex);
+
+      const anchor = findAncestor(
+        element,
+        (parent) => parent.position !== "static" || trapsFixed(parent)
+      );
+
+      /* Same local box as the element, so a transformed parent moves both.
+         Fixed and sticky are skipped: their offset is the layout position,
+         not the viewport position a fixed patch has to follow. */
+      if (
+        element instanceof HTMLElement &&
+        style.position !== "fixed" &&
+        style.position !== "sticky" &&
+        anchor &&
+        element.offsetParent === anchor &&
+        style.transform === "none"
+      ) {
+        box(
+          mask,
+          element.offsetLeft,
+          element.offsetTop,
+          element.offsetWidth,
+          element.offsetHeight,
+          "absolute"
+        );
+        return;
+      }
+
+      /* A fixed box inside a transformed ancestor positions against that
+         ancestor, not the viewport. offset* is already in that space. */
+      const trap = findAncestor(element, trapsFixed);
+
+      if (
+        element instanceof HTMLElement &&
+        style.position === "fixed" &&
+        trap &&
+        element.offsetParent === trap &&
+        style.transform === "none"
+      ) {
+        box(
+          mask,
+          element.offsetLeft,
+          element.offsetTop,
+          element.offsetWidth,
+          element.offsetHeight,
+          "fixed"
+        );
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+
+      box(mask, rect.left, rect.top, rect.width, rect.height, "fixed");
+    };
+
+    /**
      * @param {Set<Element>} wanted
      */
     const settleCovers = (wanted) => {
@@ -674,11 +874,13 @@
         mask.className = "kraftyDummyMask";
         mask.dataset.label = kraftyMessage(key ?? "dummyCoverFrame");
         mask.setAttribute("aria-hidden", "true");
-        mask.style.position = "fixed";
-        mask.style.zIndex = "2147483646";
-        mask.style.pointerEvents = "none";
-        mask.style.boxSizing = "border-box";
-        document.body.append(mask);
+        paint(mask, "margin", "0");
+        paint(mask, "right", "auto");
+        paint(mask, "bottom", "auto");
+        paint(mask, "max-width", "none");
+        paint(mask, "max-height", "none");
+        paint(mask, "pointer-events", "none");
+        paint(mask, "box-sizing", "border-box");
         covers.set(element, mask);
       }
 
@@ -696,16 +898,17 @@
       for (const [element, mask] of covers) {
         const rect = element.getBoundingClientRect();
 
-        if (rect.width < 1 || rect.height < 1) {
+        if (!element.isConnected || rect.width < 1 || rect.height < 1) {
           mask.hidden = true;
           continue;
         }
 
         mask.hidden = false;
-        mask.style.left = `${rect.left}px`;
-        mask.style.top = `${rect.top}px`;
-        mask.style.width = `${rect.width}px`;
-        mask.style.height = `${rect.height}px`;
+        /* Out of flow before it is inserted, so measuring the box does not
+           include a patch that is still a static div. */
+        paint(mask, "position", "fixed");
+        beside(element, mask);
+        pin(element, mask);
       }
     };
 

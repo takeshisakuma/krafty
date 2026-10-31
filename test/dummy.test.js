@@ -240,4 +240,158 @@ test("dummy checker", async (t) => {
     assert.strictEqual(seen.secret, "xxx xxxxxx");
     assert.strictEqual(seen.restored, "Ada launch");
   });
+
+  await t.test("a background video's patch stays behind the words in front of it", async () => {
+    const seen = await withPage(
+      {
+        html: `
+          <div id="ground" style="position:fixed;inset:0;z-index:-1">
+            <div id="mov" style="position:absolute;inset:0;transform:translate(-40px,-30px)">
+              <video id="bg" style="display:block;width:100vw;height:100vh"></video>
+            </div>
+          </div>
+          <h1 id="title" style="position:relative;margin:16px">Ada launch</h1>
+          <video id="back" style="position:fixed;z-index:-1;left:360px;top:220px;width:160px;height:90px"></video>
+          <p id="over" style="position:absolute;left:360px;top:220px;margin:0">Ada launch</p>
+          <canvas id="plain" width="50" height="30" style="display:block"></canvas>
+          <div id="modal" style="position:fixed;z-index:40;left:8px;bottom:8px;width:120px;height:70px;background:#fff">
+            <canvas id="modalPaint" width="100" height="50"></canvas>
+          </div>
+        `,
+        checkers: ["dummyCheck"],
+      },
+      async (page) =>
+        page.evaluate(() => {
+          /**
+           * @param {string} id
+           */
+          const boxOf = (id) => document.getElementById(id)?.getBoundingClientRect() ?? null;
+
+          /**
+           * @param {Element | null} element
+           */
+          const maskFor = (element) => {
+            const next = element?.nextElementSibling;
+
+            return next instanceof HTMLElement && next.classList.contains("kraftyDummyMask")
+              ? next
+              : null;
+          };
+
+          /**
+           * @param {DOMRect | null} rect
+           * @param {HTMLElement | null} mask
+           */
+          const delta = (rect, mask) => {
+            if (!rect || !mask) {
+              return null;
+            }
+
+            const box = mask.getBoundingClientRect();
+
+            return {
+              dw: Math.abs(box.width - rect.width),
+              dh: Math.abs(box.height - rect.height),
+              dx: Math.abs(box.left - rect.left),
+              dy: Math.abs(box.top - rect.top),
+            };
+          };
+
+          /**
+           * @param {number} x
+           * @param {number} y
+           * @param {Element | null} front
+           * @param {Element | null} back
+           */
+          const order = (x, y, front, back) => {
+            const stack = document.elementsFromPoint(x, y);
+
+            return {
+              front: front ? stack.indexOf(front) : -1,
+              back: back ? stack.indexOf(back) : -1,
+            };
+          };
+
+          const title = document.getElementById("title");
+          const bg = document.getElementById("bg");
+          const back = document.getElementById("back");
+          const over = document.getElementById("over");
+          const plain = document.getElementById("plain");
+          const modalPaint = document.getElementById("modalPaint");
+          const bgMask = maskFor(bg);
+          const backMask = maskFor(back);
+          const plainMask = maskFor(plain);
+          const modalMask = maskFor(modalPaint);
+
+          /* The patch does not take hits, so the hit list would skip it and
+             the words would look like they had nothing behind them. */
+          for (const mask of [bgMask, backMask, plainMask, modalMask]) {
+            mask?.style.setProperty("pointer-events", "auto");
+          }
+          const titleBox = boxOf("title");
+          const overBox = boxOf("over");
+          const plainBox = boxOf("plain");
+          const modalBox = boxOf("modalPaint");
+
+          return {
+            title: title?.textContent ?? "",
+            over: over?.textContent ?? "",
+            bg: delta(boxOf("bg"), bgMask),
+            back: delta(boxOf("back"), backMask),
+            plain: delta(plainBox, plainMask),
+            modal: delta(modalBox, modalMask),
+            titleLayer: titleBox
+              ? order(titleBox.left + 8, titleBox.top + 8, title, bgMask)
+              : null,
+            overLayer: overBox ? order(overBox.left + 4, overBox.top + 4, over, backMask) : null,
+            plainLayer: plainBox
+              ? order(plainBox.left + plainBox.width / 2, plainBox.top + plainBox.height / 2, plainMask, plain)
+              : null,
+            modalLayer: modalBox
+              ? order(
+                  modalBox.left + modalBox.width / 2,
+                  modalBox.top + modalBox.height / 2,
+                  modalMask,
+                  modalPaint
+                )
+              : null,
+          };
+        })
+    );
+
+    assert.strictEqual(seen.title, "xxx xxxxxx");
+    assert.strictEqual(seen.over, "xxx xxxxxx");
+    assert.ok(seen.bg, "background video was not covered");
+    assert.ok(seen.back, "fixed video was not covered");
+    assert.ok(seen.plain, "canvas was not covered");
+    assert.ok(seen.modal, "canvas in a modal was not covered");
+
+    if (!seen.bg || !seen.back || !seen.plain || !seen.modal) {
+      return;
+    }
+
+    assert.ok(seen.bg.dw < 2 && seen.bg.dh < 2 && seen.bg.dx < 2 && seen.bg.dy < 2, `background patch ${JSON.stringify(seen.bg)}`);
+    assert.ok(
+      seen.back.dw < 2 && seen.back.dh < 2 && seen.back.dx < 2 && seen.back.dy < 2,
+      `fixed patch ${JSON.stringify(seen.back)}`
+    );
+    assert.ok(seen.plain.dw < 1 && seen.plain.dh < 1 && seen.plain.dx < 1 && seen.plain.dy < 1);
+    assert.ok(seen.modal.dw < 1 && seen.modal.dh < 1 && seen.modal.dx < 1 && seen.modal.dy < 1);
+    assert.ok(
+      seen.titleLayer && seen.titleLayer.front !== -1 && seen.titleLayer.front < seen.titleLayer.back,
+      `title should paint over the background patch, got ${JSON.stringify(seen.titleLayer)}`
+    );
+    assert.ok(
+      seen.overLayer && seen.overLayer.front !== -1 && seen.overLayer.front < seen.overLayer.back,
+      `copy should paint over the fixed video's patch, got ${JSON.stringify(seen.overLayer)}`
+    );
+    assert.ok(
+      seen.plainLayer && seen.plainLayer.front !== -1 && seen.plainLayer.front < seen.plainLayer.back,
+      `canvas patch should cover the canvas, got ${JSON.stringify(seen.plainLayer)}`
+    );
+    assert.ok(
+      seen.modalLayer && seen.modalLayer.front !== -1 && seen.modalLayer.front < seen.modalLayer.back,
+      `modal canvas should stay covered, got ${JSON.stringify(seen.modalLayer)}`
+    );
+  });
 });

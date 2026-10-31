@@ -8,7 +8,7 @@ This section and the Japanese one below it are the Chrome Web Store
 listing's description, one per locale. Paste them in as they are, minus the
 heading markers.
 
-Sixteen checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
+Seventeen checks you can turn on over any page, from the toolbar or from a keyboard shortcut you assign yourself. Nothing is sent anywhere: every check runs in your own browser, on the tab you are looking at, and Krafty collects no data at all. Available in English and Japanese, following your browser's language.
 
 ### Head Checker
 
@@ -70,6 +70,10 @@ One button under the checker list runs everything that reports and copies the re
 
 There is no total, on purpose. A single number would be a verdict on the whole page, including everything nothing looked at. Each checker says what it checked and nothing more.
 
+### Reset
+
+A button under the checker list closes every findings panel and turns off every overlay: the outlines, the blur, the monochrome, the manuscript, the stand-in text. Each one is switched off the same way as pressing it, so the original copy comes back and nothing of Krafty's is left on the page. It can take a keyboard shortcut, the same way a checker can.
+
 ### Image Checker
 
 Finds images served much larger than the space they are drawn in — a 1920×1080 file shown at 300×169 — including CSS `background-image` on heroes and sections, and lists them worst first, with the file name and the address ready to copy. A sprite sheet, the same file with a different position in each box, is left off that list. The same file shown the same way more than once is one row, with a count. Also lists images with no width and height attributes. An image whose box is already reserved — by an aspect-ratio, by both dimensions on the element, or by a parent ratio it is positioned into — is left off that list.
@@ -126,7 +130,11 @@ Widens line, letter, word and paragraph spacing to the point a reader's own styl
 
 Replaces the text, field values and pictures on the page with stand-ins of a similar size, so a screenshot does not carry a name, a line of copy or a picture that was not meant to be shared. Spaces are kept, and a wide character stays wide, so lines wrap where they did. Turn it off and the originals come back; they never leave the browser.
 
-A canvas, a video and a frame Krafty cannot open still paint their own pixels, so each is covered with a labelled patch of the same size. An inline drawing is left as drawn. Do not send a form while this is on: the fields are holding stand-ins. Krafty does not count any of it, and its own panels are left alone.
+A canvas, a video and a frame Krafty cannot open still paint their own pixels, so each is covered with a labelled patch of the same size. The patch stays in that box's layer, so a background video does not hide the words in front of it. An inline drawing is left as drawn. Do not send a form while this is on: the fields are holding stand-ins. Krafty does not count any of it, and its own panels are left alone.
+
+### Manuscript Check
+
+Shows the page as a manuscript: one column and plain type, so the words can be read and copied without the layout in the way. Writing runs across the column, including text the page had set vertically. A control keeps its words without the button drawn around it. It does not decide which part is the article. A header, a navigation and a footer that were on screen stay on screen, in the flow of the text. Anything the page had hidden stays hidden — a closed menu does not open — and a drawer that was off screen stays off screen. Pictures in the page stay, fitted to the column; decorative backgrounds go, so the words sit on white. Styles inside a shadow tree stay as the page drew them. Krafty's own panels are left alone.
 
 ### Open on a phone
 
@@ -138,7 +146,7 @@ The store's Japanese locale. Written rather than translated, so the two say
 the same things without matching sentence for sentence. Both need updating
 when a checker changes.
 
-Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。16のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
+Krafty はページの構造とメタデータを確認するためのブラウザ拡張機能です。17のチェックを、ツールバーから、あるいはご自身で割り当てたキーボードショートカットから、任意のページに重ねて表示できます。処理はすべてお使いのブラウザ内で完結し、どこにも送信しません。データの収集も一切ありません。表示言語はブラウザの設定に追従し、日本語と英語に対応しています。
 
 ### ヘッドチェッカー
 
@@ -196,6 +204,10 @@ head の全項目はその下に一覧で並びます。値ごとにコピーボ
 
 **合計は出しません。意図的です。** 1つの数字は、何も見ていない部分まで含めたページ全体への判定として読まれてしまうからです。各チェッカーは、自分が確認した範囲だけを述べます。
 
+### リセット
+
+チェッカー一覧の下のボタンで、結果のパネルをすべて閉じ、重ね表示もすべて消します。輪郭、ぼかし、モノクロ、原稿、仮の文言。どれもそのチェッカーをもう一度押したときと同じ手順で切れるので、元の文章は戻り、ページに Krafty のものは残りません。チェッカーと同じように、キーボードショートカットを割り当てられます。
+
 ### 画像チェッカー
 
 表示領域よりかなり大きく配信されている画像を見つけます。1920×1080 のファイルを 300×169 で表示している、といったものです。ヒーローやセクションの CSS `background-image` も含め、無駄の大きい順に並べ、ファイル名と、そのままコピーできるアドレスを添えます。同じファイルで位置だけが箱ごとに違うスプライトは、その一覧に入れません。同じ見え方で繰り返すファイルは1行にまとめ、件数を添えます。width と height 属性の無い画像も一覧にします。aspect-ratio や、要素に書いた幅と高さ、重ね先の親の比率で枠が既にある画像は、その一覧に入れません。
@@ -252,7 +264,11 @@ Tab が辿る操作対象を、その順に、役割と名前つきで並べま�
 
 キャプチャに名前や文章、画像が写り込まないよう、テキストと入力値と画像を、近い大きさの仮のものに差し替えます。空白はそのまま、全角は全角のままなので、折り返しは動きません。もう一度押すと元に戻ります。差し替え前の中身はブラウザの外に出ません。
 
-キャンバス、動画、開けないフレームは、中の画素を書き換えられないので、同じ大きさのラベル付きパッチで覆います。インラインの図形はそのままです。入力欄は仮の値になるので、フォームは戻してから送信してください。件数は出さず、Krafty のパネルには手を付けません。
+キャンバス、動画、開けないフレームは、中の画素を書き換えられないので、同じ大きさのラベル付きパッチで覆います。パッチはその枠と同じ重なりに置くので、背景の動画が手前の文言を隠すことはありません。インラインの図形はそのままです。入力欄は仮の値になるので、フォームは戻してから送信してください。件数は出さず、Krafty のパネルには手を付けません。
+
+### 原稿チェッカー
+
+見えているページを原稿として読みます。一段組みの素の文字になるので、レイアウトを抜きにして文言を読み、コピーできます。縦書きも段の横方向に戻します。ボタンの飾りは外し、文言だけを残します。どれが本文かは決めません。画面に出ていたヘッダーやナビ、フッターは、文章の流れの中に残ります。ページが隠していたものは隠したままです。閉じていたメニューは開かず、画面の外にあった引き出しも外のままです。ページ内の画像は段の幅に揃えて残り、装飾の背景は外れるので、文言は白地に載ります。shadow tree の中のスタイルは、ページが描いたまま残ります。Krafty のパネルには手を付けません。
 
 ### スマホで開く
 

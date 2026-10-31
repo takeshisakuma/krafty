@@ -117,6 +117,10 @@
     "message": "Dummy Check",
     "description": "Menu label for the checker that swaps page content for stand-ins. It has no panel."
   },
+  "checkerManuscript": {
+    "message": "Manuscript Check",
+    "description": "Menu label for the checker that shows the visible page as a manuscript. It has no panel."
+  },
   "dummyCoverCanvas": {
     "message": "canvas",
     "description": "Label on the patch that covers a canvas while Dummy Check is on."
@@ -144,6 +148,10 @@
   "popupReview": {
     "message": "Copy the review",
     "description": "Runs every checker that reports and puts all of their findings on the clipboard."
+  },
+  "popupReset": {
+    "message": "Reset",
+    "description": "Turns off every checker currently on, closing panels and overlays."
   },
   "popupGroupQr": {
     "message": "Open on a phone",
@@ -1441,6 +1449,10 @@
     "message": "Review copied.",
     "description": "Shown after the popup has put every panel's findings on the clipboard."
   },
+  "popupResetDone": {
+    "message": "Reset.",
+    "description": "Shown after every checker that was on has been turned off."
+  },
   "popupCannotRun": {
     "message": "Krafty cannot run on this page.",
     "description": "Shown in the popup when the page cannot be scripted."
@@ -1500,6 +1512,14 @@
   "commandDummyCheck": {
     "message": "Toggle Dummy Check",
     "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandManuscriptCheck": {
+    "message": "Toggle Manuscript Check",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandReset": {
+    "message": "Reset every check on this page",
+    "description": "Shown on the chrome://extensions/shortcuts page. Not a checker: turns off whatever is on."
   },
   "manualTitle": {
     "message": "Krafty Manual",
@@ -1630,7 +1650,23 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualDummyBody": {
-    "message": "Swap text, field values and pictures for stand-ins of a similar size, so a screenshot does not carry a name, a line or a picture you did not mean to share. Spaces stay, and wide characters stay wide, so the lines wrap where they did. Canvas, video and a frame Krafty cannot open are covered with a labelled patch of the same size, because those pixels cannot be edited. An inline drawing is left as it is. Turn it off before sending a form: the fields hold stand-ins until you do, and then the page is as it was. Krafty does not count any of this.",
+    "message": "Swap text, field values and pictures for stand-ins of a similar size, so a screenshot does not carry a name, a line or a picture you did not mean to share. Spaces stay, and wide characters stay wide, so the lines wrap where they did. Canvas, video and a frame Krafty cannot open are covered with a labelled patch of the same size, because those pixels cannot be edited. The patch stays in that box's layer, so a background video does not hide the words in front of it. An inline drawing is left as it is. Turn it off before sending a form: the fields hold stand-ins until you do, and then the page is as it was. Krafty does not count any of this.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualManuscriptTitle": {
+    "message": "Manuscript Checker",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualManuscriptBody": {
+    "message": "Show the visible page as a manuscript: one column and plain type, so the words can be read and copied. Writing runs across the column, including text the page had set vertically. A control keeps its words without the button drawn around it. It does not decide which part is the article — a header, navigation and footer that were on screen stay, in the flow of the text. Anything the page had hidden stays hidden, and a drawer that was off screen stays off screen. Pictures stay, fitted to the column; decorative backgrounds go. Styles inside a shadow tree stay as the page drew them. Krafty's own panels are left alone.",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualResetTitle": {
+    "message": "Reset",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualResetBody": {
+    "message": "Close every findings panel and turn off every overlay, including outlines, blur, monochrome, the manuscript and stand-in text. Each checker is switched off the same way as pressing it, so the original copy comes back and nothing of Krafty's is left on the page. It can take a keyboard shortcut, the same way a checker can.",
     "description": "Shown on the manual page (option.html)."
   },
   "manualShortcutsTitle": {

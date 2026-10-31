@@ -79,6 +79,12 @@ test("wiring", async (t) => {
 
   await t.test("every manifest command has a checker", () => {
     for (const command of Object.keys(manifest.commands)) {
+      /* Reset re-runs whichever checkers are on. It is not one of them,
+         and it is the only command allowed to say so. */
+      if (command === "reset") {
+        continue;
+      }
+
       assert.ok(
         checkers.some((checker) => checker.command === command),
         `${command} has no checker, so pressing it does nothing`
@@ -141,11 +147,11 @@ test("wiring", async (t) => {
   });
 
   await t.test("a checker without a panel is not asked for one", () => {
-    /* outline, brightness, squint, spacing and dummy draw over the page and
-       have nothing to say in text. Alt draws too, and its counts reach the
-       review without a panel. Giving any of them a panelId would put an
-       empty heading in the review, and for dummy would redact the page the
-       review is about. */
+    /* Outline, brightness, squint, spacing, dummy and manuscript draw over
+       the page and have nothing to say in text. Alt draws too, and its
+       counts reach the review without a panel. Giving any of them a panelId
+       would put an empty heading in the review, and for dummy would redact
+       the page the review is about. */
     for (const checker of checkers.filter((one) => !one.panelId)) {
       const source = fs.readFileSync(path.join(code, checker.file), "utf8");
 
@@ -230,6 +236,73 @@ test("wiring", async (t) => {
     /* An unknown command must be ignored rather than throw. */
     await onCommand("no-such-command");
     assert.strictEqual(injected.length, 1);
+  });
+
+  await t.test("reset re-runs the checkers that are on", async () => {
+    /** @type {string[]} */
+    const injected = [];
+
+    /** @type {any} */
+    let onCommand;
+
+    const chrome = {
+      commands: {
+        onCommand: {
+          addListener: (/** @type {any} */ fn) => {
+            onCommand = fn;
+          },
+        },
+      },
+      runtime: { getManifest: () => ({ version: "0.0.0" }) },
+      tabs: { query: async () => [{ id: 7 }], TAB_ID_NONE: -1 },
+      scripting: {
+        executeScript: async (/** @type {any} */ options) => {
+          if (options.files) {
+            injected.push(options.files[options.files.length - 1]);
+            return [{ result: null }];
+          }
+
+          /* ensureStyles asks whether this version is already applied.
+             The class-list read is the call with no args. */
+          if (options.args) {
+            return [{ result: true }];
+          }
+
+          return [
+            {
+              result: ["kraftyOutlineChecker", "kraftySquintChecker", "kraftyManuscriptChecker"],
+            },
+          ];
+        },
+        insertCSS: async () => {},
+      },
+    };
+
+    const sandbox = /** @type {any} */ ({ chrome });
+    sandbox.globalThis = sandbox;
+    sandbox.importScripts = () => {
+      const source = fs.readFileSync(path.join(code, "checkers.js"), "utf8");
+      new Function("globalThis", "chrome", source)(sandbox, chrome);
+    };
+
+    const background = fs.readFileSync(path.join(code, "background.js"), "utf8");
+    new Function("globalThis", "chrome", "importScripts", background)(
+      sandbox,
+      chrome,
+      sandbox.importScripts
+    );
+
+    await onCommand("reset");
+
+    assert.deepStrictEqual(injected.sort(), [
+      "js/manuscriptCheck.js",
+      "js/outlineCheck.js",
+      "js/squintCheck.js",
+    ]);
+
+    injected.length = 0;
+    await onCommand("no-such-command");
+    assert.deepStrictEqual(injected, []);
   });
 
   await t.test("locales carry the same keys", () => {

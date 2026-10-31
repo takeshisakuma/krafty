@@ -268,12 +268,11 @@ $alertColor: #f00;
 
 /* Patches over pixels this script cannot rewrite, and the stand-in text
    that generated content was showing. The stripe is the signal that the
-   box is a cover, not a grey part of the design. Below the panels, which
-   have to stay usable, and above the page, including a modal that would
-   otherwise paint its canvas over a lower layer. */
+   box is a cover, not a grey part of the design. Position and layer are
+   set from the script: the patch is a sibling of the box it covers and
+   stays in that box's layer, so a background video does not hide the page
+   in front of it. A top-of-stack index here would. */
 .kraftyDummyMask {
-  position: fixed;
-  z-index: 2147483646;
   box-sizing: border-box;
   overflow: hidden;
   pointer-events: none;
@@ -313,6 +312,290 @@ $alertColor: #f00;
 
   [data-krafty-dummy-after-image]::after {
     background-image: var(--krafty-dummy-swatch) !important;
+  }
+}
+
+/* --- manuscript checker --- */
+
+/* One column and plain type for what is already on screen. The script marks
+   two sets before the class goes on: data-krafty-manuscript-flow for a
+   fixed or sticky box that is covering the viewport, and
+   data-krafty-manuscript-away for a fixed or absolute box that is off
+   screen. Display, visibility, opacity and height are not set on the page
+   at large, so something the page hid stays hidden and a disclosure can
+   still be opened.
+
+   !important for the same reason as the outline rule: a page reset of the
+   same weight would make the skin look like a no-op. The tool's chrome is
+   named in the :not() so a panel, an alt label, a pointer box, a screen or
+   a dummy patch is not restyled — and so this checker does not have to
+   know that another one is on. Descendants of an off-screen box are
+   excluded with it. Relaxing only the box and not its children would still
+   let a long line paint back into the viewport.
+
+   Writing mode, alignment, position and transform are set: a vertical
+   line, a centered flex row and an absolutely placed button are the
+   layout, and the manuscript is the words in one horizontal column.
+   Display, visibility, opacity and height are still not set on the page
+   at large. A box that paints past its own edge is the exception: the
+   script marks it and the rule below gives it height auto, so the next
+   line is not covered. A box that already clipped its contents before
+   this skin stays clipped, so a disclosure the page had closed stays
+   closed. */
+
+/* $extra hangs a pseudo on the excluded element, so ::before of a panel is
+   not the panel itself and must not be named in the :not(). */
+@mixin manuscript($tag: "*", $extra: "", $skip: "") {
+  #{$tag}:not(
+    .kraftyPanel,
+    .kraftyAltContent,
+    .kraftyAltRescan,
+    .kraftyPointerBox,
+    .kraftyBrightnessScreen,
+    .kraftySquintScreen,
+    .kraftyDummyMask,
+    [data-krafty-manuscript-away],
+    [data-krafty-manuscript-away] *
+  )#{$skip}#{$extra} {
+    @content;
+  }
+}
+
+html.kraftyManuscriptRoot {
+  background: #fff !important;
+}
+
+.kraftyManuscriptChecker {
+  /* Block, not a column flex or grid. Only the body: a descendant's display
+     is what keeps a closed menu closed, and this must not touch it. */
+  display: block !important;
+  box-sizing: border-box !important;
+  max-width: 680px !important;
+  margin: 0 !important;
+  padding: 32px 24px 64px !important;
+  min-height: 100vh !important;
+  background: #fff !important;
+  color: #1a1a1a !important;
+  font-family: system-ui, sans-serif !important;
+  font-size: 18px !important;
+  line-height: 1.6 !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  text-align: start !important;
+  column-count: auto !important;
+  column-width: auto !important;
+
+  @include manuscript {
+    font-family: system-ui, sans-serif !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    text-transform: none !important;
+    text-shadow: none !important;
+    text-align: start !important;
+    text-decoration: none !important;
+    white-space: normal !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    color: #1a1a1a !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    float: none !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    justify-content: normal !important;
+    align-items: normal !important;
+    align-content: normal !important;
+    justify-items: normal !important;
+    align-self: auto !important;
+    grid-template-columns: 1fr !important;
+    /* auto, not 1. A count of 1 is still a multi-column box, and a fixed
+       height then spills the next block into a column on the right. */
+    column-count: auto !important;
+    column-width: auto !important;
+    gap: 0 !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    user-select: text !important;
+  }
+
+  /* Not on svg. width:auto drops the page's own icon size and the
+     replaced-element default, 300 by 150, paints across the next line.
+     max-width above still fits a wide drawing to the column. */
+  @include manuscript(":not(svg)") {
+    width: auto !important;
+  }
+
+  /* Position stays put on a box the script marked hold: it is invisible,
+     and pulling it into the line would leave a hole. Everything else that
+     was placed — a button pinned to a corner, a bar — joins the words. */
+  @include manuscript("*", "", ":not([data-krafty-manuscript-hold])") {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    transform: none !important;
+  }
+
+  /* A button's fill, arrow and duplicate label are usually a pseudo.
+     Height stays untouched here, so a collapsed box the page closed with
+     height:0 stays closed. */
+  @include manuscript("*", "::before") {
+    content: none !important;
+  }
+
+  @include manuscript("*", "::after") {
+    content: none !important;
+  }
+
+  /* A bar that was covering the viewport joins the text. Height auto
+     collapses a full-screen scrim; it is not set on the page at large, so
+     a collapsed accordion stays collapsed. */
+  [data-krafty-manuscript-flow] {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  /* The script marks a box whose content paints past its edge. Height auto
+     lets the next line start below that content. flex-shrink 0 keeps a flex
+     item from being squeezed back to nothing inside a bar that also grows. */
+  [data-krafty-manuscript-grow] {
+    height: auto !important;
+    max-height: none !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* A stage left taller than the picture it holds. The script marks it. */
+  [data-krafty-manuscript-fit] {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  @include manuscript(":is(h1, h2, h3, h4, h5, h6)") {
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    margin: 0.9em 0 0.35em !important;
+  }
+
+  @include manuscript("h1") {
+    font-size: 1.8em !important;
+  }
+
+  @include manuscript("h2") {
+    font-size: 1.45em !important;
+  }
+
+  @include manuscript("h3") {
+    font-size: 1.2em !important;
+  }
+
+  @include manuscript(":is(h4, h5, h6)") {
+    font-size: 1.05em !important;
+  }
+
+  @include manuscript(":is(p, ul, ol, dl, pre, table, blockquote, figure)") {
+    margin: 0.75em 0 !important;
+  }
+
+  @include manuscript("ul") {
+    list-style: disc outside !important;
+    padding-left: 1.4em !important;
+  }
+
+  @include manuscript("ol") {
+    list-style: decimal outside !important;
+    padding-left: 1.4em !important;
+  }
+
+  @include manuscript(":is(strong, b)") {
+    font-weight: 700 !important;
+  }
+
+  @include manuscript(":is(em, i, cite)") {
+    font-style: italic !important;
+  }
+
+  @include manuscript("a") {
+    color: #0645ad !important;
+    text-decoration: underline !important;
+  }
+
+  @include manuscript(":is(pre, code, kbd, samp)") {
+    font-family: ui-monospace, monospace !important;
+  }
+
+  @include manuscript("pre") {
+    white-space: pre-wrap !important;
+  }
+
+  @include manuscript("blockquote") {
+    padding-left: 1em !important;
+    border-left: 3px solid #ccc !important;
+  }
+
+  @include manuscript("table") {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  @include manuscript(":is(th, td)") {
+    width: auto !important;
+    max-width: none !important;
+    border: 1px solid #ccc !important;
+    padding: 0.35em 0.5em !important;
+    text-align: start !important;
+  }
+
+  @include manuscript(":is(img, video)") {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0.75em 0 !important;
+  }
+
+  @include manuscript("svg") {
+    max-width: 100% !important;
+    fill: currentColor !important;
+  }
+
+  /* The pill's fixed height is what still reads as a button after the fill
+     is gone. Not on every element: height:0 is how some disclosures stay
+     shut, and this must not open them. */
+  @include manuscript(":is(a, button, input, textarea, select)") {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* An empty field with no edge disappears into the column. A button is
+     the words, the same as a link, so it is left out of this list. */
+  @include manuscript(":is(input, textarea, select)") {
+    font: inherit !important;
+    border: 1px solid #bbb !important;
+    background: #fff !important;
+    color: #1a1a1a !important;
+    padding: 0.15em 0.4em !important;
+  }
+
+  @include manuscript(
+    "input:is([type='button'], [type='submit'], [type='reset'], [type='image'])"
+  ) {
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
   }
 }
 

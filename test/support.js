@@ -47,6 +47,7 @@ const SCRIPTS = {
   squintCheck: read("code", "js", "squintCheck.js"),
   spacingCheck: read("code", "js", "spacingCheck.js"),
   dummyCheck: read("code", "js", "dummyCheck.js"),
+  manuscriptCheck: read("code", "js", "manuscriptCheck.js"),
   tabCheck: read("code", "js", "tabCheck.js"),
   targetCheck: read("code", "js", "targetCheck.js"),
 };

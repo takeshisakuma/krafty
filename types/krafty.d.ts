@@ -144,10 +144,12 @@ interface Checker {
   allFrames: boolean;
   /**
    * Element id of the panel this checker builds, for the ones that report
-   * findings. Absent on the three that only draw over the page.
+   * findings. Absent on the checkers that only draw over the page.
    */
   panelId?: string;
 }
+
+declare var kraftyReset: (tabId: number) => Promise<void>;
 
 declare var kraftyCheckers: Checker[];
 declare var kraftyEnsureStyles: (tabId: number) => Promise<void>;
@@ -174,6 +176,10 @@ declare var kraftyQrGenerate: (
     options?: { pad?: number; padX?: number; padY?: number }
   ) => void;
 };
+
+/* js/manuscriptCheck.js — drops a bar the page pins on scroll. Cleared
+   when the checker turns off. */
+declare var kraftyManuscriptUnpin: (() => void) | undefined;
 
 /* Available to the service worker, which is a classic worker rather than a
    module. lib.webworker cannot be pulled in alongside lib.dom. */

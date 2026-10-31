@@ -86,6 +86,7 @@ const setEnabled = (enabled) => {
     button(id).disabled = !enabled;
   }
   button("js-reviewButton").disabled = !enabled;
+  button("js-resetButton").disabled = !enabled;
 };
 
 /**
@@ -352,6 +353,22 @@ async function init() {
 
       await syncButtons(tabId);
       showStatus(chrome.i18n.getMessage("popupReviewCopied"), "done");
+    } catch (error) {
+      showStatus(chrome.i18n.getMessage("popupCannotRun"));
+    }
+  });
+
+  /* Not a checker. Re-runs whichever checkers are on, so each one leaves
+     the way it was built to: a panel closes, dummy puts the words back,
+     the manuscript drops its marks. Stripping the body classes from here
+     would skip those paths. */
+  button("js-resetButton").addEventListener("click", async () => {
+    clearStatus();
+
+    try {
+      await kraftyReset(tabId);
+      await syncButtons(tabId);
+      showStatus(chrome.i18n.getMessage("popupResetDone"), "done");
     } catch (error) {
       showStatus(chrome.i18n.getMessage("popupCannotRun"));
     }

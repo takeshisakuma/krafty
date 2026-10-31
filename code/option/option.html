@@ -32,7 +32,7 @@
   </section>
   <section>
     <h2 data-i18n="manualImageTitle">Image Checker</h2>
-    <p data-i18n="manualImageBody">Find images — including CSS background-image — served much larger than the space they are shown in, and images with no width and height attributes — both listed so you can point at them on the page. Allows for high-density displays, so a correctly built retina image is not reported.</p>
+    <p data-i18n="manualImageBody">Find images — including CSS background-image — served much larger than the space they are shown in, and images with no width and height attributes when the box is not already reserved — both listed so you can point at them on the page. Allows for high-density displays, so a correctly built retina image is not reported.</p>
   </section>
   <section>
     <h2 data-i18n="manualLeftoversTitle">Leftovers Checker</h2>
@@ -44,7 +44,7 @@
   </section>
   <section>
     <h2 data-i18n="manualTokenTitle">Token Check</h2>
-    <p data-i18n="manualTokenBody">List the colours, fonts, border radii and box shadows the page actually renders with, led by counts that show whether the tokens look disciplined. Near-identical values and a typeface that never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert off-system.</p>
+    <p data-i18n="manualTokenBody">List the colours, fonts, border radii and box shadows the page actually renders with, led by counts that show whether the tokens look disciplined. Near-identical values and a typeface that never loaded are noted for you to judge — Krafty does not know the design system, so it does not assert off-system. The same colour at another opacity is one colour in that note.</p>
   </section>
   <section>
     <h2 data-i18n="manualTabTitle">Tab Checker</h2>
@@ -52,7 +52,7 @@
   </section>
   <section>
     <h2 data-i18n="manualTargetTitle">Target Checker</h2>
-    <p data-i18n="manualTargetBody">List buttons and links whose box is smaller than 24 CSS pixels on a side, with the measured size. Inline links in a sentence are left out, and the size is not a verdict — space around a control can still make it fine.</p>
+    <p data-i18n="manualTargetBody">List buttons and links under 24 CSS pixels on both sides, with the measured size. The same wording is one row, with a count. Inline links in a sentence are left out, and so is a control whose only short side is its line. The size is not a verdict — space around a control can still make it fine.</p>
   </section>
   <section>
     <h2 data-i18n="manualOutlineTitle">Outline Checker</h2>
@@ -77,7 +77,15 @@
 
   <section>
     <h2 data-i18n="manualDummyTitle">Dummy Checker</h2>
-    <p data-i18n="manualDummyBody">Swap text, field values and pictures for stand-ins of a similar size, so a screenshot does not carry a name, a line or a picture you did not mean to share. Spaces stay, and wide characters stay wide, so the lines wrap where they did. Canvas, video and a frame Krafty cannot open are covered with a labelled patch of the same size, because those pixels cannot be edited. An inline drawing is left as it is. Turn it off before sending a form: the fields hold stand-ins until you do, and then the page is as it was. Krafty does not count any of this.</p>
+    <p data-i18n="manualDummyBody">Swap text, field values and pictures for stand-ins of a similar size, so a screenshot does not carry a name, a line or a picture you did not mean to share. Spaces stay, and wide characters stay wide, so the lines wrap where they did. Canvas, video and a frame Krafty cannot open are covered with a labelled patch of the same size, because those pixels cannot be edited. The patch stays in that box's layer, so a background video does not hide the words in front of it. An inline drawing is left as it is. Turn it off before sending a form: the fields hold stand-ins until you do, and then the page is as it was. Krafty does not count any of this.</p>
+  </section>
+  <section>
+    <h2 data-i18n="manualManuscriptTitle">Manuscript Checker</h2>
+    <p data-i18n="manualManuscriptBody">Show the visible page as a manuscript: one column and plain type, so the words can be read and copied. Writing runs across the column, including text the page had set vertically. A control keeps its words without the button drawn around it. It does not decide which part is the article — a header, navigation and footer that were on screen stay, in the flow of the text. Anything the page had hidden stays hidden, and a drawer that was off screen stays off screen. Pictures stay, fitted to the column; decorative backgrounds go. Styles inside a shadow tree stay as the page drew them. Krafty's own panels are left alone.</p>
+  </section>
+  <section>
+    <h2 data-i18n="manualResetTitle">Reset</h2>
+    <p data-i18n="manualResetBody">Close every findings panel and turn off every overlay, including outlines, blur, monochrome, the manuscript and stand-in text. Each checker is switched off the same way as pressing it, so the original copy comes back and nothing of Krafty's is left on the page. It can take a keyboard shortcut, the same way a checker can.</p>
   </section>
 
   <section>

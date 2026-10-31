@@ -11,7 +11,7 @@ html {
 
 body {
   margin: 0;
-  /* Sixteen checkers have to stay inside Chrome's 600px popup cap. */
+  /* The checkers have to stay inside Chrome's 600px popup cap. */
   padding: 4px 0;
   min-width: 160px;
   max-width: 280px;
@@ -31,7 +31,7 @@ body {
 /* Which group a checker belongs to answers "which of these do I want"
    better than the names do: one group reports, the other shows the page. */
 .checkerGroup {
-  margin: 10px 16px 4px;
+  margin: 8px 16px 2px;
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.04em;
@@ -42,9 +42,9 @@ body {
   display: block;
   width: 100%;
   margin: 0;
-  /* 3px rather than 6: sixteen checkers plus the review row has to stay
-     inside Chrome's 600px popup cap. See the QR test. */
-  padding: 3px 16px 3px 8px;
+  /* 2px rather than 6: the checker list plus reset has to stay inside
+     Chrome's 600px popup cap. See the QR test. */
+  padding: 2px 16px 2px 8px;
   border: 0;
   /* Each checker already had a colour, and it only appeared once the
      pointer was on the button or the checker was running - no help at all
@@ -228,13 +228,23 @@ body {
   color: #1d4ed8;
 }
 
+.manuscriptCheckButton {
+  border-left-color: #44403c;
+}
+
+.manuscriptCheckButton:hover:not(:disabled),
+.manuscriptCheckButton.active {
+  color: #44403c;
+}
+
 .reviewRow {
   margin: 8px 16px 0;
   padding-top: 8px;
   border-top: 1px solid #ddd;
 }
 
-.reviewButton {
+.reviewButton,
+.resetButton {
   display: block;
   width: 100%;
   margin: 0;
@@ -248,16 +258,23 @@ body {
   cursor: pointer;
 }
 
-.reviewButton:hover:not(:disabled) {
+.resetButton {
+  margin-top: 4px;
+}
+
+.reviewButton:hover:not(:disabled),
+.resetButton:hover:not(:disabled) {
   background-color: #f2f2f2;
 }
 
-.reviewButton:disabled {
+.reviewButton:disabled,
+.resetButton:disabled {
   color: #bbb;
   cursor: default;
 }
 
-.reviewButton:focus-visible {
+.reviewButton:focus-visible,
+.resetButton:focus-visible {
   outline: 2px solid #4d90fe;
   outline-offset: -2px;
 }

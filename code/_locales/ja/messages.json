@@ -117,6 +117,10 @@
     "message": "ダミーチェック",
     "description": "Menu label for the checker that swaps page content for stand-ins. It has no panel."
   },
+  "checkerManuscript": {
+    "message": "原稿チェック",
+    "description": "Menu label for the checker that shows the visible page as a manuscript. It has no panel."
+  },
   "dummyCoverCanvas": {
     "message": "キャンバス",
     "description": "Label on the patch that covers a canvas while Dummy Check is on."
@@ -144,6 +148,10 @@
   "popupReview": {
     "message": "レビュー結果をコピー",
     "description": "Runs every checker that reports and puts all of their findings on the clipboard."
+  },
+  "popupReset": {
+    "message": "リセット",
+    "description": "Turns off every checker currently on, closing panels and overlays."
   },
   "popupGroupQr": {
     "message": "スマホで開く",
@@ -1441,6 +1449,10 @@
     "message": "レビュー結果をコピーしました。",
     "description": "Shown after the popup has put every panel's findings on the clipboard."
   },
+  "popupResetDone": {
+    "message": "リセットしました。",
+    "description": "Shown after every checker that was on has been turned off."
+  },
   "popupCannotRun": {
     "message": "このページでは Krafty を実行できません。",
     "description": "Shown in the popup when the page cannot be scripted."
@@ -1500,6 +1512,14 @@
   "commandDummyCheck": {
     "message": "ダミーチェックの切り替え",
     "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandManuscriptCheck": {
+    "message": "原稿チェックの切り替え",
+    "description": "Shown on the chrome://extensions/shortcuts page."
+  },
+  "commandReset": {
+    "message": "このページのチェックをすべてリセット",
+    "description": "Shown on the chrome://extensions/shortcuts page. Not a checker: turns off whatever is on."
   },
   "manualTitle": {
     "message": "Krafty マニュアル",
@@ -1630,7 +1650,23 @@
     "description": "Shown on the manual page (option.html)."
   },
   "manualDummyBody": {
-    "message": "キャプチャに名前や文章、画像が写り込まないよう、テキストと入力値と画像を、近い大きさの仮のものに差し替えます。空白はそのまま、全角は全角のままなので、折り返しは動きません。キャンバス、動画、開けないフレームは中の画素を書き換えられないので、同じ大きさのラベル付きパッチで覆います。インラインの図形はそのままです。入力欄は仮の値になるので、フォームは戻してから送信してください。もう一度押すとページは元どおりです。件数は出しません。",
+    "message": "キャプチャに名前や文章、画像が写り込まないよう、テキストと入力値と画像を、近い大きさの仮のものに差し替えます。空白はそのまま、全角は全角のままなので、折り返しは動きません。キャンバス、動画、開けないフレームは中の画素を書き換えられないので、同じ大きさのラベル付きパッチで覆います。パッチはその枠と同じ重なりに置くので、背景の動画が手前の文言を隠すことはありません。インラインの図形はそのままです。入力欄は仮の値になるので、フォームは戻してから送信してください。もう一度押すとページは元どおりです。件数は出しません。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualManuscriptTitle": {
+    "message": "原稿チェッカー",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualManuscriptBody": {
+    "message": "見えているページを原稿として表示します。一段組みの素の文字になるので、文言を読んでコピーできます。縦書きも段の横方向に戻します。ボタンの飾りは外し、文言だけを残します。どれが本文かは決めません。画面に出ていたヘッダー、ナビ、フッターは文章の流れの中に残ります。ページが隠していたものは隠したままで、画面の外にあった引き出しも外のままです。画像は段の幅に揃えて残り、装飾の背景は外れます。shadow tree の中のスタイルは、ページが描いたまま残ります。Krafty のパネルには手を付けません。",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualResetTitle": {
+    "message": "リセット",
+    "description": "Shown on the manual page (option.html)."
+  },
+  "manualResetBody": {
+    "message": "結果のパネルをすべて閉じ、輪郭・ぼかし・モノクロ・原稿・仮の文言を含む重ね表示もすべて消します。各チェッカーはボタンでもう一度押したときと同じ手順で切れるので、元の文章は戻り、ページに Krafty のものは残りません。チェッカーと同じように、キーボードショートカットを割り当てられます。",
     "description": "Shown on the manual page (option.html)."
   },
   "manualShortcutsTitle": {
