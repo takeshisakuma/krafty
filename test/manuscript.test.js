@@ -84,8 +84,28 @@ const PAGE = `<style>
   <p id="under-follow">Words underneath the bar</p>
   <p id="vert">縦の文</p>
   <a id="pill" href="#s">詳細を見る</a>
+  <a id="stretch" href="#t" style="display:block;width:100%">Home</a>
+  <a id="card" href="#c" style="display:block"><span id="card-label">Read more</span><h2 id="card-title">Card title</h2><p id="card-copy">A short description.</p></a>
+  <a id="wrapped" href="#w" style="display:flex"><span id="wrapped-label">ラベル</span></a>
+  <a id="hidden-link" class="secret" href="#z">Secret link</a>
   <div id="ghost" style="position:absolute;top:12px;left:12px;width:80px;height:24px;visibility:hidden">Ghost label</div>
   <a id="below" href="#b" style="position:absolute;top:3200px;left:24px;background:#7f0000;border-radius:40px;height:48px">詳細を見る</a>
+  <div id="areas" style="display:grid;grid-template-areas:'sidebar contents advertisement';grid-template-columns:160px 1fr 160px">
+    <div id="areas-side" style="grid-area:sidebar">Side</div>
+    <div id="areas-main" style="grid-area:contents">Main words of the article</div>
+    <div id="areas-ad" style="grid-area:advertisement">Advertisement</div>
+  </div>
+  <div id="placed" style="display:grid;grid-template-columns:1fr 1fr">
+    <div id="placed-a" style="grid-column:1">Left column</div>
+    <div id="placed-b" style="grid-column:2">Right column</div>
+  </div>
+  <div id="gflow" style="display:grid;grid-auto-flow:column">
+    <div id="gflow-a">First</div>
+    <div id="gflow-b">Second</div>
+  </div>
+  <div id="shut" style="display:grid;grid-template-rows:0fr">
+    <div id="shut-body" style="overflow:hidden;min-height:0">A disclosure the page had shut.</div>
+  </div>
 </main>`;
 
 test("manuscript checker", async (t) => {
@@ -205,6 +225,80 @@ test("manuscript checker", async (t) => {
     assert.strictEqual(seen.heroImage, "none");
     assert.notStrictEqual(seen.picDisplay, "none");
     assert.strictEqual(seen.insideHidden, true);
+  });
+
+  await t.test("a link is the underlined words, only as wide as they are", async () => {
+    const seen = await withPage(
+      { html: PAGE, checkers: ["manuscriptCheck"], width: 900, height: 700 },
+      async (page) => {
+        const measured = await page.evaluate(() => {
+          /**
+           * @param {string} id
+           */
+          const paint = (id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+              return null;
+            }
+            const style = getComputedStyle(el);
+            return { color: style.color, decoration: style.textDecorationLine };
+          };
+          /**
+           * @param {string} id
+           */
+          const box = (id) => document.getElementById(id)?.getBoundingClientRect() ?? null;
+          const home = box("home");
+          const nav = box("nav");
+          const stretch = box("stretch");
+          const hidden = document.getElementById("hidden-link");
+          const beside = home
+            ? document.elementFromPoint(home.right + 24, home.top + home.height / 2)
+            : null;
+
+          return {
+            label: paint("card-label"),
+            title: paint("card-title"),
+            copy: paint("card-copy"),
+            wrapped: paint("wrapped-label"),
+            button: paint("go"),
+            hidden: hidden ? getComputedStyle(hidden).display : "",
+            homeWidth: home ? home.width : 0,
+            navWidth: nav ? nav.width : 0,
+            stretchWidth: stretch ? stretch.width : 0,
+            beside: beside?.closest("a")?.id ?? "",
+          };
+        });
+
+        await page.hover("#stretch");
+        const outline = await page.evaluate(() => {
+          const stretch = document.getElementById("stretch");
+          return stretch ? getComputedStyle(stretch).outlineStyle : "";
+        });
+
+        return { ...measured, outline };
+      }
+    );
+
+    const linkBlue = "rgb(6, 69, 173)";
+    for (const part of [seen.label, seen.title, seen.copy, seen.wrapped]) {
+      assert.ok(part);
+      assert.strictEqual(part.color, linkBlue);
+      assert.strictEqual(part.decoration, "underline");
+    }
+    assert.ok(seen.button);
+    assert.notStrictEqual(seen.button.color, linkBlue);
+    assert.strictEqual(seen.button.decoration, "none");
+    assert.strictEqual(seen.hidden, "none");
+    assert.ok(
+      seen.homeWidth < seen.navWidth - 40,
+      `a short link should stay within its words, ${seen.homeWidth} inside ${seen.navWidth}`
+    );
+    assert.ok(
+      seen.stretchWidth < seen.navWidth - 40,
+      `a block link should shrink to its words, ${seen.stretchWidth} inside ${seen.navWidth}`
+    );
+    assert.strictEqual(seen.beside, "");
+    assert.strictEqual(seen.outline, "solid");
   });
 
   await t.test("drops vertical writing, centering and button chrome", async () => {
@@ -385,6 +479,72 @@ test("manuscript checker", async (t) => {
     );
     assert.strictEqual(seen.columnCount, "auto");
     assert.strictEqual(seen.columnWidth, "auto");
+  });
+
+  await t.test("a named grid area stacks, and a shut row stays shut", async () => {
+    const seen = await withPage(
+      { html: PAGE, checkers: ["manuscriptCheck"], width: 900, height: 700 },
+      async (page) =>
+        page.evaluate(() => {
+          /**
+           * @param {string} id
+           */
+          const rect = (id) => {
+            const el = document.getElementById(id);
+            const box = el ? el.getBoundingClientRect() : null;
+
+            return box ? { top: box.top, left: box.left, bottom: box.bottom, height: box.height } : null;
+          };
+          /**
+           * @param {string} id
+           */
+          const tracks = (id) => {
+            const el = document.getElementById(id);
+            return el ? getComputedStyle(el).gridTemplateColumns.split(" ").filter(Boolean).length : 0;
+          };
+
+          return {
+            side: rect("areas-side"),
+            main: rect("areas-main"),
+            ad: rect("areas-ad"),
+            areaTracks: tracks("areas"),
+            left: rect("placed-a"),
+            right: rect("placed-b"),
+            placedTracks: tracks("placed"),
+            first: rect("gflow-a"),
+            second: rect("gflow-b"),
+            flowTracks: tracks("gflow"),
+            shut: rect("shut"),
+            shutRows: (() => {
+              const el = document.getElementById("shut");
+              return el ? getComputedStyle(el).gridTemplateRows : "";
+            })(),
+          };
+        })
+    );
+
+    assert.ok(seen.side && seen.main && seen.ad && seen.left && seen.right && seen.first && seen.second && seen.shut);
+    assert.strictEqual(seen.areaTracks, 1);
+    assert.strictEqual(seen.placedTracks, 1);
+    assert.strictEqual(seen.flowTracks, 1);
+    assert.ok(
+      seen.main.top >= seen.side.bottom - 1 && Math.abs(seen.main.left - seen.side.left) < 2,
+      `named areas should stack, ${JSON.stringify(seen.side)} then ${JSON.stringify(seen.main)}`
+    );
+    assert.ok(
+      seen.ad.top >= seen.main.bottom - 1 && Math.abs(seen.ad.left - seen.main.left) < 2,
+      `the third area should follow in the same column, ${JSON.stringify(seen.main)} then ${JSON.stringify(seen.ad)}`
+    );
+    assert.ok(
+      seen.right.top >= seen.left.bottom - 1 && Math.abs(seen.right.left - seen.left.left) < 2,
+      `an explicit second column should join the first, ${JSON.stringify(seen.left)} then ${JSON.stringify(seen.right)}`
+    );
+    assert.ok(
+      seen.second.top >= seen.first.bottom - 1 && Math.abs(seen.second.left - seen.first.left) < 2,
+      `column flow should run downward, ${JSON.stringify(seen.first)} then ${JSON.stringify(seen.second)}`
+    );
+    assert.ok(seen.shut.height < 8, `a 0fr row should stay shut, got ${seen.shut.height}`);
+    assert.ok(seen.shutRows.startsWith("0"), `the shut row should stay 0fr, got ${seen.shutRows}`);
   });
 
   await t.test("a short box does not cover the next line", async () => {

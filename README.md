@@ -134,7 +134,7 @@ A canvas, a video and a frame Krafty cannot open still paint their own pixels, s
 
 ### Manuscript Check
 
-Shows the page as a manuscript: one column and plain type, so the words can be read and copied without the layout in the way. Writing runs across the column, including text the page had set vertically. A control keeps its words without the button drawn around it. It does not decide which part is the article. A header, a navigation and a footer that were on screen stay on screen, in the flow of the text. Anything the page had hidden stays hidden — a closed menu does not open — and a drawer that was off screen stays off screen. Pictures in the page stay, fitted to the column; decorative backgrounds go, so the words sit on white. Styles inside a shadow tree stay as the page drew them. Krafty's own panels are left alone.
+Shows the page as a manuscript: one column and plain type, so the words can be read and copied without the layout in the way. Writing runs across the column, including text the page had set vertically. A control keeps its words without the button drawn around it. A link is blue and underlined, including the words inside it, and only as wide as those words, so the blank beside them is not part of the link. Resting on it draws that box. A button is not drawn as a link. It does not decide which part is the article. A header, a navigation and a footer that were on screen stay on screen, in the flow of the text. Anything the page had hidden stays hidden — a closed menu does not open — and a drawer that was off screen stays off screen. Pictures in the page stay, fitted to the column; decorative backgrounds go, so the words sit on white. Styles inside a shadow tree stay as the page drew them. Krafty's own panels are left alone.
 
 ### Open on a phone
 
@@ -268,7 +268,7 @@ Tab が辿る操作対象を、その順に、役割と名前つきで並べま�
 
 ### 原稿チェッカー
 
-見えているページを原稿として読みます。一段組みの素の文字になるので、レイアウトを抜きにして文言を読み、コピーできます。縦書きも段の横方向に戻します。ボタンの飾りは外し、文言だけを残します。どれが本文かは決めません。画面に出ていたヘッダーやナビ、フッターは、文章の流れの中に残ります。ページが隠していたものは隠したままです。閉じていたメニューは開かず、画面の外にあった引き出しも外のままです。ページ内の画像は段の幅に揃えて残り、装飾の背景は外れるので、文言は白地に載ります。shadow tree の中のスタイルは、ページが描いたまま残ります。Krafty のパネルには手を付けません。
+見えているページを原稿として読みます。一段組みの素の文字になるので、レイアウトを抜きにして文言を読み、コピーできます。縦書きも段の横方向に戻します。ボタンの飾りは外し、文言だけを残します。リンクは中の文言も含めて青の下線になり、その文言の幅だけになるので、横の余白はリンクではありません。カーソルを置くと、その範囲に枠が付きます。ボタンはリンクの見た目にはしません。どれが本文かは決めません。画面に出ていたヘッダーやナビ、フッターは、文章の流れの中に残ります。ページが隠していたものは隠したままです。閉じていたメニューは開かず、画面の外にあった引き出しも外のままです。ページ内の画像は段の幅に揃えて残り、装飾の背景は外れるので、文言は白地に載ります。shadow tree の中のスタイルは、ページが描いたまま残ります。Krafty のパネルには手を付けません。
 
 ### スマホで開く
 

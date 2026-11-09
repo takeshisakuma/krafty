@@ -413,6 +413,15 @@ html.kraftyManuscriptRoot {
     justify-items: normal !important;
     align-self: auto !important;
     grid-template-columns: 1fr !important;
+    /* `1fr` sizes the first track only. An area template names further
+       tracks, and a child placed on a named area or an explicit column
+       grows an implicit one beside it. Rows stay as the page set them:
+       a 0fr row is how a disclosure stays shut. Column flow would still
+       give each item a track of its own, so placement runs down the one
+       column. */
+    grid-template-areas: none !important;
+    grid-auto-flow: row !important;
+    grid-area: auto !important;
     /* auto, not 1. A count of 1 is still a multi-column box, and a fixed
        height then spills the next block into a column on the right. */
     column-count: auto !important;
@@ -528,9 +537,40 @@ html.kraftyManuscriptRoot {
     font-style: italic !important;
   }
 
+  /* The words of a link, including words that live in a child. The rule
+     above paints every element body colour and no decoration, and a flex
+     or inline-block child does not carry its parent's underline, so a
+     button-shaped link or a card would read as plain text. The same blue
+     and underline go on the contents. A button stays the words. A picture
+     or a drawing is not text, so it is not underlined; a drawing still
+     takes the link colour through currentColor.
+
+     The box shrinks to that content. width:auto on a block or flex link
+     is the whole column, and the underline covers only the glyphs, so the
+     blank beside them would still navigate. fit-content leaves display
+     alone, so a link the page hid stays hidden. Hover draws the box that
+     remains, which is the picture when the link holds one. */
   @include manuscript("a") {
     color: #0645ad !important;
     text-decoration: underline !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+  }
+
+  @include manuscript("a:hover") {
+    outline: 1px solid #0645ad !important;
+    outline-offset: 2px !important;
+  }
+
+  @include manuscript(
+    "a :not(button, button *, input, textarea, select, img, video, svg, canvas, picture)"
+  ) {
+    color: #0645ad !important;
+    text-decoration: underline !important;
+  }
+
+  @include manuscript("a svg") {
+    color: #0645ad !important;
   }
 
   @include manuscript(":is(pre, code, kbd, samp)") {
